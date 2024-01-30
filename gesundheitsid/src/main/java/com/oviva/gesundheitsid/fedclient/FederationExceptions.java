@@ -4,6 +4,8 @@ import java.net.URI;
 
 public class FederationExceptions {
 
+  private FederationExceptions() {}
+
   public static RuntimeException badEntityStatement(Exception cause) {
     return new RuntimeException("failed to parse entity statement", cause);
   }
@@ -42,5 +44,9 @@ public class FederationExceptions {
 
   public static RuntimeException entityStatementBadSignature(String sub) {
     return new RuntimeException("entity statement of '%s' has a bad signature".formatted(sub));
+  }
+
+  public static RuntimeException untrustedFederationStatement(String sub) {
+    return new RuntimeException("federation statement untrusted: sub=%s".formatted(sub));
   }
 }

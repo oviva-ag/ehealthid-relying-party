@@ -41,14 +41,20 @@ public class FederationMasterClientImpl implements FederationMasterClient {
           trustedFederationStatement.body().sub());
     }
 
-    // fetch the full statement from the idp and verify its signature
+    // the federation statement from the master will establish trust in the JWKS and the issuer URL
+    // of the idp,
+    // we still need to fetch the entity configuration directly afterward to get the full
+    // entity statement
+
     var idpEntitytStatement = apiClient.fetchEntityConfiguration(issuer);
     if (!idpEntitytStatement.verifySignature(trustedFederationStatement.body().jwks())) {
-      throw new RuntimeException("idp entity statement has untrusted signature");
+      throw FederationExceptions.untrustedFederationStatement(
+          trustedFederationStatement.body().sub());
     }
 
     if (!idpEntitytStatement.isValidAt(clock.instant())) {
-      throw new RuntimeException("currently not valid, expired or not yet valid");
+      throw FederationExceptions.entityStatementTimeNotValid(
+          trustedFederationStatement.body().sub());
     }
 
     return idpEntitytStatement;
