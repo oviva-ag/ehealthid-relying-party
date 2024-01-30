@@ -31,48 +31,52 @@ class FederationApiClientTest {
   @Test
   @Disabled("e2e")
   void fetchReferenceEnvironment() {
-    //    var httpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient());
     var httpClient = new JavaHttpClient();
 
-    var client = new FederationApiClientImpl(httpClient);
+    var apiClient = new FederationApiClientImpl(httpClient);
 
     var federationMaster = "https://app-ref.federationmaster.de";
 
-    var jws = client.fetchEntityConfiguration(URI.create(federationMaster));
-    System.out.println(jws);
-
+    // when fetching fedmaster entity configuration
+    var jws = apiClient.fetchEntityConfiguration(URI.create(federationMaster));
     var masterEntityStatement = jws.body();
 
+    // and listing available idps
     var idps =
-        client.fetchIdpList(
+        apiClient.fetchIdpList(
             URI.create(masterEntityStatement.metadata().federationEntity().idpListEndpoint()));
-    System.out.println(idps);
 
     var idp = idps.body().idpEntities().get(0).iss();
 
+    // and fetching their federation statement with the master
     var idpEntityStatement =
-        client.fetchFederationStatement(
+        apiClient.fetchFederationStatement(
             URI.create(
                 masterEntityStatement.metadata().federationEntity().federationFetchEndpoint()),
             federationMaster,
             idp);
-    System.out.println(idpEntityStatement);
+
+    // then
+    assertEquals(federationMaster, idpEntityStatement.body().iss());
+    assertEquals(idp, idpEntityStatement.body().sub());
   }
 
   @Test
   @Disabled("e2e")
   void fetchTuGematikIdp() {
+    // we need an extra header for the test environment
     var httpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient());
-    //    var httpClient = new JavaHttpClient();
 
-    var client = new FederationApiClientImpl(httpClient);
+    var apiClient = new FederationApiClientImpl(httpClient);
 
+    // the Gematik test IDP
     var gematikIdp = "https://gsi.dev.gematik.solutions";
 
-    var jws = client.fetchEntityConfiguration(URI.create(gematikIdp));
-    System.out.println(jws);
+    var jws = apiClient.fetchEntityConfiguration(URI.create(gematikIdp));
 
     var masterEntityStatement = jws.body();
+    assertEquals(gematikIdp, masterEntityStatement.iss());
+    assertEquals(gematikIdp, masterEntityStatement.sub());
   }
 
   @Test
@@ -219,7 +223,5 @@ class FederationApiClientTest {
         jws.body().metadata().federationEntity().idpListEndpoint());
 
     assertTrue(jws.verifySelfSigned());
-
-    System.out.println(jws);
   }
 }

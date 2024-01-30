@@ -52,7 +52,7 @@ public class FederationApiClientImpl implements FederationApiClient {
     return EntityStatementJWS.parse(body);
   }
 
-  String doGetRequest(URI uri, String accept, List<Param> params) {
+  private String doGetRequest(URI uri, String accept, List<Param> params) {
 
     List<Header> headers = new ArrayList<>();
 
@@ -74,5 +74,5 @@ public class FederationApiClientImpl implements FederationApiClient {
     return new String(res.body(), StandardCharsets.UTF_8);
   }
 
-  record Param(String name, String value) {}
+  private record Param(String name, String value) {}
 }
