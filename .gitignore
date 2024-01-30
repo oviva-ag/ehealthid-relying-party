@@ -2,3 +2,4 @@
 target/
 gesundheitsid/env.properties
 *.iml
+gesundheitsid/dependency-reduced-pom.xml
