@@ -10,6 +10,8 @@
   <packaging>pom</packaging>
 
   <properties>
+    <maven.version>3.8.6</maven.version>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -18,15 +20,28 @@
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
     <version.keycloak>23.0.3</version.keycloak>
-    <version.jboss-logging>3.5.1.Final</version.jboss-logging>
+    <version.jboss-logging>3.5.3.Final</version.jboss-logging>
     <version.slf4j>2.0.10</version.slf4j>
     <version.nimbus-jose-jwt>9.37.3</version.nimbus-jose-jwt>
 
     <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
     <spotless-maven-plugin.google-java-format.version>1.18.1
     </spotless-maven-plugin.google-java-format.version>
+    <jacoco.version>0.8.11</jacoco.version>
+
 
     <maven-shade.version>3.2.4</maven-shade.version>
+
+    <sonar.organization>oviva-ag</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.projectName>${project.artifactId}</sonar.projectName>
+    <sonar.projectKey>oviva-ag_keycloak-gesundheitsid</sonar.projectKey>
+    <sonar.moduleKey>${project.groupId}_${project.artifactId}</sonar.moduleKey>
+    <sonar.cpd.exclusions></sonar.cpd.exclusions>
+    <sonar.coverage.exclusions></sonar.coverage.exclusions>
+    <sonar.coverage.jacoco.xmlReportPaths>
+      ${maven.multiModuleProjectDirectory}/reports/target/site/jacoco-aggregate/jacoco.xml
+    </sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <licenses>
@@ -37,10 +52,18 @@
 
   <modules>
     <module>gesundheitsid</module>
+    <module>reports</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
+
+      <dependency>
+        <groupId>com.oviva.gesundheitsid</groupId>
+        <artifactId>gesunheitsid</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
@@ -117,7 +140,7 @@
       <dependency>
         <groupId>com.google.auto.service</groupId>
         <artifactId>auto-service</artifactId>
-        <version>1.0-rc5</version>
+        <version>1.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.junit</groupId>
@@ -134,14 +157,14 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.9.0</version>
+        <version>5.10.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>1.19.3</version>
+        <version>1.19.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -150,11 +173,60 @@
         <artifactId>rest-assured</artifactId>
         <version>5.4.0</version>
       </dependency>
+
+
+      <!-- BEGIN wiremock // fix for broken dependency convergence & vulnerabilities -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.14.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.jknack</groupId>
+        <artifactId>handlebars</artifactId>
+        <version>4.3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.jknack</groupId>
+        <artifactId>handlebars-helpers</artifactId>
+        <version>4.3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.jayway.jsonpath</groupId>
+        <artifactId>json-path</artifactId>
+        <version>2.9.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
       <dependency>
         <groupId>org.wiremock</groupId>
         <artifactId>wiremock</artifactId>
         <version>3.3.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
+      <!-- END wiremock -->
+
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
@@ -172,39 +244,113 @@
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless-maven-plugin.version}</version>
-          <configuration>
-            <java>
-              <removeUnusedImports/>
-              <googleJavaFormat>
-                <version>${spotless-maven-plugin.google-java-format.version}</version>
-                <style>GOOGLE</style>
-              </googleJavaFormat>
-            </java>
-          </configuration>
-          <executions>
-            <execution>
-              <id>spotless-check</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>check</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>spotless-apply</id>
-              <phase>compile</phase>
-              <goals>
-                <goal>apply</goal>
-              </goals>
-            </execution>
-          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
           <version>${maven-shade.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>${maven.version}</version>
+                </requireMavenVersion>
+                <reactorModuleConvergence>
+                  <message>The reactor is not valid</message>
+                </reactorModuleConvergence>
+                <dependencyConvergence/>
+                <banDuplicatePomDependencyVersions/>
+                <banDependencyManagementScope/>
+                <banCircularDependencies/>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.7.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <configuration>
+          <java>
+            <removeUnusedImports/>
+            <googleJavaFormat>
+              <version>${google-java-format.version}</version>
+              <style>GOOGLE</style>
+            </googleJavaFormat>
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <!-- Runs in compile phase to fail fast in case of formatting issues.-->
+            <id>spotless-check</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+          <execution>
+            <!-- Runs in compile phase to fail fast in case of formatting issues.-->
+            <id>spotless-apply</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <destFile>${project.build.directory}/jacoco.exec</destFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
 </project>

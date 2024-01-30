@@ -73,54 +73,36 @@
       <artifactId>slf4j-jdk14</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- BEGIN wiremock // fix for broken dependency convergence -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jknack</groupId>
+      <artifactId>handlebars-helpers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- END wiremock -->
+
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-core</artifactId>
       <scope>test</scope>
     </dependency>
 
-
   </dependencies>
-
-  <build>
-    <finalName>${project.artifactId}</finalName>
-    <plugins>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <version>${spotless-maven-plugin.version}</version>
-        <configuration>
-          <java>
-            <removeUnusedImports/>
-            <googleJavaFormat>
-              <version>${spotless-maven-plugin.google-java-format.version}</version>
-              <style>GOOGLE</style>
-            </googleJavaFormat>
-          </java>
-        </configuration>
-        <executions>
-          <execution>
-            <id>spotless-check</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>spotless-apply</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>apply</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
