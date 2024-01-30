@@ -120,31 +120,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <configuration>
-          <artifactSet>
-            <excludes>
-              <exclude>org.keycloak*</exclude>
-              <exclude>org.apache.httpcomponents:httpcore</exclude>
-              <exclude>com.google*</exclude>
-              <exclude>org.checkerframework*</exclude>
-            </excludes>
-            <includes>
-              <include>com.nimbusds:nimbus-jose-jwt</include>
-            </includes>
-          </artifactSet>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
