@@ -1,6 +1,5 @@
 package com.oviva.gesundheitsid.util;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,7 +20,7 @@ public class JWKSetDeserializer extends StdDeserializer<JWKSet> {
 
   @Override
   public JWKSet deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-      throws IOException, JacksonException {
+      throws IOException {
 
     var node = jsonParser.getCodec().readTree(jsonParser);
 
@@ -41,7 +40,7 @@ public class JWKSetDeserializer extends StdDeserializer<JWKSet> {
 
     @Override
     public JWK deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-        throws IOException, JacksonException {
+        throws IOException {
 
       Map<String, Object> map =
           jsonParser.getCodec().readValue(jsonParser, new TypeReference<Map<String, Object>>() {});

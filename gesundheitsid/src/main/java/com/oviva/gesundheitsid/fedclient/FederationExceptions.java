@@ -19,6 +19,10 @@ public class FederationExceptions {
         "JWS is not of type idp-list but rather '%s'".formatted(actualType));
   }
 
+  public static RuntimeException emptyIdpList(URI master) {
+    return new RuntimeException("list of idps empty from '%s'".formatted(master));
+  }
+
   public static RuntimeException badSignature(Exception cause) {
     return new RuntimeException("bad signature", cause);
   }

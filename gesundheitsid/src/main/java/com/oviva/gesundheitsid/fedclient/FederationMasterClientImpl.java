@@ -117,7 +117,7 @@ public class FederationMasterClientImpl implements FederationMasterClient {
 
     var idpJws = apiClient.fetchIdpList(URI.create(idpListEndpoint));
     if (idpJws == null || idpJws.body() == null || idpJws.body().idpEntities() == null) {
-      throw new RuntimeException("unable to fetch IDP list from '%s'".formatted(fedMasterUri));
+      throw FederationExceptions.emptyIdpList(fedMasterUri);
     }
 
     return idpJws.body().idpEntities();

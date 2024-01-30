@@ -31,8 +31,7 @@ public class JavaHttpClient implements HttpClient {
       var res = httpClient.send(builder.build(), BodyHandlers.ofByteArray());
       return toResponse(res);
     } catch (IOException e) {
-      var msg = "failed to request '%s %s'".formatted(req.method(), req.uri());
-      throw new RuntimeException(msg, e);
+      throw HttpExceptions.httpFailCausedBy(req.method(), req.uri(), e);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }

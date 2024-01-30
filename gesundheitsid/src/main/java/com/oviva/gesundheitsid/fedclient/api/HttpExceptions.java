@@ -4,6 +4,8 @@ import java.net.URI;
 
 public class HttpExceptions {
 
+  private HttpExceptions() {}
+
   public static RuntimeException httpFailBadStatus(String method, URI uri, int status) {
     return httpFail(method, uri, "bad status %d".formatted(status));
   }

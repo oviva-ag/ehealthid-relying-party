@@ -12,6 +12,7 @@ public class JwsVerifier {
 
   private JwsVerifier() {}
 
+  @SuppressWarnings("java:S2583")
   public static boolean verify(@NonNull JWKSet jwks, @NonNull JWSObject jws) {
 
     if (jwks == null) {
