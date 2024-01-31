@@ -1,9 +1,11 @@
 package com.oviva.gesundheitsid.auth;
 
+import com.oviva.gesundheitsid.auth.internal.steps.SelectSectoralIdpStepImpl;
 import com.oviva.gesundheitsid.auth.steps.SelectSectoralIdpStep;
 import com.oviva.gesundheitsid.crypto.KeySupplier;
 import com.oviva.gesundheitsid.fedclient.FederationMasterClient;
 import com.oviva.gesundheitsid.fedclient.api.OpenIdClient;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.net.URI;
 import java.util.List;
 
@@ -17,19 +19,20 @@ public class AuthenticationFlow {
   private final KeySupplier relyingPartyKeySupplier;
 
   public AuthenticationFlow(
-      URI selfIssuer,
-      FederationMasterClient federationMasterClient,
-      OpenIdClient openIdClient,
-      KeySupplier relyingPartyKeySupplier) {
+      @NonNull URI selfIssuer,
+      @NonNull FederationMasterClient federationMasterClient,
+      @NonNull OpenIdClient openIdClient,
+      @NonNull KeySupplier relyingPartyKeySupplier) {
     this.selfIssuer = selfIssuer;
     this.federationMasterClient = federationMasterClient;
     this.openIdClient = openIdClient;
     this.relyingPartyKeySupplier = relyingPartyKeySupplier;
   }
 
-  public SelectSectoralIdpStep start(Session session) {
+  @NonNull
+  public SelectSectoralIdpStep start(@NonNull Session session) {
 
-    return new SelectSectoralIdpStep(
+    return new SelectSectoralIdpStepImpl(
         selfIssuer,
         federationMasterClient,
         openIdClient,

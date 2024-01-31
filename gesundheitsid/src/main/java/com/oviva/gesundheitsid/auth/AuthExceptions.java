@@ -23,7 +23,11 @@ public class AuthExceptions {
         "entity statement of '%s' lacks openid configuration".formatted(sub));
   }
 
-  public static RuntimeException noEntityConfiguration() {
-    return new RuntimeException("no entity configuration for idp available");
+  public static RuntimeException badIdTokenSignature(String issuer) {
+    return new RuntimeException("bad ID token signature from sub=%s".formatted(issuer));
+  }
+
+  public static RuntimeException badIdToken(String issuer, Exception cause) {
+    return new RuntimeException("bad ID token from sub=%s".formatted(issuer), cause);
   }
 }

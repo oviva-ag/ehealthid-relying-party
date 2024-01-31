@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nimbusds.jose.JWSObject;
 
-public record IdTokenJWS(JWSObject jws, Payload payload) {
+public record IdTokenJWS(JWSObject jws, IdToken body) {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  public record Payload(
+  public record IdToken(
       @JsonProperty("iss") String iss,
       @JsonProperty("sub") String sub,
       @JsonProperty("aud") String aud,

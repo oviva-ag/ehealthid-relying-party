@@ -49,7 +49,79 @@ public record EntityStatement(
       @JsonProperty("authorization_endpoint") String authorizationEndpoint,
       @JsonProperty("scopes_supported") List<String> scopesSupported,
       @JsonProperty("grant_types_supported") List<String> grantTypesSupported,
-      @JsonProperty("user_type_supported") List<String> userTypeSupported) {}
+      @JsonProperty("user_type_supported") List<String> userTypeSupported) {
+
+    public static Builder create() {
+      return new Builder();
+    }
+
+    public static final class Builder {
+
+      private String pushedAuthorizationRequestEndpoint;
+      private String issuer;
+      private Boolean requirePushedAuthorizationRequests;
+      private String tokenEndpoint;
+      private String authorizationEndpoint;
+      private List<String> scopesSupported;
+      private List<String> grantTypesSupported;
+      private List<String> userTypeSupported;
+
+      private Builder() {}
+
+      public Builder pushedAuthorizationRequestEndpoint(String pushedAuthorizationRequestEndpoint) {
+        this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
+        return this;
+      }
+
+      public Builder issuer(String issuer) {
+        this.issuer = issuer;
+        return this;
+      }
+
+      public Builder requirePushedAuthorizationRequests(
+          Boolean requirePushedAuthorizationRequests) {
+        this.requirePushedAuthorizationRequests = requirePushedAuthorizationRequests;
+        return this;
+      }
+
+      public Builder tokenEndpoint(String tokenEndpoint) {
+        this.tokenEndpoint = tokenEndpoint;
+        return this;
+      }
+
+      public Builder authorizationEndpoint(String authorizationEndpoint) {
+        this.authorizationEndpoint = authorizationEndpoint;
+        return this;
+      }
+
+      public Builder scopesSupported(List<String> scopesSupported) {
+        this.scopesSupported = scopesSupported;
+        return this;
+      }
+
+      public Builder grantTypesSupported(List<String> grantTypesSupported) {
+        this.grantTypesSupported = grantTypesSupported;
+        return this;
+      }
+
+      public Builder userTypeSupported(List<String> userTypeSupported) {
+        this.userTypeSupported = userTypeSupported;
+        return this;
+      }
+
+      public OpenidProvider build() {
+        return new OpenidProvider(
+            pushedAuthorizationRequestEndpoint,
+            issuer,
+            requirePushedAuthorizationRequests,
+            tokenEndpoint,
+            authorizationEndpoint,
+            scopesSupported,
+            grantTypesSupported,
+            userTypeSupported);
+      }
+    }
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record Metadata(
@@ -70,6 +142,8 @@ public record EntityStatement(
       private OpenIdRelyingParty openIdRelyingParty;
       private FederationEntity federationEntity;
 
+      private OpenidProvider openidProvider;
+
       private Builder() {}
 
       public Builder openIdRelyingParty(OpenIdRelyingParty openIdRelyingParty) {
@@ -82,8 +156,13 @@ public record EntityStatement(
         return this;
       }
 
+      public Builder openidProvider(OpenidProvider openidProvider) {
+        this.openidProvider = openidProvider;
+        return this;
+      }
+
       public Metadata build() {
-        return new Metadata(null, openIdRelyingParty, federationEntity);
+        return new Metadata(openidProvider, openIdRelyingParty, federationEntity);
       }
     }
   }
