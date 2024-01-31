@@ -46,9 +46,17 @@
 
   <licenses>
     <license>
-      <name>Copyright (C) 2024 Oviva AG - All Rights Reserved</name>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
     </license>
   </licenses>
+
+  <scm>
+    <connection>scm:git:https://github.com/oviva-ag/keycloak-gesundheitsid.git</connection>
+    <url>https://github.com/oviva-ag/keycloak-gesundheitsid</url>
+  </scm>
 
   <modules>
     <module>gesundheitsid</module>
