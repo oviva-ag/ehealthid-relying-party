@@ -1,5 +1,6 @@
 package com.oviva.gesundheitsid.fedclient.api;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.net.URI;
 
 /** very primitive cached client, there is no cache eviction here */
@@ -24,6 +25,7 @@ public class CachedFederationApiClient implements FederationApiClient {
     this.idpListCache = idpListCache;
   }
 
+  @NonNull
   @Override
   public EntityStatementJWS fetchFederationStatement(
       URI federationFetchUrl, String issuer, String subject) {
@@ -32,6 +34,7 @@ public class CachedFederationApiClient implements FederationApiClient {
         key, k -> delegate.fetchFederationStatement(federationFetchUrl, issuer, subject));
   }
 
+  @NonNull
   @Override
   public IdpListJWS fetchIdpList(URI idpListUrl) {
     return idpListCache.computeIfAbsent(
@@ -39,7 +42,7 @@ public class CachedFederationApiClient implements FederationApiClient {
   }
 
   @Override
-  public EntityStatementJWS fetchEntityConfiguration(URI entityUrl) {
+  public @NonNull EntityStatementJWS fetchEntityConfiguration(URI entityUrl) {
     return entityStatementCache.computeIfAbsent(
         entityUrl.toString(), k -> delegate.fetchEntityConfiguration(entityUrl));
   }
