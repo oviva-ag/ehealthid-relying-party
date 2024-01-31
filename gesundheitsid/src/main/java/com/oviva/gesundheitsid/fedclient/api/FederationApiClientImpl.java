@@ -2,6 +2,7 @@ package com.oviva.gesundheitsid.fedclient.api;
 
 import com.oviva.gesundheitsid.fedclient.api.HttpClient.Header;
 import com.oviva.gesundheitsid.fedclient.api.HttpClient.Request;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
@@ -22,6 +23,7 @@ public class FederationApiClientImpl implements FederationApiClient {
     this.httpClient = client;
   }
 
+  @NonNull
   @Override
   public EntityStatementJWS fetchFederationStatement(
       URI federationFetchUrl, String issuer, String subject) {
@@ -32,6 +34,7 @@ public class FederationApiClientImpl implements FederationApiClient {
     return EntityStatementJWS.parse(body);
   }
 
+  @NonNull
   @Override
   public IdpListJWS fetchIdpList(URI idpListUrl) {
 
@@ -40,7 +43,7 @@ public class FederationApiClientImpl implements FederationApiClient {
   }
 
   @Override
-  public EntityStatementJWS fetchEntityConfiguration(URI entityUrl) {
+  public @NonNull EntityStatementJWS fetchEntityConfiguration(URI entityUrl) {
 
     var uri =
         UriBuilder.fromUri(entityUrl)

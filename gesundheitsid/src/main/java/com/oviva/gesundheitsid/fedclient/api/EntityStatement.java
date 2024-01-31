@@ -113,6 +113,10 @@ public record EntityStatement(
       private String contacts;
       private String homepageUri;
 
+      private String federationFetchEndpoint;
+      private String federationListEndpoint;
+      private String idpListEndpoint;
+
       private Builder() {}
 
       public Builder name(String name) {
@@ -130,8 +134,29 @@ public record EntityStatement(
         return this;
       }
 
+      public Builder federationFetchEndpoint(String federationFetchEndpoint) {
+        this.federationFetchEndpoint = federationFetchEndpoint;
+        return this;
+      }
+
+      public Builder federationListEndpoint(String federationListEndpoint) {
+        this.federationListEndpoint = federationListEndpoint;
+        return this;
+      }
+
+      public Builder idpListEndpoint(String idpListEndpoint) {
+        this.idpListEndpoint = idpListEndpoint;
+        return this;
+      }
+
       public FederationEntity build() {
-        return new FederationEntity(name, contacts, homepageUri, null, null, null);
+        return new FederationEntity(
+            name,
+            contacts,
+            homepageUri,
+            federationFetchEndpoint,
+            federationListEndpoint,
+            idpListEndpoint);
       }
     }
   }

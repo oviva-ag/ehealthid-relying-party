@@ -50,6 +50,15 @@ public class FederationExceptions {
     return new RuntimeException("entity statement of '%s' has a bad signature".formatted(sub));
   }
 
+  public static RuntimeException federationStatementTimeNotValid(String sub) {
+    return new RuntimeException(
+        "federation statement of '%s' expired or not yet valid".formatted(sub));
+  }
+
+  public static RuntimeException federationStatementBadSignature(String sub) {
+    return new RuntimeException("federation statement of '%s' has a bad signature".formatted(sub));
+  }
+
   public static RuntimeException untrustedFederationStatement(String sub) {
     return new RuntimeException("federation statement untrusted: sub=%s".formatted(sub));
   }

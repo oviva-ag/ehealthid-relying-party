@@ -1,9 +1,11 @@
 package com.oviva.gesundheitsid.fedclient;
 
+import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatement;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatementJWS;
 import com.oviva.gesundheitsid.fedclient.api.FederationApiClient;
 import com.oviva.gesundheitsid.fedclient.api.IdpList.IdpEntity;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.net.URI;
 import java.time.Clock;
 import java.util.List;
@@ -36,28 +38,31 @@ public class FederationMasterClientImpl implements FederationMasterClient {
 
     var trustedFederationStatement = fetchTrustedFederationStatement(issuer);
 
-    if (!trustedFederationStatement.isValidAt(clock.instant())) {
-      throw FederationExceptions.entityStatementTimeNotValid(
-          trustedFederationStatement.body().sub());
-    }
-
     // the federation statement from the master will establish trust in the JWKS and the issuer URL
     // of the idp,
     // we still need to fetch the entity configuration directly afterward to get the full
     // entity statement
 
-    var idpEntitytStatement = apiClient.fetchEntityConfiguration(issuer);
-    if (!idpEntitytStatement.verifySignature(trustedFederationStatement.body().jwks())) {
-      throw FederationExceptions.untrustedFederationStatement(
-          trustedFederationStatement.body().sub());
+    return fetchTrustedEntityConfiguration(issuer, trustedFederationStatement.body().jwks());
+  }
+
+  private EntityStatementJWS fetchTrustedEntityConfiguration(@NonNull URI sub, JWKSet trustStore) {
+
+    var trustedEntityConfiguration = apiClient.fetchEntityConfiguration(sub);
+    if (!trustedEntityConfiguration.isValidAt(clock.instant())) {
+      throw FederationExceptions.entityStatementTimeNotValid(sub.toString());
     }
 
-    if (!idpEntitytStatement.isValidAt(clock.instant())) {
-      throw FederationExceptions.entityStatementTimeNotValid(
-          trustedFederationStatement.body().sub());
+    if (!trustedEntityConfiguration.verifySignature(trustStore)) {
+      throw FederationExceptions.untrustedFederationStatement(sub.toString());
     }
 
-    return idpEntitytStatement;
+    if (!trustStore.equals(trustedEntityConfiguration.body().jwks())
+        && !trustedEntityConfiguration.verifySelfSigned()) {
+      throw FederationExceptions.entityStatementBadSignature(sub.toString());
+    }
+
+    return trustedEntityConfiguration;
   }
 
   private EntityStatementJWS fetchTrustedFederationStatement(URI issuer) {
@@ -66,12 +71,23 @@ public class FederationMasterClientImpl implements FederationMasterClient {
 
     var federationFetchEndpoint = getFederationFetchEndpoint(masterEntityConfiguration.body());
 
+    return fetchTrustedFederationStatement(
+        federationFetchEndpoint, masterEntityConfiguration.body().jwks(), issuer);
+  }
+
+  private EntityStatementJWS fetchTrustedFederationStatement(
+      URI federationFetchEndpoint, JWKSet fedmasterTrustStore, URI issuer) {
+
     var federationStatement =
         apiClient.fetchFederationStatement(
             federationFetchEndpoint, fedMasterUri.toString(), issuer.toString());
 
     if (!federationStatement.isValidAt(clock.instant())) {
-      throw FederationExceptions.entityStatementTimeNotValid(federationStatement.body().sub());
+      throw FederationExceptions.federationStatementTimeNotValid(federationStatement.body().sub());
+    }
+
+    if (!federationStatement.verifySignature(fedmasterTrustStore)) {
+      throw FederationExceptions.federationStatementBadSignature(issuer.toString());
     }
 
     return federationStatement;
