@@ -15,7 +15,6 @@ import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.gesundheitsid.test.ECKeyPairGenerator;
-import com.oviva.gesundheitsid.test.ECKeyPairGenerator.ECKeyPair;
 import java.text.ParseException;
 import org.junit.jupiter.api.Test;
 

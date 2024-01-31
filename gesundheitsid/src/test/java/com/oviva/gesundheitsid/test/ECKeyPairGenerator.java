@@ -2,6 +2,7 @@ package com.oviva.gesundheitsid.test;
 
 import static org.mockito.Mockito.spy;
 
+import com.oviva.gesundheitsid.crypto.ECKeyPair;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -43,8 +44,6 @@ public class ECKeyPairGenerator {
       throw new RuntimeException(e);
     }
   }
-
-  public record ECKeyPair(ECPublicKey pub, ECPrivateKey priv) {}
 
   private static class NotSoSecureRandom extends SecureRandom {
 

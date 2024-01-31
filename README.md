@@ -1,0 +1,2 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=alert_status&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=coverage&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
