@@ -4,11 +4,10 @@
 # Keycloak Identity Provider for GesundheitsID (eHealthID)
 
 ## Contents
-- [gesundheitsid](./gesundheitsid) - A plain Java library to build RelyingParties for GesundheitsID with.
+- [gesundheitsid](./gesundheitsid) - A plain Java library to build RelyingParties for GesundheitsID.
   - API clients
   - Models for the EntityStatments, IDP list endpoints etc.
   - Narrow support for the 'Fachdienst' use-case.
-- [keycloak-gesundheitsid-identityprovider]() - WIP, a full IdentityProvider for Keycloak
 
 ## End-to-End Test flow with Gematik Reference IDP
 
@@ -76,7 +75,7 @@ See [AuthenticationFlowExampleTest](https://github.com/oviva-ag/keycloak-gesundh
 
 ### Gematik Test Sektoraler IdP in Browser
 
-Since the Gematik Referenze IDP in the Test Environment needs a custom header, it can not be used directly in the browser for authentication.
+Since the Gematik reference IDP in the Test Environment needs a custom header, it can not be used directly in the browser for authentication.
 Setting up a proxy with a header filter can get around that limitation though.
 
 **Prerequisite:** Install some Chrome-ish browser like [Thorium](https://github.com/Alex313031/Thorium-MacOS/releases) or Chromium.

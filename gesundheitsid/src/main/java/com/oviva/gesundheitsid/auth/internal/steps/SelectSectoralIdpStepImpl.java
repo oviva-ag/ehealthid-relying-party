@@ -118,7 +118,7 @@ public class SelectSectoralIdpStepImpl implements SelectSectoralIdpStep {
     var openidConfig = getIdpOpenIdProvider(trustedEntityStatement);
     var parEndpoint = openidConfig.pushedAuthorizationRequestEndpoint();
     if (parEndpoint == null || parEndpoint.isBlank()) {
-      throw AuthExceptions.missingPARUrl(trustedEntityStatement.sub());
+      throw AuthExceptions.missingParUrl(trustedEntityStatement.sub());
     }
 
     return openIdClient.requestPushedUri(URI.create(parEndpoint), builder);

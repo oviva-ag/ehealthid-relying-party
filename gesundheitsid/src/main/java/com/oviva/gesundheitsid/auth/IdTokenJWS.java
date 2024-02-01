@@ -21,7 +21,7 @@ public record IdTokenJWS(JWSObject jws, IdToken body) {
       @JsonProperty("urn:telematik:claims:profession") String telematikProfession,
       @JsonProperty("urn:telematik:claims:given_name") String telematikGivenName,
 
-      /** vor insured person (IP) the immutable part of the Krankenversichertennummer (KVNR) * */
+      // for insured person (IP) the immutable part of the Krankenversichertennummer (KVNR)
       @JsonProperty("urn:telematik:claims:id") String telematikKvnr,
       @JsonProperty("urn:telematik:claims:email") String telematikEmail) {}
 }

@@ -12,7 +12,7 @@ public class AuthExceptions {
         "entity statement of '%s' has no authorization url configuration".formatted(sub));
   }
 
-  public static RuntimeException missingPARUrl(String sub) {
+  public static RuntimeException missingParUrl(String sub) {
     return new RuntimeException(
         "entity statement of '%s' has no pushed authorization request configuration"
             .formatted(sub));
