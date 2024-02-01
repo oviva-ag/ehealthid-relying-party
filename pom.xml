@@ -23,6 +23,8 @@
     <version.jboss-logging>3.5.3.Final</version.jboss-logging>
     <version.slf4j>2.0.10</version.slf4j>
     <version.nimbus-jose-jwt>9.37.3</version.nimbus-jose-jwt>
+    <version.logback.classic>1.4.14</version.logback.classic>
+    <version.logback.json>0.1.5</version.logback.json>
 
     <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
     <spotless-maven-plugin.google-java-format.version>1.18.1
@@ -60,18 +62,12 @@
 
   <modules>
     <module>gesundheitsid</module>
+    <module>oidc-server</module>
     <module>reports</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
-
-      <dependency>
-        <groupId>com.oviva.gesundheitsid</groupId>
-        <artifactId>gesunheitsid</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-      </dependency>
-
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
@@ -144,6 +140,21 @@
         <groupId>com.nimbusds</groupId>
         <artifactId>nimbus-jose-jwt</artifactId>
         <version>${version.nimbus-jose-jwt}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${version.logback.classic}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback.contrib</groupId>
+        <artifactId>logback-json-classic</artifactId>
+        <version>${version.logback.json}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback.contrib</groupId>
+        <artifactId>logback-jackson</artifactId>
+        <version>${version.logback.json}</version>
       </dependency>
       <dependency>
         <groupId>com.google.auto.service</groupId>
@@ -312,11 +323,6 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
           <version>1.6.0</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-source-plugin</artifactId>
-          <version>3.3.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

@@ -18,6 +18,11 @@
       <artifactId>gesundheitsid</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oidc-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
