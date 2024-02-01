@@ -1,6 +1,7 @@
 package com.oviva.gesundheitsid.test;
 
 import com.oviva.gesundheitsid.fedclient.api.HttpClient;
+import java.util.ArrayList;
 
 public class GematikHeaderDecoratorHttpClient implements HttpClient {
 
@@ -20,7 +21,11 @@ public class GematikHeaderDecoratorHttpClient implements HttpClient {
             "missing 'GEMATIK_AUTH_HEADER' environment value against '%s'"
                 .formatted(HOST_GEMATIK_IDP));
       }
-      req.headers().add(new Header("X-Authorization", Environment.gematikAuthHeader()));
+
+      var headers = new ArrayList<>(req.headers());
+      headers.add(new Header("X-Authorization", Environment.gematikAuthHeader()));
+
+      req = new Request(req.uri(), req.method(), headers, req.body());
     }
 
     return delegate.call(req);

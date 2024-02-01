@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import com.oviva.gesundheitsid.crypto.ECKeyPair;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatement;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatement.FederationEntity;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatement.Metadata;
@@ -13,7 +14,6 @@ import com.oviva.gesundheitsid.fedclient.api.IdpList;
 import com.oviva.gesundheitsid.fedclient.api.IdpList.IdpEntity;
 import com.oviva.gesundheitsid.fedclient.api.IdpListJWS;
 import com.oviva.gesundheitsid.test.ECKeyPairGenerator;
-import com.oviva.gesundheitsid.test.ECKeyPairGenerator.ECKeyPair;
 import com.oviva.gesundheitsid.test.JwksUtils;
 import com.oviva.gesundheitsid.test.JwsUtils;
 import com.oviva.gesundheitsid.util.JsonCodec;
