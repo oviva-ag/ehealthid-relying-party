@@ -9,7 +9,7 @@ public interface TokenIssuer {
 
   Code issueCode(Session session);
 
-  Token redeem(@NonNull String code);
+  Token redeem(@NonNull String code, String redirectUri, String clientId);
 
   record Code(
       String code,

@@ -30,7 +30,6 @@ public class App extends Application {
 
     return Set.of(
         new OpenIdEndpoint(config, sessionRepo, tokenIssuer, keyStore),
-        new RequestLogFilter(),
         new JacksonJsonProvider(configureObjectMapper()));
   }
 

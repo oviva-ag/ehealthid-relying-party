@@ -56,8 +56,8 @@
       <artifactId>resteasy-undertow</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jackson2-provider</artifactId>
+      <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+      <artifactId>jackson-jakarta-rs-json-provider</artifactId>
     </dependency>
 
     <!-- BEGIN logging-->

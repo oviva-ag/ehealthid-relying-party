@@ -20,7 +20,7 @@ public class OpenIdErrorResponses {
     addNonBlankQueryParam(builder, "error_description", description);
     addNonBlankQueryParam(builder, "state", state);
 
-    return Response.seeOther(redirectUri).build();
+    return Response.seeOther(builder.build()).build();
   }
 
   private static void addNonBlankQueryParam(UriBuilder builder, String name, String value) {

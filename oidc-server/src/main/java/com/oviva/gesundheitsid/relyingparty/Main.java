@@ -11,11 +11,8 @@ import com.oviva.gesundheitsid.relyingparty.ws.App;
 import jakarta.ws.rs.SeBootstrap;
 import jakarta.ws.rs.SeBootstrap.Configuration;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +35,7 @@ public class Main {
     main.run(new EnvConfigProvider("OIDC_SERVER", System::getenv));
   }
 
-  private void run(ConfigProvider configProvider) throws ExecutionException, InterruptedException {
+  public void run(ConfigProvider configProvider) throws ExecutionException, InterruptedException {
     logger.atInfo().log("\n" + BANNER);
 
     var baseUri = URI.create("https://t.oviva.io");
@@ -57,10 +54,11 @@ public class Main {
             // + port)),
             supportedResponseTypes,
             validRedirectUris // TODO: hardcoded :)
-            //            configProvider.get("redirect_uris").stream()
-            //                .flatMap(this::mustParseCommaList)
-            //                .map(URI::create)
-            //                .toList()
+
+            //                        configProvider.get("redirect_uris").stream()
+            //                            .flatMap(Strings::mustParseCommaList)
+            //                            .map(URI::create)
+            //                            .toList()
             );
 
     var keyStore = new KeyStore();
@@ -79,21 +77,5 @@ public class Main {
 
     // wait forever
     Thread.currentThread().join();
-  }
-
-  private Stream<String> mustParseCommaList(String value) {
-    if (value == null || value.isBlank()) {
-      return Stream.empty();
-    }
-
-    return Arrays.stream(value.split(",")).map(this::trimmed).filter(Objects::nonNull);
-  }
-
-  private String trimmed(String value) {
-    if (value == null || value.isBlank()) {
-      return null;
-    }
-
-    return value.trim();
   }
 }

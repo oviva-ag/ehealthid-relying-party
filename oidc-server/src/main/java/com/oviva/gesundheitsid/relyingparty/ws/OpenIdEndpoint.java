@@ -90,6 +90,13 @@ public class OpenIdEndpoint {
           .build();
     }
 
+    if (!"https".equals(parsedRedirect.getScheme())) {
+      // TODO nice form
+      return Response.status(Status.BAD_REQUEST)
+          .entity("not https 'redirect_uri': %s".formatted(parsedRedirect))
+          .build();
+    }
+
     if (!config.validRedirectUris().contains(parsedRedirect)) {
       // TODO nice form
       return Response.status(Status.BAD_REQUEST)
@@ -204,10 +211,16 @@ public class OpenIdEndpoint {
       @FormParam("client_id") String clientId) {
 
     if (!"authorization_code".equals(grantType)) {
-      return Response.serverError().build(); // TODO
+      return Response.status(Status.BAD_REQUEST).entity("bad 'grant_type': " + grantType).build();
     }
 
-    var redeemed = tokenIssuer.redeem(code);
+    var redeemed = tokenIssuer.redeem(code, redirectUri, clientId);
+    if (redeemed == null) {
+      return Response.status(Status.BAD_REQUEST).entity("invalid code").build();
+    }
+
+    var cacheControl = new CacheControl();
+    cacheControl.setNoStore(true);
 
     return Response.ok(
             new TokenResponse(
@@ -216,6 +229,7 @@ public class OpenIdEndpoint {
                 null,
                 (int) redeemed.expiresInSeconds(),
                 redeemed.idToken()))
+        .cacheControl(cacheControl)
         .build();
   }
 

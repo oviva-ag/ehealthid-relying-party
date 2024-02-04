@@ -48,13 +48,14 @@ public class TokenIssuerImpl implements TokenIssuer {
   }
 
   @Override
-  public Token redeem(@NonNull String code) {
+  public Token redeem(@NonNull String code, String redirectUri, String clientId) {
+
     var redeemed = codeRepo.remove(code).orElse(null);
     if (redeemed == null) {
       return null;
     }
 
-    if (redeemed.expiresAt().isBefore(clock.instant())) {
+    if (!validateCode(redeemed, redirectUri, clientId)) {
       return null;
     }
 
@@ -63,6 +64,23 @@ public class TokenIssuerImpl implements TokenIssuer {
         issueAccessToken(accessTokenTtl, redeemed.clientId()),
         issueIdToken(redeemed.clientId(), redeemed.nonce()),
         accessTokenTtl.getSeconds());
+  }
+
+  private boolean validateCode(Code code, String redirectUri, String clientId) {
+
+    if (code.expiresAt().isBefore(clock.instant())) {
+      return false;
+    }
+
+    if (redirectUri == null || clientId == null) {
+      return false;
+    }
+
+    if (!code.redirectUri().toString().equals(redirectUri)) {
+      return false;
+    }
+
+    return code.clientId().equals(clientId);
   }
 
   private String issueIdToken(String audience, String nonce) {
