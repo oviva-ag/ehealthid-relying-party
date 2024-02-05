@@ -1,7 +1,7 @@
 package com.oviva.gesundheitsid.relyingparty.ws;
 
 import com.nimbusds.jose.jwk.JWKSet;
-import com.oviva.gesundheitsid.relyingparty.cfg.Config;
+import com.oviva.gesundheitsid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.gesundheitsid.relyingparty.svc.KeyStore;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -15,11 +15,11 @@ import java.util.List;
 @Path("/")
 public class OpenIdEndpoint {
 
-  private final Config config;
+  private final RelyingPartyConfig relyingPartyConfig;
   private final KeyStore keyStore;
 
-  public OpenIdEndpoint(Config config, KeyStore keyStore) {
-    this.config = config;
+  public OpenIdEndpoint(RelyingPartyConfig relyingPartyConfig, KeyStore keyStore) {
+    this.relyingPartyConfig = relyingPartyConfig;
     this.keyStore = keyStore;
   }
 
@@ -30,12 +30,12 @@ public class OpenIdEndpoint {
 
     var body =
         new OpenIdConfiguration(
-            config.baseUri().toString(),
-            config.baseUri().resolve("/auth").toString(),
-            config.baseUri().resolve("/token").toString(),
-            config.baseUri().resolve("/jwks.json").toString(),
+            relyingPartyConfig.baseUri().toString(),
+            relyingPartyConfig.baseUri().resolve("/auth").toString(),
+            relyingPartyConfig.baseUri().resolve("/token").toString(),
+            relyingPartyConfig.baseUri().resolve("/jwks.json").toString(),
             List.of("openid"),
-            config.supportedResponseTypes(),
+            relyingPartyConfig.supportedResponseTypes(),
             List.of("authorization_code"),
             List.of("public"),
             List.of("ES256"),

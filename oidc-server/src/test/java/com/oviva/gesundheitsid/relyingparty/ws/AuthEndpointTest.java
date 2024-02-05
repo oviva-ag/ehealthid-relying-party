@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import com.oviva.gesundheitsid.auth.AuthenticationFlow;
 import com.oviva.gesundheitsid.auth.steps.SelectSectoralIdpStep;
 import com.oviva.gesundheitsid.auth.steps.TrustedSectoralIdpStep;
-import com.oviva.gesundheitsid.relyingparty.cfg.Config;
+import com.oviva.gesundheitsid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.gesundheitsid.relyingparty.svc.SessionRepo;
 import com.oviva.gesundheitsid.relyingparty.svc.TokenIssuer;
 import com.oviva.gesundheitsid.relyingparty.svc.TokenIssuer.Code;
@@ -30,7 +30,7 @@ class AuthEndpointTest {
 
   @Test
   void auth_badScopes() {
-    var config = new Config(0, BASE_URI, null, List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, null, List.of(REDIRECT_URI));
 
     var sut = new AuthEndpoint(config, null, null, null);
 
@@ -54,7 +54,7 @@ class AuthEndpointTest {
 
   @Test
   void auth_malformedRedirect() {
-    var config = new Config(0, BASE_URI, null, List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, null, List.of(REDIRECT_URI));
 
     var sut = new AuthEndpoint(config, null, null, null);
 
@@ -74,7 +74,7 @@ class AuthEndpointTest {
 
   @Test
   void auth_untrustedRedirect() {
-    var config = new Config(0, BASE_URI, null, List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, null, List.of(REDIRECT_URI));
 
     var sut = new AuthEndpoint(config, null, null, null);
 
@@ -97,7 +97,7 @@ class AuthEndpointTest {
 
   @Test
   void auth_badResponseType() {
-    var config = new Config(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
 
     var sessionRepo = mock(SessionRepo.class);
     var sut = new AuthEndpoint(config, sessionRepo, null, null);
@@ -126,7 +126,7 @@ class AuthEndpointTest {
 
   @Test
   void auth_success() {
-    var config = new Config(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
 
     var idpRedirectUrl = URI.create("https://federated-idp.example.com");
 
@@ -170,7 +170,7 @@ class AuthEndpointTest {
   @ValueSource(strings = {" ", "  \n\t"})
   void callback_noSessionId(String sessionId) {
 
-    var config = new Config(0, null, null, null);
+    var config = new RelyingPartyConfig(0, null, null, null);
 
     var sut = new AuthEndpoint(config, null, null, null);
 
@@ -185,7 +185,7 @@ class AuthEndpointTest {
   @Test
   void callback_unknownSession() {
 
-    var config = new Config(0, null, null, null);
+    var config = new RelyingPartyConfig(0, null, null, null);
 
     var sessionRepo = mock(SessionRepo.class);
 
@@ -206,7 +206,7 @@ class AuthEndpointTest {
   @Test
   void callback() {
 
-    var config = new Config(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
 
     var sessionRepo = mock(SessionRepo.class);
     var tokenIssuer = mock(TokenIssuer.class);
@@ -246,7 +246,7 @@ class AuthEndpointTest {
   @Test
   void token_badGrantType() {
 
-    var config = new Config(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
 
     var tokenIssuer = mock(TokenIssuer.class);
 
@@ -271,7 +271,7 @@ class AuthEndpointTest {
   @Test
   void token_badCode() {
 
-    var config = new Config(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
 
     var tokenIssuer = mock(TokenIssuer.class);
 
@@ -296,7 +296,7 @@ class AuthEndpointTest {
   @Test
   void token() {
 
-    var config = new Config(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
 
     var tokenIssuer = mock(TokenIssuer.class);
 

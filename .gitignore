@@ -6,3 +6,4 @@ gesundheitsid/dependency-reduced-pom.xml
 .flattened-pom.xml
 *_jwks.json
 env.properties
+*.pem

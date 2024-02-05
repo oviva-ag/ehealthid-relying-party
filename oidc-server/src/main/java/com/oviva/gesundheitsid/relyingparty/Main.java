@@ -1,5 +1,6 @@
 package com.oviva.gesundheitsid.relyingparty;
 
+import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.gesundheitsid.auth.AuthenticationFlow;
 import com.oviva.gesundheitsid.fedclient.FederationMasterClientImpl;
 import com.oviva.gesundheitsid.fedclient.api.CachedFederationApiClient;
@@ -7,15 +8,16 @@ import com.oviva.gesundheitsid.fedclient.api.FederationApiClientImpl;
 import com.oviva.gesundheitsid.fedclient.api.InMemoryCacheImpl;
 import com.oviva.gesundheitsid.fedclient.api.JavaHttpClient;
 import com.oviva.gesundheitsid.fedclient.api.OpenIdClient;
-import com.oviva.gesundheitsid.relyingparty.cfg.Config;
 import com.oviva.gesundheitsid.relyingparty.cfg.ConfigProvider;
 import com.oviva.gesundheitsid.relyingparty.cfg.EnvConfigProvider;
+import com.oviva.gesundheitsid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.gesundheitsid.relyingparty.fed.FederationConfig;
 import com.oviva.gesundheitsid.relyingparty.poc.GematikHeaderDecoratorHttpClient;
 import com.oviva.gesundheitsid.relyingparty.svc.InMemoryCodeRepo;
 import com.oviva.gesundheitsid.relyingparty.svc.InMemorySessionRepo;
 import com.oviva.gesundheitsid.relyingparty.svc.KeyStore;
 import com.oviva.gesundheitsid.relyingparty.svc.TokenIssuerImpl;
+import com.oviva.gesundheitsid.relyingparty.util.Strings;
 import com.oviva.gesundheitsid.relyingparty.ws.App;
 import com.oviva.gesundheitsid.util.JwksUtils;
 import jakarta.ws.rs.SeBootstrap;
@@ -41,56 +43,50 @@ public class Main {
         \\____/|___/_/|___/\\_,_/
              GesundheitsID OpenID Connect Relying-Party
         """;
+  private final ConfigProvider configProvider;
+
+  public Main(ConfigProvider configProvider) {
+    this.configProvider = configProvider;
+  }
 
   public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-    var main = new Main();
-    main.run(new EnvConfigProvider("OIDC_SERVER", System::getenv));
+    var main = new Main(new EnvConfigProvider("OIDC_SERVER", System::getenv));
+    main.run();
   }
 
-  public void run(ConfigProvider configProvider) throws ExecutionException, InterruptedException {
+  public void run() throws ExecutionException, InterruptedException {
+
     logger.atInfo().log("\n" + BANNER);
 
+    var federationEncJwksPath = loadJwks("federation_enc_jwks_path");
+    var federationSigJwksPath = loadJwks("federation_sig_jwks_path");
+
+    var validRedirectUris = loadAllowedRedirectUrls();
+
+    // TODO load from config
     var baseUri = URI.create("https://t.oviva.io");
-    var validRedirectUris =
-        List.of(URI.create("https://idp-test.oviva.io/auth/realms/master/broker/oidc/endpoint"));
 
     var supportedResponseTypes = List.of("code");
 
-    var port =
-        configProvider.get("port").stream().mapToInt(Integer::parseInt).findFirst().orElse(1234);
-    var config =
-        new Config(
-            port,
-            baseUri, // TOOD: hardcoded :)
-            // configProvider.get("base_uri").map(URI::create).orElse(URI.create("http://localhost:"
-            // + port)),
-            supportedResponseTypes,
-            validRedirectUris // TODO: hardcoded :)
+    var port = getPortConfig();
 
-            //                        configProvider.get("redirect_uris").stream()
-            //                            .flatMap(Strings::mustParseCommaList)
-            //                            .map(URI::create)
-            //                            .toList()
-            );
+    var config = new RelyingPartyConfig(port, baseUri, supportedResponseTypes, validRedirectUris);
 
     var keyStore = new KeyStore();
     var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, new InMemoryCodeRepo());
     var sessionRepo = new InMemorySessionRepo();
 
+    // TODO
     // setup your environment, your own issuer MUST serve a _valid_ and _trusted_ entity
     // configuration
     // see: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
     var fedmaster = URI.create("https://app-test.federationmaster.de");
 
     // TODO replace with `baseUri`
-    var self = URI.create("https://idp-test.oviva.io/auth/realms/master/ehealthid");
+    var federationIssuer = URI.create("https://idp-test.oviva.io/auth/realms/master/ehealthid");
 
-    var authFlow = buildAuthFlow(baseUri, fedmaster);
-
-    // TODO make path configurable
-    var relyingPartyEncryptionJwks = JwksUtils.load(Path.of("./relying-party-enc_jwks.json"));
-    var relyingPartySigningJwks = JwksUtils.load(Path.of("./relying-party-sig_jwks.json"));
+    var authFlow = buildAuthFlow(baseUri, fedmaster, federationEncJwksPath);
 
     var federationConfig =
         FederationConfig.create()
@@ -98,9 +94,9 @@ public class Main {
             .iss(baseUri)
             .appName("Oviva Direkt")
             .federationMaster(fedmaster)
-            .entitySigningKey(relyingPartySigningJwks.getKeys().get(0).toECKey())
-            .entitySigningKeys(relyingPartySigningJwks.toPublicJWKSet())
-            .relyingPartyEncKeys(relyingPartyEncryptionJwks.toPublicJWKSet())
+            .entitySigningKey(federationSigJwksPath.getKeys().get(0).toECKey())
+            .entitySigningKeys(federationSigJwksPath.toPublicJWKSet())
+            .relyingPartyEncKeys(federationEncJwksPath.toPublicJWKSet())
 
             // TODO: bump up to hours, once we're confident it's correct ;)
             // the spec says ~1 day
@@ -122,11 +118,25 @@ public class Main {
     Thread.currentThread().join();
   }
 
-  private AuthenticationFlow buildAuthFlow(URI selfIssuer, URI fedmaster) {
+  private int getPortConfig() {
+    return configProvider.get("port").stream().mapToInt(Integer::parseInt).findFirst().orElse(1234);
+  }
 
-    // path to the JWKS containing the private keys to decrypt ID tokens, the public part
-    // is in your entity configuration
-    var relyingPartyEncryptionJwks = JwksUtils.load(Path.of("./relying-party-enc_jwks.json"));
+  private JWKSet loadJwks(String configName) {
+
+    var path =
+        configProvider
+            .get(configName)
+            .map(Path::of)
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "missing jwks path for '%s'".formatted(configName)));
+
+    return JwksUtils.load(path);
+  }
+
+  private AuthenticationFlow buildAuthFlow(URI selfIssuer, URI fedmaster, JWKSet encJwks) {
 
     // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
     // test environment
@@ -148,6 +158,22 @@ public class Main {
     var openIdClient = new OpenIdClient(httpClient);
 
     return new AuthenticationFlow(
-        selfIssuer, fedmasterClient, openIdClient, relyingPartyEncryptionJwks::getKeyByKeyId);
+        selfIssuer, fedmasterClient, openIdClient, encJwks::getKeyByKeyId);
+  }
+
+  private List<URI> loadAllowedRedirectUrls() {
+
+    var redirectUris =
+        configProvider.get("redirect_uris").stream()
+            .flatMap(Strings::mustParseCommaList)
+            .map(URI::create)
+            .toList();
+
+    if (!redirectUris.isEmpty()) {
+      return redirectUris;
+    }
+
+    // TODO: hardcoded
+    return List.of(URI.create("https://idp-test.oviva.io/auth/realms/master/broker/oidc/endpoint"));
   }
 }
