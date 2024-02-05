@@ -6,6 +6,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.oviva.gesundheitsid.auth.IdTokenJWS;
 import com.oviva.gesundheitsid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.gesundheitsid.relyingparty.util.IdGenerator;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -33,7 +34,7 @@ public class TokenIssuerImpl implements TokenIssuer {
   }
 
   @Override
-  public Code issueCode(Session session) {
+  public Code issueCode(Session session, IdTokenJWS idTokenJWS) {
     var code = IdGenerator.generateID();
     var value =
         new Code(
@@ -42,7 +43,8 @@ public class TokenIssuerImpl implements TokenIssuer {
             clock.instant().plus(TTL),
             session.redirectUri(),
             session.nonce(),
-            session.clientId());
+            session.clientId(),
+            idTokenJWS);
     codeRepo.save(value);
     return value;
   }
@@ -62,7 +64,7 @@ public class TokenIssuerImpl implements TokenIssuer {
     var accessTokenTtl = Duration.ofMinutes(5);
     return new Token(
         issueAccessToken(accessTokenTtl, redeemed.clientId()),
-        issueIdToken(redeemed.clientId(), redeemed.nonce()),
+        issueIdToken(redeemed.clientId(), redeemed.nonce(), redeemed.federatedIdToken()),
         accessTokenTtl.getSeconds());
   }
 
@@ -83,7 +85,7 @@ public class TokenIssuerImpl implements TokenIssuer {
     return code.clientId().equals(clientId);
   }
 
-  private String issueIdToken(String audience, String nonce) {
+  private String issueIdToken(String audience, String nonce, IdTokenJWS federatedIdToken) {
     try {
       var jwk = keyStore.signingKey();
       var signer = new ECDSASigner(jwk);
@@ -94,13 +96,28 @@ public class TokenIssuerImpl implements TokenIssuer {
           new JWTClaimsSet.Builder()
               .issuer(issuer.toString())
               .audience(audience)
-              .subject(UUID.randomUUID().toString())
+              .subject(federatedIdToken.body().sub()) // propagate original `sub`
               .issueTime(Date.from(now))
               .expirationTime(Date.from(now.plus(Duration.ofHours(8))));
 
       if (nonce != null) {
         claimsBuilder.claim("nonce", nonce);
       }
+
+      // complete list of scopes and corresponding claims:
+      // https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf
+      // Specification 4.2.4  - A_22989 -
+      claimsBuilder.claim("urn:telematik:claims:id", federatedIdToken.body().telematikKvnr());
+
+      // GesundheitsID specific claims according to Gematik reference IDP:
+      //
+      // "acr" : "gematik-ehealth-loa-high",
+      // "amr" : "TODO amr",
+      // "email" : null,
+      // "urn:telematik:claims:profession" : "1.2.276.0.76.4.49",
+      // "urn:telematik:claims:given_name" : null,
+      // "urn:telematik:claims:id" : "X110411675",
+      // "urn:telematik:claims:email" : "darius_michael@mail.boedefeld.de"
 
       var claims = claimsBuilder.build();
 

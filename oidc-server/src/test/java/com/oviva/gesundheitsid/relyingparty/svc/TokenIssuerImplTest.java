@@ -12,6 +12,8 @@ import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
+import com.oviva.gesundheitsid.auth.IdTokenJWS;
+import com.oviva.gesundheitsid.auth.IdTokenJWS.IdToken;
 import com.oviva.gesundheitsid.relyingparty.svc.TokenIssuer.Code;
 import java.net.URI;
 import java.text.ParseException;
@@ -30,11 +32,11 @@ class TokenIssuerImplTest {
 
     var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
 
-    var session = new SessionRepo.Session(null, null, null, null, null);
+    var session = new SessionRepo.Session(null, null, null, null, null, null, null);
 
     // when
-    var c1 = sut.issueCode(session);
-    var c2 = sut.issueCode(session);
+    var c1 = sut.issueCode(session, null);
+    var c2 = sut.issueCode(session, null);
 
     // then
     assertNotNull(c1);
@@ -53,10 +55,10 @@ class TokenIssuerImplTest {
 
     var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
 
-    var session = new SessionRepo.Session(null, null, null, null, null);
+    var session = new SessionRepo.Session(null, null, null, null, null, null, null);
 
     // when
-    var c1 = sut.issueCode(session);
+    var c1 = sut.issueCode(session, null);
 
     // then
     var now = Instant.now();
@@ -76,10 +78,10 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com/callback");
     var clientId = "myapp";
 
-    var session = new SessionRepo.Session(null, null, nonce, redirectUri, clientId);
+    var session = new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null);
 
     // when
-    var code = sut.issueCode(session);
+    var code = sut.issueCode(session, null);
 
     // then
     assertEquals(nonce, code.nonce());
@@ -97,10 +99,10 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com/callback");
     var clientId = "myapp";
 
-    var session = new SessionRepo.Session(null, null, nonce, redirectUri, clientId);
+    var session = new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null);
 
     // when
-    var code = sut.issueCode(session);
+    var code = sut.issueCode(session, null);
 
     // then
     verify(codeRepo).save(code);
@@ -137,8 +139,16 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com");
     var clientId = "myapp";
 
+    var federatedIdToken =
+        new IdTokenJWS(
+            null,
+            new IdToken(
+                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null));
+
     var id = UUID.randomUUID().toString();
-    var code = new Code(id, null, Instant.now().plusSeconds(10), redirectUri, null, clientId);
+    var code =
+        new Code(
+            id, null, Instant.now().plusSeconds(10), redirectUri, null, clientId, federatedIdToken);
 
     when(codeRepo.remove(id)).thenReturn(Optional.of(code), Optional.empty());
 
@@ -168,7 +178,21 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com/callback");
     var clientId = "myapp";
 
-    var code = new Code(id, null, Instant.now().plusSeconds(10), redirectUri, nonce, clientId);
+    var federatedIdToken =
+        new IdTokenJWS(
+            null,
+            new IdToken(
+                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null));
+
+    var code =
+        new Code(
+            id,
+            null,
+            Instant.now().plusSeconds(10),
+            redirectUri,
+            nonce,
+            clientId,
+            federatedIdToken);
 
     when(codeRepo.remove(id)).thenReturn(Optional.of(code));
 

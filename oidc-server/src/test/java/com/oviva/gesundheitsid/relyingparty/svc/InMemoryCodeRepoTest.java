@@ -21,7 +21,7 @@ class InMemoryCodeRepoTest {
     var redirect = URI.create("https://example.com/callback");
     var clientId = "app";
 
-    var code = new Code(id, issuedAt, expiresAt, redirect, null, clientId);
+    var code = new Code(id, issuedAt, expiresAt, redirect, null, clientId, null);
 
     sut.save(code);
 
@@ -45,7 +45,7 @@ class InMemoryCodeRepoTest {
 
     var id = "4929";
 
-    var code = new Code(id, null, null, null, null, null);
+    var code = new Code(id, null, null, null, null, null, null);
 
     sut.save(code);
 

@@ -15,7 +15,7 @@
 
 1. Setup your test environment, your own issuer **MUST** serve a **VALID** and **TRUSTED** entity
   statement. See [Gematik docs](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583)
-2. Setup the file `.env.properties` to provide
+2. Setup the file `env.properties` to provide
   the [X-Authorization header](https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen)
   for the Gematik
 3. Setup the JWK sets for signing and encryption keys
@@ -94,6 +94,7 @@ Setting up a proxy with a header filter can get around that limitation though.
 
 ## Helpful Links
 
+- [Gematik Sectoral IDP Specifications v2.0.1](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf)
 - [AppFlow - Authentication flow to implement](https://wiki.gematik.de/display/IDPKB/App-App+Flow#AppAppFlow-0-FederationMaster)
 - [Sektoraler IDP - Examples & Reference Implementation](https://wiki.gematik.de/display/IDPKB/Sektoraler+IDP+-+Referenzimplementierung+und+Beispiele)
 - [OpenID Federation Spec](https://openid.net/specs/openid-federation-1_0.html)

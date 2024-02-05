@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.oviva.gesundheitsid.crypto.ECKeyPair;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatement;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatement.FederationEntity;
 import com.oviva.gesundheitsid.fedclient.api.EntityStatement.Metadata;
@@ -13,10 +16,9 @@ import com.oviva.gesundheitsid.fedclient.api.FederationApiClient;
 import com.oviva.gesundheitsid.fedclient.api.IdpList;
 import com.oviva.gesundheitsid.fedclient.api.IdpList.IdpEntity;
 import com.oviva.gesundheitsid.fedclient.api.IdpListJWS;
-import com.oviva.gesundheitsid.test.ECKeyPairGenerator;
-import com.oviva.gesundheitsid.test.JwksUtils;
-import com.oviva.gesundheitsid.test.JwsUtils;
+import com.oviva.gesundheitsid.test.ECKeyGenerator;
 import com.oviva.gesundheitsid.util.JsonCodec;
+import com.oviva.gesundheitsid.util.JwsUtils;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
@@ -86,7 +88,7 @@ class FederationMasterClientImplTest {
 
     var issuer = URI.create("https://idp-tk.example.com");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
+    var fedmasterKeypair = ECKeyGenerator.example();
 
     var fedmasterEntityConfigurationJws = expiredFedmasterConfiguration(fedmasterKeypair);
 
@@ -109,8 +111,8 @@ class FederationMasterClientImplTest {
 
     var issuer = URI.create("https://idp-tk.example.com");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
-    var unrelatedKeypair = ECKeyPairGenerator.generate();
+    var fedmasterKeypair = ECKeyGenerator.example();
+    var unrelatedKeypair = ECKeyGenerator.generate();
 
     var fedmasterEntityConfigurationJws =
         badSignatureFedmasterConfiguration(fedmasterKeypair, unrelatedKeypair);
@@ -134,16 +136,16 @@ class FederationMasterClientImplTest {
     var issuer = URI.create("https://idp-tk.example.com");
     var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
+    var fedmasterKeypair = ECKeyGenerator.example();
 
     var fedmasterEntityConfigurationJws =
         federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
 
-    var trustedSectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var trustedSectoralIdpKeypair = ECKeyGenerator.generate();
     var trustedFederationStatement =
         trustedFederationStatement(issuer, trustedSectoralIdpKeypair, fedmasterKeypair);
 
-    var untrustedSectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var untrustedSectoralIdpKeypair = ECKeyGenerator.generate();
     var sectoralEntityConfiguration =
         sectoralIdpEntityConfiguration(issuer, untrustedSectoralIdpKeypair);
 
@@ -165,23 +167,25 @@ class FederationMasterClientImplTest {
   }
 
   @Test
-  void establishTrust_configurationWithBadJwks() {
+  void establishTrust_configurationWithBadJwks() throws JOSEException {
 
     var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
 
     var issuer = URI.create("https://idp-tk.example.com");
     var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
+    var fedmasterKeypair = ECKeyGenerator.example();
 
     var fedmasterEntityConfigurationJws =
         federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
 
-    var trustedSectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var trustedSectoralIdpKeypair =
+        new com.nimbusds.jose.jwk.gen.ECKeyGenerator(Curve.P_256).generate();
     var trustedFederationStatement =
         trustedFederationStatement(issuer, trustedSectoralIdpKeypair, fedmasterKeypair);
 
-    var untrustedSectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var untrustedSectoralIdpKeypair =
+        new com.nimbusds.jose.jwk.gen.ECKeyGenerator(Curve.P_256).generate();
     var sectoralEntityConfiguration =
         badSignedSectoralIdpEntityConfiguration(
             issuer, trustedSectoralIdpKeypair, untrustedSectoralIdpKeypair);
@@ -200,8 +204,7 @@ class FederationMasterClientImplTest {
     var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
 
     // then
-    assertEquals(
-        "entity statement of 'https://idp-tk.example.com' has a bad signature", e.getMessage());
+    assertEquals("federation statement untrusted: sub=https://idp-tk.example.com", e.getMessage());
   }
 
   @Test
@@ -212,12 +215,12 @@ class FederationMasterClientImplTest {
     var issuer = URI.create("https://idp-tk.example.com");
     var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
+    var fedmasterKeypair = ECKeyGenerator.example();
 
     var fedmasterEntityConfigurationJws =
         federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
 
-    var trustedSectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var trustedSectoralIdpKeypair = ECKeyGenerator.generate();
     var trustedFederationStatement =
         trustedFederationStatement(issuer, trustedSectoralIdpKeypair, fedmasterKeypair);
 
@@ -251,12 +254,12 @@ class FederationMasterClientImplTest {
     var issuer = URI.create("https://idp-tk.example.com");
     var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
+    var fedmasterKeypair = ECKeyGenerator.example();
 
     var fedmasterEntityConfigurationJws =
         federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
 
-    var trustedSectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var trustedSectoralIdpKeypair = ECKeyGenerator.generate();
     var trustedFederationStatement =
         expiredFederationStatement(issuer, trustedSectoralIdpKeypair, fedmasterKeypair);
 
@@ -284,14 +287,14 @@ class FederationMasterClientImplTest {
     var issuer = URI.create("https://idp-tk.example.com");
     var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
+    var fedmasterKeypair = ECKeyGenerator.example();
 
     var fedmasterEntityConfigurationJws =
         federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
 
-    var trustedSectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var trustedSectoralIdpKeypair = ECKeyGenerator.generate();
 
-    var badKeypair = ECKeyPairGenerator.generate();
+    var badKeypair = ECKeyGenerator.generate();
     var trustedFederationStatement =
         trustedFederationStatement(issuer, trustedSectoralIdpKeypair, badKeypair);
 
@@ -318,12 +321,12 @@ class FederationMasterClientImplTest {
     var issuer = URI.create("https://idp-tk.example.com");
     var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
 
-    var fedmasterKeypair = ECKeyPairGenerator.example();
+    var fedmasterKeypair = ECKeyGenerator.example();
 
     var fedmasterEntityConfigurationJws =
         federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
 
-    var sectoralIdpKeypair = ECKeyPairGenerator.generate();
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
     var trustedFederationStatement =
         trustedFederationStatement(issuer, sectoralIdpKeypair, fedmasterKeypair);
     var sectoralEntityConfiguration = sectoralIdpEntityConfiguration(issuer, sectoralIdpKeypair);
@@ -346,9 +349,9 @@ class FederationMasterClientImplTest {
   }
 
   private EntityStatementJWS badSignedSectoralIdpEntityConfiguration(
-      URI sub, ECKeyPair sectoralIdpKeyPair, ECKeyPair actualJwksKeys) {
+      URI sub, ECKey sectoralIdpKeyPair, ECKey actualJwksKeys) {
 
-    var publicJwks = JwksUtils.toPublicJwks(actualJwksKeys);
+    var publicJwks = toPublicJwks(actualJwksKeys);
 
     var body =
         EntityStatement.create()
@@ -358,15 +361,14 @@ class FederationMasterClientImplTest {
             .jwks(publicJwks)
             .build();
 
-    var signed =
-        JwsUtils.toJws(JwksUtils.toJwks(sectoralIdpKeyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(sectoralIdpKeyPair, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
   }
 
-  private EntityStatementJWS expiredIdpEntityConfiguration(URI sub, ECKeyPair sectoralIdpKeyPair) {
+  private EntityStatementJWS expiredIdpEntityConfiguration(URI sub, ECKey sectoralIdpKeyPair) {
 
-    var publicJwks = JwksUtils.toPublicJwks(sectoralIdpKeyPair);
+    var publicJwks = toPublicJwks(sectoralIdpKeyPair);
 
     var body =
         EntityStatement.create()
@@ -376,15 +378,14 @@ class FederationMasterClientImplTest {
             .jwks(publicJwks)
             .build();
 
-    var signed =
-        JwsUtils.toJws(JwksUtils.toJwks(sectoralIdpKeyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(sectoralIdpKeyPair, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
   }
 
-  private EntityStatementJWS sectoralIdpEntityConfiguration(URI sub, ECKeyPair sectoralIdpKeyPair) {
+  private EntityStatementJWS sectoralIdpEntityConfiguration(URI sub, ECKey sectoralIdpKeyPair) {
 
-    var publicJwks = JwksUtils.toPublicJwks(sectoralIdpKeyPair);
+    var publicJwks = toPublicJwks(sectoralIdpKeyPair);
 
     var body =
         EntityStatement.create()
@@ -394,16 +395,15 @@ class FederationMasterClientImplTest {
             .jwks(publicJwks)
             .build();
 
-    var signed =
-        JwsUtils.toJws(JwksUtils.toJwks(sectoralIdpKeyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(sectoralIdpKeyPair, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
   }
 
   private EntityStatementJWS expiredFederationStatement(
-      URI sub, ECKeyPair sectoralIdpKeyPair, ECKeyPair fedmasterKeyPair) {
+      URI sub, ECKey sectoralIdpKeyPair, ECKey fedmasterKeyPair) {
 
-    var publicJwks = JwksUtils.toPublicJwks(sectoralIdpKeyPair);
+    var publicJwks = toPublicJwks(sectoralIdpKeyPair);
 
     var body =
         EntityStatement.create()
@@ -413,16 +413,15 @@ class FederationMasterClientImplTest {
             .jwks(publicJwks)
             .build();
 
-    var signed =
-        JwsUtils.toJws(JwksUtils.toJwks(fedmasterKeyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(fedmasterKeyPair, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
   }
 
   private EntityStatementJWS trustedFederationStatement(
-      URI sub, ECKeyPair sectoralIdpKeyPair, ECKeyPair fedmasterKeyPair) {
+      URI sub, ECKey sectoralIdpKeyPair, ECKey fedmasterKeyPair) {
 
-    var publicJwks = JwksUtils.toPublicJwks(sectoralIdpKeyPair);
+    var publicJwks = toPublicJwks(sectoralIdpKeyPair);
 
     var body =
         EntityStatement.create()
@@ -432,16 +431,14 @@ class FederationMasterClientImplTest {
             .jwks(publicJwks)
             .build();
 
-    var signed =
-        JwsUtils.toJws(JwksUtils.toJwks(fedmasterKeyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(fedmasterKeyPair, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
   }
 
-  private EntityStatementJWS federationFetchFedmasterConfiguration(
-      URI fetchUrl, ECKeyPair keyPair) {
+  private EntityStatementJWS federationFetchFedmasterConfiguration(URI fetchUrl, ECKey key) {
 
-    var publicJwks = JwksUtils.toPublicJwks(keyPair);
+    var publicJwks = toPublicJwks(key);
 
     var body =
         EntityStatement.create()
@@ -458,14 +455,14 @@ class FederationMasterClientImplTest {
                     .build())
             .build();
 
-    var signed = JwsUtils.toJws(JwksUtils.toJwks(keyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(key, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
   }
 
-  private EntityStatementJWS expiredFedmasterConfiguration(ECKeyPair keyPair) {
+  private EntityStatementJWS expiredFedmasterConfiguration(ECKey key) {
 
-    var publicJwks = JwksUtils.toPublicJwks(keyPair);
+    var publicJwks = toPublicJwks(key);
 
     var body =
         EntityStatement.create()
@@ -475,15 +472,14 @@ class FederationMasterClientImplTest {
             .jwks(publicJwks)
             .build();
 
-    var signed = JwsUtils.toJws(JwksUtils.toJwks(keyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(key, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
   }
 
-  private EntityStatementJWS badSignatureFedmasterConfiguration(
-      ECKeyPair keyPair, ECKeyPair unrelatedKeyPair) {
+  private EntityStatementJWS badSignatureFedmasterConfiguration(ECKey key, ECKey unrelatedKey) {
 
-    var publicJwks = JwksUtils.toPublicJwks(keyPair);
+    var publicJwks = toPublicJwks(key);
 
     var body =
         EntityStatement.create()
@@ -493,9 +489,23 @@ class FederationMasterClientImplTest {
             .jwks(publicJwks)
             .build();
 
-    var signed =
-        JwsUtils.toJws(JwksUtils.toJwks(unrelatedKeyPair), JsonCodec.writeValueAsString(body));
+    var signed = JwsUtils.toJws(unrelatedKey, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
+  }
+
+  public static JWKSet toPublicJwks(ECKey key) {
+    try {
+
+      if (key.getKeyID() == null || key.getKeyID().isBlank()) {
+        key = new ECKey.Builder(key).keyIDFromThumbprint().build();
+      }
+
+      var pub = key.toPublicJWK();
+
+      return new JWKSet(pub);
+    } catch (JOSEException e) {
+      throw new IllegalArgumentException("bad key", e);
+    }
   }
 }

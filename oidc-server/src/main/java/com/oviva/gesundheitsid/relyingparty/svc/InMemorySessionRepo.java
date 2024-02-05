@@ -20,7 +20,13 @@ public class InMemorySessionRepo implements SessionRepo {
     var id = IdGenerator.generateID();
     session =
         new Session(
-            id, session.state(), session.nonce(), session.redirectUri(), session.clientId());
+            id,
+            session.state(),
+            session.nonce(),
+            session.redirectUri(),
+            session.clientId(),
+            session.codeVerifier(),
+            session.trustedSectoralIdpStep());
 
     repo.put(id, session);
 

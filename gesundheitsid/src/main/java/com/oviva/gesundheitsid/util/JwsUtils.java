@@ -1,4 +1,4 @@
-package com.oviva.gesundheitsid.test;
+package com.oviva.gesundheitsid.util;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -6,16 +6,15 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
-import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.ECKey;
 
 public class JwsUtils {
 
   private JwsUtils() {}
 
-  public static JWSObject toJws(JWKSet jwks, String payload) {
+  public static JWSObject toJws(ECKey key, String payload) {
     try {
-      var key = jwks.getKeys().get(0);
-      var signer = new ECDSASigner(key.toECKey());
+      var signer = new ECDSASigner(key);
 
       var h = new JWSHeader.Builder(JWSAlgorithm.ES256).keyID(key.getKeyID()).build();
 

@@ -11,7 +11,7 @@ import java.time.Instant;
 
 public record EntityStatementJWS(JWSObject jws, EntityStatement body) implements TemporalValid {
 
-  private static final String ENTITY_STATEMENT_TYP = "entity-statement+jwt";
+  public static final String ENTITY_STATEMENT_TYP = "entity-statement+jwt";
 
   public static EntityStatementJWS parse(String wire) {
     try {
