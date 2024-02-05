@@ -3,11 +3,6 @@ package com.oviva.gesundheitsid.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdDelegatingSerializer;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.oviva.gesundheitsid.util.JWKSetDeserializer.JWKDeserializer;
 import java.io.IOException;
 
 public class JsonCodec {
@@ -17,11 +12,7 @@ public class JsonCodec {
   static {
     var om = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    var mod = new SimpleModule("jwks");
-    mod.addDeserializer(JWK.class, new JWKDeserializer(JWK.class));
-    mod.addDeserializer(JWKSet.class, new JWKSetDeserializer(JWKSet.class));
-    mod.addSerializer(new StdDelegatingSerializer(JWKSet.class, new JWKSetConverter()));
-    om.registerModule(mod);
+    om.registerModule(new JoseModule());
 
     JsonCodec.om = om;
   }
