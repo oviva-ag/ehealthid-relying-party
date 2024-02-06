@@ -34,6 +34,7 @@ import java.util.List;
 @Path("/auth")
 public class AuthEndpoint {
 
+  private final URI baseUri;
   private final RelyingPartyConfig relyingPartyConfig;
 
   private final SessionRepo sessionRepo;
@@ -42,10 +43,12 @@ public class AuthEndpoint {
   private final AuthenticationFlow authenticationFlow;
 
   public AuthEndpoint(
+      URI baseUri,
       RelyingPartyConfig relyingPartyConfig,
       SessionRepo sessionRepo,
       TokenIssuer tokenIssuer,
       AuthenticationFlow authenticationFlow) {
+    this.baseUri = baseUri;
     this.relyingPartyConfig = relyingPartyConfig;
     this.sessionRepo = sessionRepo;
     this.tokenIssuer = tokenIssuer;
@@ -132,12 +135,12 @@ public class AuthEndpoint {
     var codeChallenge = calculateS256CodeChallenge(verifier);
 
     // ==== 1) start a new flow
-    var relyingPartyCallback = relyingPartyConfig.baseUri().resolve("/auth/callback");
+    var relyingPartyCallback = baseUri.resolve("/auth/callback");
 
     var step1 =
         authenticationFlow.start(
             new AuthenticationFlow.Session(
-                "test", "test", relyingPartyCallback, codeChallenge, scopes));
+                state, nonce, relyingPartyCallback, codeChallenge, scopes));
 
     // ==== 2) get the list of available IDPs
     var idps = step1.fetchIdpOptions();

@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import com.oviva.ehealthid.auth.AuthenticationFlow;
-import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
-import com.oviva.ehealthid.relyingparty.fed.FederationConfig;
+import com.oviva.ehealthid.relyingparty.ConfigReader.Config;
 import com.oviva.ehealthid.relyingparty.fed.FederationEndpoint;
 import com.oviva.ehealthid.relyingparty.svc.KeyStore;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
@@ -16,8 +15,7 @@ import java.util.Set;
 
 public class App extends Application {
 
-  private final RelyingPartyConfig relyingPartyConfig;
-  private final FederationConfig federationConfig;
+  private final Config config;
   private final SessionRepo sessionRepo;
 
   private final KeyStore keyStore;
@@ -26,14 +24,12 @@ public class App extends Application {
   private final AuthenticationFlow authenticationFlow;
 
   public App(
-      RelyingPartyConfig relyingPartyConfig,
-      FederationConfig federationConfig,
+      Config config,
       SessionRepo sessionRepo,
       KeyStore keyStore,
       TokenIssuer tokenIssuer,
       AuthenticationFlow authenticationFlow) {
-    this.relyingPartyConfig = relyingPartyConfig;
-    this.federationConfig = federationConfig;
+    this.config = config;
     this.sessionRepo = sessionRepo;
     this.keyStore = keyStore;
     this.tokenIssuer = tokenIssuer;
@@ -44,9 +40,10 @@ public class App extends Application {
   public Set<Object> getSingletons() {
 
     return Set.of(
-        new FederationEndpoint(federationConfig),
-        new AuthEndpoint(relyingPartyConfig, sessionRepo, tokenIssuer, authenticationFlow),
-        new OpenIdEndpoint(relyingPartyConfig, keyStore),
+        new FederationEndpoint(config.federation()),
+        new AuthEndpoint(
+            config.baseUri(), config.relyingParty(), sessionRepo, tokenIssuer, authenticationFlow),
+        new OpenIdEndpoint(config.baseUri(), config.relyingParty(), keyStore),
         new JacksonJsonProvider(configureObjectMapper()));
   }
 

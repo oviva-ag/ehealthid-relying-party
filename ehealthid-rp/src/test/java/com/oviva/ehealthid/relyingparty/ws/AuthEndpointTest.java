@@ -30,9 +30,10 @@ class AuthEndpointTest {
 
   @Test
   void auth_badScopes() {
-    var config = new RelyingPartyConfig(0, BASE_URI, null, List.of(REDIRECT_URI));
 
-    var sut = new AuthEndpoint(config, null, null, null);
+    var rpConfig = new RelyingPartyConfig(null, List.of(REDIRECT_URI));
+
+    var sut = new AuthEndpoint(BASE_URI, rpConfig, null, null, null);
 
     var scope = "openid email";
     var state = UUID.randomUUID().toString();
@@ -54,9 +55,9 @@ class AuthEndpointTest {
 
   @Test
   void auth_malformedRedirect() {
-    var config = new RelyingPartyConfig(0, BASE_URI, null, List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(null, List.of(REDIRECT_URI));
 
-    var sut = new AuthEndpoint(config, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, null, null);
 
     var scope = "openid email";
     var state = UUID.randomUUID().toString();
@@ -74,9 +75,9 @@ class AuthEndpointTest {
 
   @Test
   void auth_untrustedRedirect() {
-    var config = new RelyingPartyConfig(0, BASE_URI, null, List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(null, List.of(REDIRECT_URI));
 
-    var sut = new AuthEndpoint(config, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, null, null);
 
     var scope = "openid email";
     var state = UUID.randomUUID().toString();
@@ -97,10 +98,10 @@ class AuthEndpointTest {
 
   @Test
   void auth_badResponseType() {
-    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
 
     var sessionRepo = mock(SessionRepo.class);
-    var sut = new AuthEndpoint(config, sessionRepo, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, null);
 
     var scope = "openid";
     var state = UUID.randomUUID().toString();
@@ -126,7 +127,7 @@ class AuthEndpointTest {
 
   @Test
   void auth_success() {
-    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
 
     var idpRedirectUrl = URI.create("https://federated-idp.example.com");
 
@@ -141,7 +142,7 @@ class AuthEndpointTest {
     when(authFlow.start(any())).thenReturn(selectIdpStep);
 
     var sessionRepo = mock(SessionRepo.class);
-    var sut = new AuthEndpoint(config, sessionRepo, null, authFlow);
+    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, authFlow);
 
     var scope = "openid";
     var state = UUID.randomUUID().toString();
@@ -170,9 +171,9 @@ class AuthEndpointTest {
   @ValueSource(strings = {" ", "  \n\t"})
   void callback_noSessionId(String sessionId) {
 
-    var config = new RelyingPartyConfig(0, null, null, null);
+    var config = new RelyingPartyConfig(null, null);
 
-    var sut = new AuthEndpoint(config, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, null, null);
 
     // when
     try (var res = sut.callback(sessionId, "")) {
@@ -185,11 +186,11 @@ class AuthEndpointTest {
   @Test
   void callback_unknownSession() {
 
-    var config = new RelyingPartyConfig(0, null, null, null);
+    var config = new RelyingPartyConfig(null, null);
 
     var sessionRepo = mock(SessionRepo.class);
 
-    var sut = new AuthEndpoint(config, sessionRepo, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, null);
 
     var sessionId = UUID.randomUUID().toString();
 
@@ -206,12 +207,12 @@ class AuthEndpointTest {
   @Test
   void callback() {
 
-    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
 
     var sessionRepo = mock(SessionRepo.class);
     var tokenIssuer = mock(TokenIssuer.class);
 
-    var sut = new AuthEndpoint(config, sessionRepo, tokenIssuer, null);
+    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, tokenIssuer, null);
 
     var sessionId = UUID.randomUUID().toString();
 
@@ -246,11 +247,11 @@ class AuthEndpointTest {
   @Test
   void token_badGrantType() {
 
-    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
 
     var tokenIssuer = mock(TokenIssuer.class);
 
-    var sut = new AuthEndpoint(config, null, tokenIssuer, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, tokenIssuer, null);
 
     var clientId = "myapp";
 
@@ -271,11 +272,11 @@ class AuthEndpointTest {
   @Test
   void token_badCode() {
 
-    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
 
     var tokenIssuer = mock(TokenIssuer.class);
 
-    var sut = new AuthEndpoint(config, null, tokenIssuer, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, tokenIssuer, null);
 
     var clientId = "myapp";
 
@@ -296,11 +297,11 @@ class AuthEndpointTest {
   @Test
   void token() {
 
-    var config = new RelyingPartyConfig(0, BASE_URI, List.of("code"), List.of(REDIRECT_URI));
+    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
 
     var tokenIssuer = mock(TokenIssuer.class);
 
-    var sut = new AuthEndpoint(config, null, tokenIssuer, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, tokenIssuer, null);
 
     var clientId = "myapp";
 

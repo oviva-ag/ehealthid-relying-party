@@ -11,10 +11,11 @@ public class JsonCodec {
   private static ObjectMapper om;
 
   static {
-    var om = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    var om = new ObjectMapper();
 
     om.registerModule(new JoseModule());
     om.setSerializationInclusion(Include.NON_NULL);
+    om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     JsonCodec.om = om;
   }
@@ -26,14 +27,6 @@ public class JsonCodec {
       return om.writeValueAsString(value);
     } catch (JsonProcessingException e) {
       throw new SerializeException("failed to serialize value to JSON", e);
-    }
-  }
-
-  public static <T> T readValue(String in, Class<T> clazz) {
-    try {
-      return om.readValue(in, clazz);
-    } catch (IOException e) {
-      throw new DeserializeException("failed to deserialize JSON", e);
     }
   }
 

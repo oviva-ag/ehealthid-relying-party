@@ -3,6 +3,7 @@ package com.oviva.ehealthid.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,8 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.test.Fixtures;
 import com.oviva.ehealthid.util.JsonCodec.DeserializeException;
+import com.oviva.ehealthid.util.JsonCodec.SerializeException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,17 +31,29 @@ class JsonCodecTest {
                 {"keys":[{"kty":"EC","d":"6RrmHekWp_RwY6FNlM46zwt1wFytfVQSYrS2-DDLj7g","use":"enc","crv":"P-256","kid":"test","x":"M4yMVgv6nV9AHvNCdrFUZ2zLnSD8yXFZBgbLgXU0vAc","y":"AvE4diGs4teOYHECACyi41UMxPGv8myq-Y7MBZGfwzY"}]}"""));
   }
 
+  static List<FailingEncodeTC> testCasesFailingEncode() {
+
+    var loop = new ArrayList<>();
+    var b = new ArrayList<>();
+    loop.add(b);
+    b.add(loop);
+
+    return List.of(
+        new FailingEncodeTC(loop, SerializeException.class),
+        new FailingEncodeTC(new JsonCodecTest(), SerializeException.class));
+  }
+
   @Test
   void readBadJson() {
     var raw = """
     {"a": bad }
-    """;
+    """.getBytes(StandardCharsets.UTF_8);
     assertThrows(DeserializeException.class, () -> JsonCodec.readValue(raw, Object.class));
   }
 
   @Test
   void readJwksString() {
-    var raw = Fixtures.getUtf8String("json_codec_jwks.json");
+    var raw = Fixtures.get("json_codec_jwks.json");
     var jwks = JsonCodec.readValue(raw, JWKSet.class);
 
     assertThat(jwks.getKeys(), hasSize(1));
@@ -59,6 +74,14 @@ class JsonCodecTest {
   }
 
   @ParameterizedTest
+  @MethodSource("testCasesFailingEncode")
+  void encode(FailingEncodeTC tc) {
+
+    var exception = assertThrows(Exception.class, () -> JsonCodec.writeValueAsString(tc.in()));
+    assertInstanceOf(tc.expectedException(), exception);
+  }
+
+  @ParameterizedTest
   @MethodSource("testCasesEncode")
   void encode(EncodeTC tc) throws JsonProcessingException {
 
@@ -72,4 +95,6 @@ class JsonCodecTest {
   }
 
   record EncodeTC(Object in, String expected) {}
+
+  record FailingEncodeTC(Object in, Class<? extends Throwable> expectedException) {}
 }

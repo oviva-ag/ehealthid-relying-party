@@ -9,16 +9,19 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 
 @Path("/")
 public class OpenIdEndpoint {
 
+  private final URI baseUri;
   private final RelyingPartyConfig relyingPartyConfig;
   private final KeyStore keyStore;
 
-  public OpenIdEndpoint(RelyingPartyConfig relyingPartyConfig, KeyStore keyStore) {
+  public OpenIdEndpoint(URI baseUri, RelyingPartyConfig relyingPartyConfig, KeyStore keyStore) {
+    this.baseUri = baseUri;
     this.relyingPartyConfig = relyingPartyConfig;
     this.keyStore = keyStore;
   }
@@ -30,10 +33,10 @@ public class OpenIdEndpoint {
 
     var body =
         new OpenIdConfiguration(
-            relyingPartyConfig.baseUri().toString(),
-            relyingPartyConfig.baseUri().resolve("/auth").toString(),
-            relyingPartyConfig.baseUri().resolve("/token").toString(),
-            relyingPartyConfig.baseUri().resolve("/jwks.json").toString(),
+            baseUri.toString(),
+            baseUri.resolve("/auth").toString(),
+            baseUri.resolve("/token").toString(),
+            baseUri.resolve("/jwks.json").toString(),
             List.of("openid"),
             relyingPartyConfig.supportedResponseTypes(),
             List.of("authorization_code"),
