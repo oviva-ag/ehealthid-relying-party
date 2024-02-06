@@ -1,5 +1,5 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=alert_status&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=coverage&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=alert_status&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=coverage&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 
 # OpenID Connect Relying Party for GesundheitsID (eHealthID)
 
@@ -8,7 +8,7 @@
 - [ehealthid-rp](./ehealthid-rp) - A standalone application to act as a OpenID Connect (OIDC)
   Relying Party. Bridges OIDC and Germany's GesundheitsID OpenID federation.
 - [esgen](./esgen) - A script to generate keys and federation registration forms.
-- [gesundheitsid](./gesundheitsid) - A plain Java library to build RelyingParties for GesundheitsID.
+- [ehealthid](./ehealthid) - A plain Java library to build RelyingParties for GesundheitsID.
     - API clients
     - Models for the EntityStatments, IDP list endpoints etc.
     - Narrow support for the 'Fachdienst' use-case.
@@ -167,7 +167,7 @@ public class Example {
 
 ```
 
-See [AuthenticationFlowExampleTest](https://github.com/oviva-ag/keycloak-gesundheitsid/blob/8751c92e45531f6cdca204b8db18a2825e05e69a/gesundheitsid/src/test/java/com/oviva/gesundheitsid/auth/AuthenticationFlowExampleTest.java#L44-L117)
+See [AuthenticationFlowExampleTest](https://github.com/oviva-ag/ehealthid-relying-party/blob/main/ehealthid/src/test/java/com/oviva/ehealthid/auth/AuthenticationFlowExampleTest.java)
 
 ## Working with Gematik Test Environment
 
