@@ -1,5 +1,5 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=alert_status&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=coverage&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=alert_status&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=coverage&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 
 # OpenID Connect Relying Party for GesundheitsID (eHealthID)
 
@@ -8,12 +8,57 @@
 - [ehealthid-rp](./ehealthid-rp) - A standalone application to act as a OpenID Connect (OIDC)
   Relying Party. Bridges OIDC and Germany's GesundheitsID OpenID federation.
 - [esgen](./esgen) - A script to generate keys and federation registration forms.
-- [gesundheitsid](./gesundheitsid) - A plain Java library to build RelyingParties for GesundheitsID.
+- [ehealthid](./ehealthid) - A plain Java library to build RelyingParties for GesundheitsID.
     - API clients
     - Models for the EntityStatments, IDP list endpoints etc.
     - Narrow support for the 'Fachdienst' use-case.
 
-## Generate Keys & Register for Federation
+# Quickstart
+
+```shell
+# build everything
+mvn clean verify
+
+# generate keys for the application, keep those safe
+./gen_keys.sh \
+    --issuer-uri=https://mydiga.example.com \
+    --member-id="$MEMBER_ID" \
+    --organisation-name="My DiGA" \
+    --generate-keys
+    
+# configure the application
+export EHEALTHID_RP_APP_NAME=Awesome DiGA
+export EHEALTHID_RP_BASE_URI=https://mydiga.example.com
+export EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=enc_jwks.json
+export EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de
+export EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=sig_jwks.json
+export EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback
+export EHEALTHID_RP_ES_TTL=PT5M
+
+# boots the relying party server
+./start.sh
+```
+
+# Configuration
+
+Use environment variables to configure the relying party server.
+
+| Name                                    | Description                                                                                                                                      | Example                                        |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| `EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH` | Path to a JWKS with at least one keypair for encryption of ID tokens.                                                                            | `./enc_jwks.json`                              |
+| `EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH` | Path to a JWKS with at least one keypair for signature withing the federation. All these keys __MUST__ be registered with the federation master. | `./sig_jwks.json`                              |
+| `EHEALTHID_RP_REDIRECT_URIS`            | Valid redirection URIs for OpenID connect.                                                                                                       | `https://sso-mydiga.example.com/auth/callback` |
+| `EHEALTHID_RP_BASE_URI`                 | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.   | `https://mydiga-rp.example.com`                |
+| `EHEALTHID_RP_HOST`                     | Host to bind to.                                                                                                                                 | `0.0.0.0`                                      |
+| `EHEALTHID_RP_PORT`                     | Port to bind to.                                                                                                                                 | `1234`                                         |
+| `EHEALTHID_RP_FEDERATION_MASTER`        | The URI of the federation master.                                                                                                                | `https://app-test.federationmaster.de`         |
+| `EHEALTHID_RP_APP_NAME`                 | The application name within the federation.                                                                                                      | `Awesome DiGA`                                 |
+| `EHEALTHID_RP_ES_TTL`                   | The time to live for the entity statement. In ISO8601 format.                                                                                    | `PT12H`                                        |
+| `EHEALTHID_RP_SCOPES`                   | The comma separated list of scopes requested in the federation. This __MUST__ match what was registered with the federation master.              | `openid,urn:telematik:email,urn:telematik:display_name`                                      |
+
+
+
+# Generate Keys & Register for Federation
 
 In order to participate in the GesundheitsID one needs to register the entity statement of the IDP
 or in this case the relying party here.
@@ -24,6 +69,10 @@ with Gematik.
 See [Gematik documentation](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583) for
 details
 on the registration process.
+
+```shell
+./gen_keys.sh --help
+```
 
 ### Generate Fresh Keys and Prepare Registration
 
@@ -44,15 +93,22 @@ export MEMBER_ID=FDmyDiGa0112TU
 # a string received from Gematik as part of the registration process
 export MEMBER_ID=FDmyDiGa0112TU
 
+# specify the environment, either 
+# TU -> test environment
+# RU -> reference environment
+# PU -> productive environment
+export ENVIRONMENT=RU
+
 ./gen_keys.sh \
     --issuer-uri=https://mydiga.example.com \
     --member-id="$MEMBER_ID" \
     --organisation-name="My DiGA" \
+    --environment=$ENVIRONMENT \
     --signing-jwks=./sig_jwks.json \
     --encryption-jwks=./enc_jwks.json
 ```
 
-## End-to-End Test flow with Gematik Reference IDP
+## Library IntegrationTest flow with Gematik Reference IDP
 
 **Prerequisites**:
 
@@ -111,7 +167,7 @@ public class Example {
 
 ```
 
-See [AuthenticationFlowExampleTest](https://github.com/oviva-ag/keycloak-gesundheitsid/blob/8751c92e45531f6cdca204b8db18a2825e05e69a/gesundheitsid/src/test/java/com/oviva/gesundheitsid/auth/AuthenticationFlowExampleTest.java#L44-L117)
+See [AuthenticationFlowExampleTest](https://github.com/oviva-ag/ehealthid-relying-party/blob/main/ehealthid/src/test/java/com/oviva/ehealthid/auth/AuthenticationFlowExampleTest.java)
 
 ## Working with Gematik Test Environment
 

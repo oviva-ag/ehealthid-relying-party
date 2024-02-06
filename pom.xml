@@ -37,7 +37,7 @@
     <sonar.organization>oviva-ag</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.projectName>${project.artifactId}</sonar.projectName>
-    <sonar.projectKey>oviva-ag_keycloak-gesundheitsid</sonar.projectKey>
+    <sonar.projectKey>oviva-ag_ehealthid-relying-party</sonar.projectKey>
     <sonar.moduleKey>${project.groupId}_${project.artifactId}</sonar.moduleKey>
     <sonar.cpd.exclusions></sonar.cpd.exclusions>
     <sonar.coverage.exclusions>esgen/**</sonar.coverage.exclusions>

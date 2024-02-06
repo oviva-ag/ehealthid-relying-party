@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class EnvFederationConfigProviderTest {
 
-  private static final String PREFIX = "OIDC_SERVER";
+  private static final String PREFIX = "EHEALTHID_RP";
 
   static Stream<TC> mangleTestCases() {
     return Stream.of(

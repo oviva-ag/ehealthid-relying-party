@@ -53,12 +53,7 @@ public class FederationEndpoint {
                             .idTokenSignedResponseAlg("ES256")
                             .idTokenEncryptedResponseAlg("ECDH-ES")
                             .idTokenEncryptedResponseEnc("A256GCM")
-                            .scope(
-                                String.join(
-                                    " ",
-                                    "openid",
-                                    "urn:telematik:email",
-                                    "urn:telematik:versicherter")) // add urn:telematik:display_name
+                            .scope(String.join(" ", federationConfig.scopes()))
                             .redirectUris(federationConfig.redirectUris())
                             .build())
                     .federationEntity(
