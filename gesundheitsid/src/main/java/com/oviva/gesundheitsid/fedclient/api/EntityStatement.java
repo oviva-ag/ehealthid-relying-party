@@ -2,7 +2,16 @@ package com.oviva.gesundheitsid.fedclient.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.oviva.gesundheitsid.util.JsonCodec;
 import java.time.Instant;
 import java.util.List;
 
@@ -36,6 +45,25 @@ public record EntityStatement(
 
   public static Builder create() {
     return new Builder();
+  }
+
+  public JWSObject sign(ECKey key) {
+    try {
+      var signer = new ECDSASigner(key);
+
+      var h =
+          new JWSHeader.Builder(JWSAlgorithm.ES256)
+              .type(new JOSEObjectType(EntityStatementJWS.ENTITY_STATEMENT_TYP))
+              .keyID(key.getKeyID())
+              .build();
+
+      var jwsObject = new JWSObject(h, new Payload(JsonCodec.writeValueAsString(this)));
+      jwsObject.sign(signer);
+
+      return jwsObject;
+    } catch (JOSEException e) {
+      throw new IllegalArgumentException("failed to sign entity statement", e);
+    }
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)

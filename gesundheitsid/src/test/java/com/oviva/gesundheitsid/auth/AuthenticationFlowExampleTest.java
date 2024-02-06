@@ -14,7 +14,7 @@ import com.oviva.gesundheitsid.fedclient.api.OpenIdClient;
 import com.oviva.gesundheitsid.fedclient.api.UrlFormBodyBuilder;
 import com.oviva.gesundheitsid.test.Environment;
 import com.oviva.gesundheitsid.test.GematikHeaderDecoratorHttpClient;
-import com.oviva.gesundheitsid.test.JwksUtils;
+import com.oviva.gesundheitsid.util.JwksUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLDecoder;

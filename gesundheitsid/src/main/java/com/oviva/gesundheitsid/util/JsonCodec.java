@@ -1,5 +1,6 @@
 package com.oviva.gesundheitsid.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +14,7 @@ public class JsonCodec {
     var om = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     om.registerModule(new JoseModule());
+    om.setSerializationInclusion(Include.NON_NULL);
 
     JsonCodec.om = om;
   }

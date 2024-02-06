@@ -11,7 +11,7 @@ class InMemorySessionRepoTest {
   @Test
   void save() {
     var sut = new InMemorySessionRepo();
-    var session = new SessionRepo.Session(null, null, null, null, null);
+    var session = new SessionRepo.Session(null, null, null, null, null, null, null);
 
     var id1 = sut.save(session);
     assertNotNull(id1);
@@ -25,7 +25,7 @@ class InMemorySessionRepoTest {
   @Test
   void save_alreadySaved() {
     var sut = new InMemorySessionRepo();
-    var session = new SessionRepo.Session("1", null, null, null, null);
+    var session = new SessionRepo.Session("1", null, null, null, null, null, null);
 
     assertThrows(IllegalStateException.class, () -> sut.save(session));
   }
@@ -40,7 +40,7 @@ class InMemorySessionRepoTest {
     var redirectUri = URI.create("https://example.com/callback");
     var clientId = "app";
 
-    var session = new SessionRepo.Session(null, state, nonce, redirectUri, clientId);
+    var session = new SessionRepo.Session(null, state, nonce, redirectUri, clientId, null, null);
 
     var id = sut.save(session);
 

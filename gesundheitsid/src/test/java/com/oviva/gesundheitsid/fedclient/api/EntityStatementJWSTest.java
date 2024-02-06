@@ -1,7 +1,7 @@
 package com.oviva.gesundheitsid.fedclient.api;
 
 import static com.oviva.gesundheitsid.test.B64Utils.toB64;
-import static com.oviva.gesundheitsid.test.JwsUtils.tamperSignature;
+import static com.oviva.gesundheitsid.util.JwsUtils.tamperSignature;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
