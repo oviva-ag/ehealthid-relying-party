@@ -4,8 +4,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.oviva.gesundheitsid</groupId>
-  <artifactId>gesundheitsid-parent</artifactId>
+  <groupId>com.oviva.ehealthid</groupId>
+  <artifactId>ehealthid-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -40,7 +40,7 @@
     <sonar.projectKey>oviva-ag_keycloak-gesundheitsid</sonar.projectKey>
     <sonar.moduleKey>${project.groupId}_${project.artifactId}</sonar.moduleKey>
     <sonar.cpd.exclusions></sonar.cpd.exclusions>
-    <sonar.coverage.exclusions></sonar.coverage.exclusions>
+    <sonar.coverage.exclusions>esgen/**</sonar.coverage.exclusions>
     <sonar.coverage.jacoco.xmlReportPaths>
       ${maven.multiModuleProjectDirectory}/reports/target/site/jacoco-aggregate/jacoco.xml
     </sonar.coverage.jacoco.xmlReportPaths>
@@ -61,9 +61,9 @@
   </scm>
 
   <modules>
+    <module>ehealthid-rp</module>
+    <module>ehealthid</module>
     <module>esgen</module>
-    <module>gesundheitsid</module>
-    <module>oidc-server</module>
     <module>reports</module>
   </modules>
 
@@ -156,6 +156,11 @@
         <groupId>com.google.auto.service</groupId>
         <artifactId>auto-service</artifactId>
         <version>1.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.spullara.mustache.java</groupId>
+        <artifactId>compiler</artifactId>
+        <version>0.9.11</version>
       </dependency>
       <dependency>
         <groupId>org.junit</groupId>

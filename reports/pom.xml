@@ -5,22 +5,22 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.oviva.gesundheitsid</groupId>
-    <artifactId>gesundheitsid-parent</artifactId>
+    <groupId>com.oviva.ehealthid</groupId>
+    <artifactId>ehealthid-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>gesundheitsid-reports</artifactId>
+  <artifactId>reports</artifactId>
 
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>gesundheitsid</artifactId>
+      <artifactId>ehealthid</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>oidc-server</artifactId>
+      <artifactId>ehealthid-rp</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

@@ -1,23 +1,66 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=alert_status&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_keycloak-gesundheitsid&metric=coverage&token=64c09371c0f6c1d729fc0b0424706cd54011cb90)](https://sonarcloud.io/summary/new_code?id=oviva-ag_keycloak-gesundheitsid)
 
-# Keycloak Identity Provider for GesundheitsID (eHealthID)
+# OpenID Connect Relying Party for GesundheitsID (eHealthID)
 
 ## Contents
+
+- [ehealthid-rp](./ehealthid-rp) - A standalone application to act as a OpenID Connect (OIDC)
+  Relying Party. Bridges OIDC and Germany's GesundheitsID OpenID federation.
+- [esgen](./esgen) - A script to generate keys and federation registration forms.
 - [gesundheitsid](./gesundheitsid) - A plain Java library to build RelyingParties for GesundheitsID.
-  - API clients
-  - Models for the EntityStatments, IDP list endpoints etc.
-  - Narrow support for the 'Fachdienst' use-case.
+    - API clients
+    - Models for the EntityStatments, IDP list endpoints etc.
+    - Narrow support for the 'Fachdienst' use-case.
+
+## Generate Keys & Register for Federation
+
+In order to participate in the GesundheitsID one needs to register the entity statement of the IDP
+or in this case the relying party here.
+
+To simplify matter, here a script to generate fresh keys as well as the XML necessary to register
+with Gematik.
+
+See [Gematik documentation](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583) for
+details
+on the registration process.
+
+### Generate Fresh Keys and Prepare Registration
+
+```shell
+# a string received from Gematik as part of the registration process
+export MEMBER_ID=FDmyDiGa0112TU
+
+./gen_keys.sh \
+    --issuer-uri=https://mydiga.example.com \
+    --member-id="$MEMBER_ID" \
+    --organisation-name="My DiGA" \
+    --generate-keys
+```
+
+### Re-use Existing Keys and Prepare Registration
+
+```shell
+# a string received from Gematik as part of the registration process
+export MEMBER_ID=FDmyDiGa0112TU
+
+./gen_keys.sh \
+    --issuer-uri=https://mydiga.example.com \
+    --member-id="$MEMBER_ID" \
+    --organisation-name="My DiGA" \
+    --signing-jwks=./sig_jwks.json \
+    --encryption-jwks=./enc_jwks.json
+```
 
 ## End-to-End Test flow with Gematik Reference IDP
 
 **Prerequisites**:
 
 1. Setup your test environment, your own issuer **MUST** serve a **VALID** and **TRUSTED** entity
-  statement. See [Gematik docs](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583)
+   statement. See [Gematik docs](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583)
 2. Setup the file `env.properties` to provide
-  the [X-Authorization header](https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen)
-  for the Gematik
+   the [X-Authorization header](https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen)
+   for the Gematik
 3. Setup the JWK sets for signing and encryption keys
 
 ```java
@@ -72,28 +115,34 @@ See [AuthenticationFlowExampleTest](https://github.com/oviva-ag/keycloak-gesundh
 
 ## Working with Gematik Test Environment
 
-
 ### Gematik Test Sektoraler IdP in Browser
 
-Since the Gematik reference IDP in the Test Environment needs a custom header, it can not be used directly in the browser for authentication.
+Since the Gematik reference IDP in the Test Environment needs a custom header, it can not be used
+directly in the browser for authentication.
 Setting up a proxy with a header filter can get around that limitation though.
 
-**Prerequisite:** Install some Chrome-ish browser like [Thorium](https://github.com/Alex313031/Thorium-MacOS/releases) or Chromium.
+**Prerequisite:** Install some Chrome-ish browser
+like [Thorium](https://github.com/Alex313031/Thorium-MacOS/releases) or Chromium.
 
-1. launch `mitmweb`: `mitmweb -p 8881 --web-port=8882`
+1.
+
+launch `mitmweb`: `mitmweb -p 8881 --web-port=8882 --set "modify_headers=/~q & ~d gsi.dev.gematik.solutions/X-Authorization/<value goes here>"`
+
 2. launch Chrome-like browser
     ```
     /Applications/Thorium.app/Contents/MacOS/Thorium --proxy-server=http://localhost:8881
    ```
-3. setup `modify_headers` option
-    ```mitmproxy
-    # modify_headers filter 
-    /~q & ~d gsi.dev.gematik.solutions/X-Authorization/<value goes here>
-    ```
 
 ## Setup Test VM
 
+For testing the entity statement of the relying party must be publicly available via HTTPS. Setting
+up a quick VM
+with a caddy reverse proxy makes that easy.
+
 ```shell
+
+# adapt as necessary, make sure to set up the corresponding DNS A records
+DOMAIN=mydiga.example.com
 
 sudo apt update
 sudo apt install jq openjdk-17-jre-headless
@@ -105,11 +154,11 @@ curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo 
 sudo apt update
 sudo apt install caddy
 
+# caddy enables itself by default, we don't want it
 sudo systemctl disable --now caddy
 
-sudo caddy reverse-proxy --from=t.oviva.io --to=:1234
+sudo caddy reverse-proxy --from=$DOMAIN --to=:1234
 ```
-
 
 ## Helpful Links
 

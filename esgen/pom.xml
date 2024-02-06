@@ -5,12 +5,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.oviva.gesundheitsid</groupId>
-    <artifactId>gesundheitsid-parent</artifactId>
+    <groupId>com.oviva.ehealthid</groupId>
+    <artifactId>ehealthid-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>esgen</artifactId>
+  <description>
+    Generator for entity-statements in the TI federation. This can generate the necessary
+    keys as well as the registration xml.
+  </description>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -24,8 +28,19 @@
     </dependency>
 
     <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>4.7.5</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
     </dependency>
 
     <dependency>
@@ -55,5 +70,54 @@
     </dependency>
 
   </dependencies>
+
+  <build>
+    <finalName>esgen</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>info.picocli</groupId>
+              <artifactId>picocli-codegen</artifactId>
+              <version>4.7.5</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.oviva.ehealthid.esgen.Main</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+
+      </plugin>
+    </plugins>
+  </build>
+
 
 </project>

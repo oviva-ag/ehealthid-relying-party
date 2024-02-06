@@ -1,3 +1,8 @@
 #!/bin/bash
 
-mvn --quiet clean compile exec:java -Dexec.mainClass="com.oviva.gesundheitsid.esgen.Main" -f esgen
+set -e
+
+echo "INFO compiling"
+mvn --quiet clean package -DskipTests -am -pl=esgen
+echo "INFO running cli"
+java -jar ./esgen/target/esgen-jar-with-dependencies.jar "$@"
