@@ -13,7 +13,52 @@
     - Models for the EntityStatments, IDP list endpoints etc.
     - Narrow support for the 'Fachdienst' use-case.
 
-## Generate Keys & Register for Federation
+# Quickstart
+
+```shell
+# build everything
+mvn clean verify
+
+# generate keys for the application, keep those safe
+./gen_keys.sh \
+    --issuer-uri=https://mydiga.example.com \
+    --member-id="$MEMBER_ID" \
+    --organisation-name="My DiGA" \
+    --generate-keys
+    
+# configure the application
+export EHEALTHID_RP_APP_NAME=Awesome DiGA
+export EHEALTHID_RP_BASE_URI=https://mydiga.example.com
+export EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=enc_jwks.json
+export EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de
+export EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=sig_jwks.json
+export EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback
+export EHEALTHID_RP_ES_TTL=PT5M
+
+# boots the relying party server
+./start.sh
+```
+
+# Configuration
+
+Use environment variables to configure the relying party server.
+
+| Name                                    | Description                                                                                                                                      | Example                                        |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| `EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH` | Path to a JWKS with at least one keypair for encryption of ID tokens.                                                                            | `./enc_jwks.json`                              |
+| `EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH` | Path to a JWKS with at least one keypair for signature withing the federation. All these keys __MUST__ be registered with the federation master. | `./sig_jwks.json`                              |
+| `EHEALTHID_RP_REDIRECT_URIS`            | Valid redirection URIs for OpenID connect.                                                                                                       | `https://sso-mydiga.example.com/auth/callback` |
+| `EHEALTHID_RP_BASE_URI`                 | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.   | `https://mydiga-rp.example.com`                |
+| `EHEALTHID_RP_HOST`                     | Host to bind to.                                                                                                                                 | `0.0.0.0`                                      |
+| `EHEALTHID_RP_PORT`                     | Port to bind to.                                                                                                                                 | `1234`                                         |
+| `EHEALTHID_RP_FEDERATION_MASTER`        | The URI of the federation master.                                                                                                                | `https://app-test.federationmaster.de`         |
+| `EHEALTHID_RP_APP_NAME`                 | The application name within the federation.                                                                                                      | `Awesome DiGA`                                 |
+| `EHEALTHID_RP_ES_TTL`                   | The time to live for the entity statement. In ISO8601 format.                                                                                    | `PT12H`                                        |
+| `EHEALTHID_RP_SCOPES`                   | The comma separated list of scopes requested in the federation. This __MUST__ match what was registered with the federation master.              | `openid,urn:telematik:email,urn:telematik:display_name`                                      |
+
+
+
+# Generate Keys & Register for Federation
 
 In order to participate in the GesundheitsID one needs to register the entity statement of the IDP
 or in this case the relying party here.
@@ -24,6 +69,10 @@ with Gematik.
 See [Gematik documentation](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583) for
 details
 on the registration process.
+
+```shell
+./gen_keys.sh --help
+```
 
 ### Generate Fresh Keys and Prepare Registration
 
@@ -44,15 +93,22 @@ export MEMBER_ID=FDmyDiGa0112TU
 # a string received from Gematik as part of the registration process
 export MEMBER_ID=FDmyDiGa0112TU
 
+# specify the environment, either 
+# TU -> test environment
+# RU -> reference environment
+# PU -> productive environment
+export ENVIRONMENT=RU
+
 ./gen_keys.sh \
     --issuer-uri=https://mydiga.example.com \
     --member-id="$MEMBER_ID" \
     --organisation-name="My DiGA" \
+    --environment=$ENVIRONMENT \
     --signing-jwks=./sig_jwks.json \
     --encryption-jwks=./enc_jwks.json
 ```
 
-## End-to-End Test flow with Gematik Reference IDP
+## Library IntegrationTest flow with Gematik Reference IDP
 
 **Prerequisites**:
 

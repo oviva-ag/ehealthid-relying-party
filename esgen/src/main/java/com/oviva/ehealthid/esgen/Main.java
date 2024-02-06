@@ -38,7 +38,8 @@ public class Main implements Callable<Integer> {
 
   @Option(
       names = {"-e", "--environment"},
-      description = "the environment to register for",
+      description =
+          "the environment to register for, either TU (Testumgebung), RU (Referenzumgebung) or PU (Produktivumgebung)",
       defaultValue = "TU",
       required = true)
   private Environment environment;

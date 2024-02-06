@@ -1,4 +1,4 @@
-package ehealthid.relyingparty;
+package com.oviva.ehealthid.relyingparty;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.auth.AuthenticationFlow;
@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,6 @@ import org.slf4j.LoggerFactory;
 public class Main {
 
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
-
   private static final String BANNER =
       """
           ____       _
@@ -43,6 +43,7 @@ public class Main {
         \\____/|___/_/|___/\\_,_/
              GesundheitsID OpenID Connect Relying-Party
         """;
+  private static final String CONFIG_PREFIX = "EHEALTHID_RP";
   private final ConfigProvider configProvider;
 
   public Main(ConfigProvider configProvider) {
@@ -51,7 +52,7 @@ public class Main {
 
   public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-    var main = new Main(new EnvConfigProvider("OIDC_SERVER", System::getenv));
+    var main = new Main(new EnvConfigProvider(CONFIG_PREFIX, System::getenv));
     main.run();
   }
 
@@ -64,12 +65,16 @@ public class Main {
 
     var validRedirectUris = loadAllowedRedirectUrls();
 
-    // TODO load from config
-    var baseUri = URI.create("https://t.oviva.io");
+    var baseUri =
+        configProvider
+            .get("base_uri")
+            .map(URI::create)
+            .orElseThrow(() -> new IllegalArgumentException("no 'base_uri' configured"));
+
+    var host = configProvider.get("host").orElse("0.0.0.0");
+    var port = getPortConfig();
 
     var supportedResponseTypes = List.of("code");
-
-    var port = getPortConfig();
 
     var config = new RelyingPartyConfig(port, baseUri, supportedResponseTypes, validRedirectUris);
 
@@ -81,38 +86,56 @@ public class Main {
     // setup your environment, your own issuer MUST serve a _valid_ and _trusted_ entity
     // configuration
     // see: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
-    var fedmaster = URI.create("https://app-test.federationmaster.de");
+    var fedmaster =
+        configProvider
+            .get("federation_master")
+            .map(URI::create)
+            .orElse(URI.create("https://app-test.federationmaster.de"));
 
-    // TODO replace with `baseUri`
-    var federationIssuer = URI.create("https://idp-test.oviva.io/auth/realms/master/ehealthid");
+    var appName =
+        configProvider
+            .get("app_name")
+            .orElseThrow(() -> new IllegalArgumentException("missing 'app_name' configuration"));
+
+    var entityStatementTtl =
+        configProvider.get("es_ttl").map(Duration::parse).orElse(Duration.ofHours(1));
 
     var authFlow = buildAuthFlow(baseUri, fedmaster, federationEncJwksPath);
+
+    var scopes =
+        configProvider
+            .get("scopes")
+            .or(
+                () ->
+                    Optional.of(
+                        "openid,urn:telematik:email,urn:telematik:versicherter,urn:telematik:display_name"))
+            .stream()
+            .flatMap(Strings::mustParseCommaList)
+            .toList();
 
     var federationConfig =
         FederationConfig.create()
             .sub(baseUri)
             .iss(baseUri)
-            .appName("Oviva Direkt")
+            .appName(appName)
             .federationMaster(fedmaster)
             .entitySigningKey(federationSigJwksPath.getKeys().get(0).toECKey())
             .entitySigningKeys(federationSigJwksPath.toPublicJWKSet())
             .relyingPartyEncKeys(federationEncJwksPath.toPublicJWKSet())
-
-            // TODO: bump up to hours, once we're confident it's correct ;)
-            // the spec says ~1 day
-            .ttl(Duration.ofMinutes(5))
+            .ttl(entityStatementTtl)
+            .scopes(scopes)
             .redirectUris(List.of(baseUri.resolve("/auth/callback").toString()))
             .build();
 
     var instance =
         SeBootstrap.start(
                 new App(config, federationConfig, sessionRepo, keyStore, tokenIssuer, authFlow),
-                Configuration.builder().host("0.0.0.0").port(config.port()).build())
+                Configuration.builder().host(host).port(config.port()).build())
             .toCompletableFuture()
             .get();
 
     var localUri = instance.configuration().baseUri();
-    logger.atInfo().addKeyValue("local_addr", localUri).log("Magic at {}", config.baseUri());
+    logger.atInfo().log("Magic at {} ({})", config.baseUri(), localUri);
 
     // wait forever
     Thread.currentThread().join();
@@ -162,18 +185,9 @@ public class Main {
   }
 
   private List<URI> loadAllowedRedirectUrls() {
-
-    var redirectUris =
-        configProvider.get("redirect_uris").stream()
-            .flatMap(Strings::mustParseCommaList)
-            .map(URI::create)
-            .toList();
-
-    if (!redirectUris.isEmpty()) {
-      return redirectUris;
-    }
-
-    // TODO: hardcoded
-    return List.of(URI.create("https://idp-test.oviva.io/auth/realms/master/broker/oidc/endpoint"));
+    return configProvider.get("redirect_uris").stream()
+        .flatMap(Strings::mustParseCommaList)
+        .map(URI::create)
+        .toList();
   }
 }

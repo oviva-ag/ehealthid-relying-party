@@ -17,6 +17,7 @@ public record FederationConfig(
     JWKSet relyingPartyEncKeys,
     Duration ttl,
     List<String> redirectUris,
+    List<String> scopes,
     String appName) {
 
   public static Builder create() {
@@ -35,6 +36,7 @@ public record FederationConfig(
     private JWKSet relyingPartyEncKeys;
     private Duration ttl;
     private List<String> redirectUris;
+    private List<String> scopes;
     private String appName;
 
     public Builder() {}
@@ -84,6 +86,11 @@ public record FederationConfig(
       return this;
     }
 
+    public Builder scopes(List<String> scopes) {
+      this.scopes = scopes;
+      return this;
+    }
+
     public FederationConfig build() {
       return new FederationConfig(
           iss,
@@ -94,6 +101,7 @@ public record FederationConfig(
           relyingPartyEncKeys,
           ttl,
           redirectUris,
+          scopes,
           appName);
     }
   }

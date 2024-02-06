@@ -52,6 +52,7 @@ class FederationEndpointTest {
             .sub(ISSUER)
             .redirectUris(List.of(ISSUER + "/callback"))
             .appName("My App")
+            .scopes(List.of("openid", "email"))
             .federationMaster(FEDMASTER)
             .relyingPartyEncKeys(new JWKSet(encryptionKey))
             .entitySigningKeys(new JWKSet(signatureKey))
