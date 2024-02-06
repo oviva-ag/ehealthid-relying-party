@@ -27,7 +27,7 @@ jobs:
           cache: 'maven'
       - name: run spotless
         id: spotless
-        run: mvn -B spotless:check
+        run: ./mvnw -B spotless:check
       - name: check spotless
         if: always()
         uses: oviva-ag/checks-action@v1.2.0

@@ -19,7 +19,6 @@
     <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
-    <version.keycloak>23.0.3</version.keycloak>
     <version.jboss-logging>3.5.3.Final</version.jboss-logging>
     <version.slf4j>2.0.10</version.slf4j>
     <version.nimbus-jose-jwt>9.37.3</version.nimbus-jose-jwt>
@@ -56,8 +55,8 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://github.com/oviva-ag/keycloak-gesundheitsid.git</connection>
-    <url>https://github.com/oviva-ag/keycloak-gesundheitsid</url>
+    <connection>scm:git:https://github.com/oviva-ag/ehealthid-relying-party.git</connection>
+    <url>https://github.com/oviva-ag/ehealthid-relying-party</url>
   </scm>
 
   <modules>
@@ -87,43 +86,6 @@
         <version>${version.slf4j}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.keycloak.bom</groupId>
-        <artifactId>keycloak-spi-bom</artifactId>
-        <version>${version.keycloak}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-server-spi-private</artifactId>
-        <version>${version.keycloak}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-services</artifactId>
-        <version>${version.keycloak}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-model-legacy-services</artifactId>
-        <version>${version.keycloak}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-model-legacy</artifactId>
-        <version>${version.keycloak}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-model-legacy-private</artifactId>
-        <version>${version.keycloak}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-crypto-default</artifactId>
-        <version>${version.keycloak}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.logging</groupId>
@@ -165,7 +127,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.10.1</version>
+        <version>5.10.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -328,11 +290,15 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.9.1</version>
+          <version>3.3.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>3.6.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.9.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -453,7 +419,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.3.0</version>
         <executions>
           <execution>
             <id>attach-sources</id>
