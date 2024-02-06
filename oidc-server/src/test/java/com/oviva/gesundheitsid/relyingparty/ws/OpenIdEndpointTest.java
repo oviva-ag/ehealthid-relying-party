@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.oviva.gesundheitsid.relyingparty.cfg.Config;
+import com.oviva.gesundheitsid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.gesundheitsid.relyingparty.svc.KeyStore;
 import java.net.URI;
 import java.text.ParseException;
@@ -20,7 +20,7 @@ class OpenIdEndpointTest {
   @Test
   void openIdConfiguration() {
 
-    var config = new Config(0, BASE_URI, null, null);
+    var config = new RelyingPartyConfig(0, BASE_URI, null, null);
     var sut = new OpenIdEndpoint(config, null);
 
     // when

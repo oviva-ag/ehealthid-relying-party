@@ -24,7 +24,7 @@
     <version.slf4j>2.0.10</version.slf4j>
     <version.nimbus-jose-jwt>9.37.3</version.nimbus-jose-jwt>
     <version.logback.classic>1.4.14</version.logback.classic>
-    <version.logback.json>0.1.5</version.logback.json>
+    <version.logback.encoder>7.4</version.logback.encoder>
 
     <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
     <spotless-maven-plugin.google-java-format.version>1.18.1
@@ -61,6 +61,7 @@
   </scm>
 
   <modules>
+    <module>esgen</module>
     <module>gesundheitsid</module>
     <module>oidc-server</module>
     <module>reports</module>
@@ -147,14 +148,9 @@
         <version>${version.logback.classic}</version>
       </dependency>
       <dependency>
-        <groupId>ch.qos.logback.contrib</groupId>
-        <artifactId>logback-json-classic</artifactId>
-        <version>${version.logback.json}</version>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback.contrib</groupId>
-        <artifactId>logback-jackson</artifactId>
-        <version>${version.logback.json}</version>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
+        <version>${version.logback.encoder}</version>
       </dependency>
       <dependency>
         <groupId>com.google.auto.service</groupId>
@@ -328,6 +324,10 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
           <version>3.9.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.6.0</version>
         </plugin>
       </plugins>
     </pluginManagement>

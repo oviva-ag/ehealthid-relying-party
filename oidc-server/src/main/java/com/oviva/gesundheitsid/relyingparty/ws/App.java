@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import com.oviva.gesundheitsid.auth.AuthenticationFlow;
-import com.oviva.gesundheitsid.relyingparty.cfg.Config;
+import com.oviva.gesundheitsid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.gesundheitsid.relyingparty.fed.FederationConfig;
 import com.oviva.gesundheitsid.relyingparty.fed.FederationEndpoint;
 import com.oviva.gesundheitsid.relyingparty.svc.KeyStore;
@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class App extends Application {
 
-  private final Config config;
+  private final RelyingPartyConfig relyingPartyConfig;
   private final FederationConfig federationConfig;
   private final SessionRepo sessionRepo;
 
@@ -26,13 +26,13 @@ public class App extends Application {
   private final AuthenticationFlow authenticationFlow;
 
   public App(
-      Config config,
+      RelyingPartyConfig relyingPartyConfig,
       FederationConfig federationConfig,
       SessionRepo sessionRepo,
       KeyStore keyStore,
       TokenIssuer tokenIssuer,
       AuthenticationFlow authenticationFlow) {
-    this.config = config;
+    this.relyingPartyConfig = relyingPartyConfig;
     this.federationConfig = federationConfig;
     this.sessionRepo = sessionRepo;
     this.keyStore = keyStore;
@@ -45,8 +45,8 @@ public class App extends Application {
 
     return Set.of(
         new FederationEndpoint(federationConfig),
-        new AuthEndpoint(config, sessionRepo, tokenIssuer, authenticationFlow),
-        new OpenIdEndpoint(config, keyStore),
+        new AuthEndpoint(relyingPartyConfig, sessionRepo, tokenIssuer, authenticationFlow),
+        new OpenIdEndpoint(relyingPartyConfig, keyStore),
         new JacksonJsonProvider(configureObjectMapper()));
   }
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <appender name="json" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <providers>
+        <timestamp>
+          <fieldName>timestamp</fieldName>
+          <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSX</pattern>
+          <timeZone>UTC</timeZone>
+        </timestamp>
+        <arguments/>
+        <stackTrace/>
+        <context/>
+        <mdc/>
+        <tags/>
+        <pattern>
+          <pattern>
+            {
+            "logger": "%logger",
+            "severity": "%level",
+            "thread": "%thread",
+            "message": "%message"
+            }
+          </pattern>
+        </pattern>
+      </providers>
+    </encoder>
+  </appender>
+  <root level="INFO">
+    <appender-ref ref="json"/>
+  </root>
+</configuration>

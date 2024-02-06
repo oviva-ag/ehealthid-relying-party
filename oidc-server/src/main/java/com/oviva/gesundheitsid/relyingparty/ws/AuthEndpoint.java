@@ -2,7 +2,7 @@ package com.oviva.gesundheitsid.relyingparty.ws;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.gesundheitsid.auth.AuthenticationFlow;
-import com.oviva.gesundheitsid.relyingparty.cfg.Config;
+import com.oviva.gesundheitsid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.gesundheitsid.relyingparty.svc.SessionRepo;
 import com.oviva.gesundheitsid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.gesundheitsid.relyingparty.svc.TokenIssuer;
@@ -34,7 +34,7 @@ import java.util.List;
 @Path("/auth")
 public class AuthEndpoint {
 
-  private final Config config;
+  private final RelyingPartyConfig relyingPartyConfig;
 
   private final SessionRepo sessionRepo;
   private final TokenIssuer tokenIssuer;
@@ -42,11 +42,11 @@ public class AuthEndpoint {
   private final AuthenticationFlow authenticationFlow;
 
   public AuthEndpoint(
-      Config config,
+      RelyingPartyConfig relyingPartyConfig,
       SessionRepo sessionRepo,
       TokenIssuer tokenIssuer,
       AuthenticationFlow authenticationFlow) {
-    this.config = config;
+    this.relyingPartyConfig = relyingPartyConfig;
     this.sessionRepo = sessionRepo;
     this.tokenIssuer = tokenIssuer;
     this.authenticationFlow = authenticationFlow;
@@ -98,7 +98,7 @@ public class AuthEndpoint {
           .build();
     }
 
-    if (!config.validRedirectUris().contains(parsedRedirect)) {
+    if (!relyingPartyConfig.validRedirectUris().contains(parsedRedirect)) {
       // TODO nice form
       return Response.status(Status.BAD_REQUEST)
           .entity("untrusted 'redirect_uri': %s".formatted(parsedRedirect))
@@ -113,7 +113,7 @@ public class AuthEndpoint {
           "scope '%s' not supported".formatted(scope));
     }
 
-    if (!config.supportedResponseTypes().contains(responseType)) {
+    if (!relyingPartyConfig.supportedResponseTypes().contains(responseType)) {
       return OpenIdErrorResponses.redirectWithError(
           parsedRedirect,
           ErrorCode.UNSUPPORTED_RESPONSE_TYPE,
@@ -132,7 +132,7 @@ public class AuthEndpoint {
     var codeChallenge = calculateS256CodeChallenge(verifier);
 
     // ==== 1) start a new flow
-    var relyingPartyCallback = config.baseUri().resolve("/auth/callback");
+    var relyingPartyCallback = relyingPartyConfig.baseUri().resolve("/auth/callback");
 
     var step1 =
         authenticationFlow.start(
