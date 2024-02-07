@@ -6,7 +6,11 @@ import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
+import com.oviva.ehealthid.relyingparty.util.IdGenerator;
 import com.oviva.ehealthid.relyingparty.ws.OpenIdErrorResponses.ErrorCode;
+import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
+import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.FormParam;
@@ -41,6 +45,8 @@ public class AuthEndpoint {
   private final TokenIssuer tokenIssuer;
 
   private final AuthenticationFlow authenticationFlow;
+
+  private final Pages pages = new Pages(new TemplateRenderer());
 
   public AuthEndpoint(
       URI baseUri,
@@ -88,24 +94,19 @@ public class AuthEndpoint {
     try {
       parsedRedirect = new URI(redirectUri);
     } catch (URISyntaxException e) {
-      // TODO nice form
-      return Response.status(Status.BAD_REQUEST)
-          .entity("bad 'redirect_uri': %s".formatted(parsedRedirect))
-          .build();
+      return badRequest(
+          "Bad redirect_uri='%s'. Passed link is not valid.".formatted(parsedRedirect));
     }
 
     if (!"https".equals(parsedRedirect.getScheme())) {
-      // TODO nice form
-      return Response.status(Status.BAD_REQUEST)
-          .entity("not https 'redirect_uri': %s".formatted(parsedRedirect))
-          .build();
+      return badRequest(
+          "Insecure redirect_uri='%s'. Misconfigured server, please use 'https'."
+              .formatted(parsedRedirect));
     }
 
     if (!relyingPartyConfig.validRedirectUris().contains(parsedRedirect)) {
-      // TODO nice form
-      return Response.status(Status.BAD_REQUEST)
-          .entity("untrusted 'redirect_uri': %s".formatted(parsedRedirect))
-          .build();
+      return badRequest(
+          "Untrusted redirect_uri=%s. Misconfigured server.".formatted(parsedRedirect));
     }
 
     if (!"openid".equals(scope)) {
@@ -143,23 +144,18 @@ public class AuthEndpoint {
                 state, nonce, relyingPartyCallback, codeChallenge, scopes));
 
     // ==== 2) get the list of available IDPs
-    var idps = step1.fetchIdpOptions();
-
-    // ==== 3) select and IDP
-
-    // for now we hardcode the reference IDP from Gematik
-    var sektoralerIdpIss = "https://gsi.dev.gematik.solutions";
-
-    var step2 = step1.redirectToSectoralIdp(sektoralerIdpIss);
-
-    var federatedLogin = step2.idpRedirectUri();
+    var identityProviders = step1.fetchIdpOptions();
+    var form = pages.selectIdpForm(identityProviders);
 
     // store session
-    var session = new Session(null, state, nonce, parsedRedirect, clientId, verifier, step2);
-    var sessionId = sessionRepo.save(session);
+    var sessionId = IdGenerator.generateID();
+    var session =
+        new Session(sessionId, state, nonce, parsedRedirect, clientId, verifier, step1, null);
+    sessionRepo.save(session);
 
-    // TODO: trigger actual flow
-    return Response.seeOther(federatedLogin).cookie(createSessionCookie(sessionId)).build();
+    return Response.ok(form, MediaType.TEXT_HTML_TYPE)
+        .cookie(createSessionCookie(sessionId))
+        .build();
   }
 
   private NewCookie createSessionCookie(String sessionId) {
@@ -173,27 +169,51 @@ public class AuthEndpoint {
         .build();
   }
 
+  @POST
+  @Path("/select-idp")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  public Response postSelectIdp(
+      @CookieParam("session_id") String sessionId,
+      @FormParam("identityProvider") String identityProvider) {
+
+    if (identityProvider == null || identityProvider.isBlank()) {
+      return badRequest("No identity provider selected. Please go back.");
+    }
+
+    var session = findSession(sessionId);
+    if (session == null) {
+      return badRequest("Oops, no session unknown or expired. Please start again.");
+    }
+
+    var step2 = session.selectSectoralIdpStep().redirectToSectoralIdp(identityProvider);
+
+    var federatedLogin = step2.idpRedirectUri();
+
+    var newSession =
+        new SessionRepo.Session(
+            session.id(),
+            session.state(),
+            session.nonce(),
+            session.redirectUri(),
+            session.clientId(),
+            session.codeVerifier(),
+            session.selectSectoralIdpStep(),
+            step2);
+
+    sessionRepo.save(newSession);
+
+    return Response.seeOther(federatedLogin).build();
+  }
+
   @GET
   @Path("/callback")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response callback(
       @CookieParam("session_id") String sessionId, @QueryParam("code") String code) {
 
-    if (sessionId == null || sessionId.isBlank()) {
-      // TODO: nice UI
-      return Response.status(Status.BAD_REQUEST)
-          .entity("Session missing!")
-          .type(MediaType.TEXT_PLAIN_TYPE)
-          .build();
-    }
-
-    var session = sessionRepo.load(sessionId);
+    var session = findSession(sessionId);
     if (session == null) {
-      // TODO: nice UI
-      return Response.status(Status.BAD_REQUEST)
-          .entity("Session not found!")
-          .type(MediaType.TEXT_PLAIN_TYPE)
-          .build();
+      return badRequest("Oops, no session unknown or expired. Please start again.");
     }
 
     var idToken =
@@ -241,6 +261,23 @@ public class AuthEndpoint {
                 (int) redeemed.expiresInSeconds(),
                 redeemed.idToken()))
         .cacheControl(cacheControl)
+        .build();
+  }
+
+  @Nullable
+  private Session findSession(@Nullable String id) {
+
+    if (id == null || id.isBlank()) {
+      return null;
+    }
+
+    return sessionRepo.load(id);
+  }
+
+  private Response badRequest(String message) {
+    return Response.status(Status.BAD_REQUEST)
+        .entity(pages.error(message))
+        .type(MediaType.TEXT_HTML_TYPE)
         .build();
   }
 

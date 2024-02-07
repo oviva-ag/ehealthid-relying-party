@@ -1,6 +1,5 @@
 package com.oviva.ehealthid.relyingparty.svc;
 
-import com.oviva.ehealthid.relyingparty.util.IdGenerator;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,26 +10,12 @@ public class InMemorySessionRepo implements SessionRepo {
   private final ConcurrentMap<String, Session> repo = new ConcurrentHashMap<>();
 
   @Override
-  public String save(@NonNull Session session) {
-    if (session.id() != null) {
-      throw new IllegalStateException(
-          "session already has an ID=%s, already saved?".formatted(session.id()));
+  public void save(@NonNull Session session) {
+    if (session.id() == null) {
+      throw new IllegalArgumentException("session has no ID");
     }
 
-    var id = IdGenerator.generateID();
-    session =
-        new Session(
-            id,
-            session.state(),
-            session.nonce(),
-            session.redirectUri(),
-            session.clientId(),
-            session.codeVerifier(),
-            session.trustedSectoralIdpStep());
-
-    repo.put(id, session);
-
-    return id;
+    repo.put(session.id(), session);
   }
 
   @Nullable

@@ -32,7 +32,7 @@ class TokenIssuerImplTest {
 
     var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
 
-    var session = new SessionRepo.Session(null, null, null, null, null, null, null);
+    var session = new SessionRepo.Session(null, null, null, null, null, null, null, null);
 
     // when
     var c1 = sut.issueCode(session, null);
@@ -55,7 +55,7 @@ class TokenIssuerImplTest {
 
     var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
 
-    var session = new SessionRepo.Session(null, null, null, null, null, null, null);
+    var session = new SessionRepo.Session(null, null, null, null, null, null, null, null);
 
     // when
     var c1 = sut.issueCode(session, null);
@@ -78,7 +78,8 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com/callback");
     var clientId = "myapp";
 
-    var session = new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null);
+    var session =
+        new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null, null);
 
     // when
     var code = sut.issueCode(session, null);
@@ -99,7 +100,8 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com/callback");
     var clientId = "myapp";
 
-    var session = new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null);
+    var session =
+        new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null, null);
 
     // when
     var code = sut.issueCode(session, null);
