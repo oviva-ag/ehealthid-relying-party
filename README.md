@@ -1,6 +1,12 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=alert_status&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=coverage&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 
+# TODO
+- [ ] Internationalization (ResourceBundles) for templates
+- [ ] Basic ExceptionMapper
+- [ ] Health & Metrics endpoints
+- [ ] Dockerfile & Helm chart
+
 # OpenID Connect Relying Party for GesundheitsID (eHealthID)
 
 ## Contents
@@ -248,4 +254,3 @@ sudo caddy reverse-proxy --from=$DOMAIN --to=:1234
 - [AppFlow - Authentication flow to implement](https://wiki.gematik.de/display/IDPKB/App-App+Flow#AppAppFlow-0-FederationMaster)
 - [Sektoraler IDP - Examples & Reference Implementation](https://wiki.gematik.de/display/IDPKB/Sektoraler+IDP+-+Referenzimplementierung+und+Beispiele)
 - [OpenID Federation Spec](https://openid.net/specs/openid-federation-1_0.html)
-

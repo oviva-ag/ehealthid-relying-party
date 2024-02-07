@@ -1,0 +1,68 @@
+{{<layout.html.mustache}}
+  {{$head}}
+    <style>
+      .form-inline {
+        display: flex;
+        flex-flow: row wrap;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-inline label {
+        margin: 0 10px 4px 0;
+
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 150%; /* 21px */
+        letter-spacing: 0.15px;
+      }
+
+      .form-inline select, .form-inline input {
+        vertical-align: middle;
+        padding: 0 16px;
+        height: 40px;
+        margin: 10px 0;
+
+        border-radius: 8px;
+        border: 1px solid #00A88F;
+        background: #FFF;
+
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 150%; /* 21px */
+        letter-spacing: 0.15px;
+      }
+
+      .form-inline select {
+        font-weight: 400;
+      }
+
+      .form-inline input[type=submit] {
+        padding: 10px 20px;
+        cursor: pointer;
+        background: #00A88F;
+        color: white;
+
+        border-radius: 24px;
+      }
+
+      .form-inline input[type=submit]:hover, .form-inline input[type=submit]:active {
+        background-color: rgba(0, 168, 143, 0.92);
+      }
+    </style>
+  {{/head}}
+  {{$body}}
+    <h1>GesundheitsID</h1>
+    <form action="/auth/select-idp" method="post" class="form-inline">
+      <label for="idp-selection">Select your GesundheitsID Provider</label>
+      <select name="identityProvider" id="idp-selection">
+        {{#identityProviders}}
+          <option value="{{iss}}">{{name}}</option>
+        {{/identityProviders}}
+      </select>
+      <input type="submit" value="Login">
+    </form>
+  {{/body}}
+{{/layout.html.mustache}}

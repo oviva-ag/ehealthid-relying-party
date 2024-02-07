@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login with GesundheitsID</title>
+  <style>
+      html body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  font-family: Inter, sans-serif;
+  font-style: normal;
+  line-height: 150%; /* 36px */
+  letter-spacing: 0.15px;
+  color: #000E30;
+
+  background-color: #F7ECE7;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 400px;
+  margin: 1em auto 2em;
+  padding: 20px;
+
+  border-radius: 12px;
+  background: #FFF;
+}
+
+h1 {
+  font-family: "DM Serif Text", serif;
+  font-size: 24px;
+}
+
+a {
+  color: #00645F;
+}
+
+@media (max-width: 500px) {
+  .container {
+    margin: 0 auto;
+    border: none;
+  }
+
+  html body {
+    background: #FFF;
+  }
+}
+
+  </style>
+    <style>
+      .form-inline {
+        display: flex;
+        flex-flow: row wrap;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-inline label {
+        margin: 0 10px 4px 0;
+
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 150%; /* 21px */
+        letter-spacing: 0.15px;
+      }
+
+      .form-inline select, .form-inline input {
+        vertical-align: middle;
+        padding: 0 16px;
+        height: 40px;
+        margin: 10px 0;
+
+        border-radius: 8px;
+        border: 1px solid #00A88F;
+        background: #FFF;
+
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 150%; /* 21px */
+        letter-spacing: 0.15px;
+      }
+
+      .form-inline select {
+        font-weight: 400;
+      }
+
+      .form-inline input[type=submit] {
+        padding: 10px 20px;
+        cursor: pointer;
+        background: #00A88F;
+        color: white;
+
+        border-radius: 24px;
+      }
+
+      .form-inline input[type=submit]:hover, .form-inline input[type=submit]:active {
+        background-color: rgba(0, 168, 143, 0.92);
+      }
+    </style>
+
+</head>
+<body>
+<div class="container">
+      <h1>GesundheitsID</h1>
+    <form action="/auth/select-idp" method="post" class="form-inline">
+      <label for="idp-selection">Select your GesundheitsID Provider</label>
+      <select name="identityProvider" id="idp-selection">
+          <option value="https://a.example.com">AoK Tesfalen</option>
+          <option value="https://b.example.com">Siemens</option>
+          <option value="https://c.example.com">Zuse</option>
+          <option value="https://d.example.com">Barmer</option>
+      </select>
+      <input type="submit" value="Login">
+    </form>
+
+</div>
+</body>
+</html>

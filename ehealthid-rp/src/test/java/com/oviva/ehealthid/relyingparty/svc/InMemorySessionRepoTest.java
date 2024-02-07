@@ -9,25 +9,11 @@ import org.junit.jupiter.api.Test;
 class InMemorySessionRepoTest {
 
   @Test
-  void save() {
+  void save_noId() {
     var sut = new InMemorySessionRepo();
-    var session = new SessionRepo.Session(null, null, null, null, null, null, null);
+    var session = new SessionRepo.Session(null, null, null, null, null, null, null, null);
 
-    var id1 = sut.save(session);
-    assertNotNull(id1);
-
-    var id2 = sut.save(session);
-    assertNotNull(id1);
-
-    assertNotEquals(id1, id2);
-  }
-
-  @Test
-  void save_alreadySaved() {
-    var sut = new InMemorySessionRepo();
-    var session = new SessionRepo.Session("1", null, null, null, null, null, null);
-
-    assertThrows(IllegalStateException.class, () -> sut.save(session));
+    assertThrows(IllegalArgumentException.class, () -> sut.save(session));
   }
 
   @Test
@@ -35,14 +21,16 @@ class InMemorySessionRepoTest {
 
     var sut = new InMemorySessionRepo();
 
+    var id = "mySessionId";
     var state = "myState";
     var nonce = UUID.randomUUID().toString();
     var redirectUri = URI.create("https://example.com/callback");
     var clientId = "app";
 
-    var session = new SessionRepo.Session(null, state, nonce, redirectUri, clientId, null, null);
+    var session =
+        new SessionRepo.Session(id, state, nonce, redirectUri, clientId, null, null, null);
 
-    var id = sut.save(session);
+    sut.save(session);
 
     var got = sut.load(id);
 

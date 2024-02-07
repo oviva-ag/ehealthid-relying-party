@@ -3,6 +3,7 @@ package com.oviva.ehealthid.relyingparty.ws;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.oviva.ehealthid.auth.AuthenticationFlow;
@@ -10,9 +11,11 @@ import com.oviva.ehealthid.auth.steps.SelectSectoralIdpStep;
 import com.oviva.ehealthid.auth.steps.TrustedSectoralIdpStep;
 import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
+import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Token;
+import com.oviva.ehealthid.relyingparty.util.IdGenerator;
 import com.oviva.ehealthid.relyingparty.ws.AuthEndpoint.TokenResponse;
 import jakarta.ws.rs.core.Response.Status;
 import java.net.URI;
@@ -22,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 
 class AuthEndpointTest {
 
@@ -109,9 +113,6 @@ class AuthEndpointTest {
     var responseType = "badtype";
     var clientId = "myapp";
 
-    var sessionId = UUID.randomUUID().toString();
-    when(sessionRepo.save(any())).thenReturn(sessionId);
-
     // when
     try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce)) {
 
@@ -150,19 +151,16 @@ class AuthEndpointTest {
     var responseType = "code";
     var clientId = "myapp";
 
-    var sessionId = UUID.randomUUID().toString();
-    when(sessionRepo.save(any())).thenReturn(sessionId);
-
     // when
     try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce)) {
 
       // then
-      assertEquals(Status.SEE_OTHER.getStatusCode(), res.getStatus());
-      var sessionCookie = res.getCookies().get("session_id");
-      assertEquals(sessionId, sessionCookie.getValue());
 
-      var location = res.getLocation();
-      assertEquals(idpRedirectUrl, location);
+      // TODO? Check form?
+      assertEquals(Status.OK.getStatusCode(), res.getStatus());
+
+      var sessionCookie = res.getCookies().get("session_id");
+      assertNotNull(sessionCookie.getValue());
     }
   }
 
@@ -224,7 +222,7 @@ class AuthEndpointTest {
 
     var session =
         new SessionRepo.Session(
-            sessionId, state, nonce, REDIRECT_URI, clientId, null, trustedIdpStep);
+            sessionId, state, nonce, REDIRECT_URI, clientId, null, null, trustedIdpStep);
     when(sessionRepo.load(sessionId)).thenReturn(session);
 
     var code = "6238e4504332468aa0c12e300787fded";
@@ -326,5 +324,72 @@ class AuthEndpointTest {
       assertEquals(accessToken, got.accessToken());
       assertEquals(expiresIn, got.expiresIn());
     }
+  }
+
+  @Test
+  void selectIdp() {
+
+    var sessionRepo = mock(SessionRepo.class);
+
+    var sessionId = IdGenerator.generateID();
+    var selectIdpStep = mock(SelectSectoralIdpStep.class);
+
+    var selectedIdpIssuer = "https://aok-testfalen.example.com";
+
+    var idpRedirect = URI.create(selectedIdpIssuer).resolve("/auth/login");
+
+    var trustedIdpStep = mock(TrustedSectoralIdpStep.class);
+    when(selectIdpStep.redirectToSectoralIdp(selectedIdpIssuer)).thenReturn(trustedIdpStep);
+    when(trustedIdpStep.idpRedirectUri()).thenReturn(idpRedirect);
+
+    var session =
+        new SessionRepo.Session(sessionId, null, null, null, null, null, selectIdpStep, null);
+    when(sessionRepo.load(sessionId)).thenReturn(session);
+
+    var sut = new AuthEndpoint(BASE_URI, null, sessionRepo, null, null);
+
+    // when
+    var res = sut.postSelectIdp(sessionId, selectedIdpIssuer);
+
+    // then
+    assertEquals(idpRedirect, res.getLocation());
+
+    var captor = ArgumentCaptor.forClass(Session.class);
+    verify(sessionRepo).save(captor.capture());
+
+    var savedSession = captor.getValue();
+    assertEquals(trustedIdpStep, savedSession.trustedSectoralIdpStep());
+  }
+
+  @Test
+  void selectIdp_noSession() {
+    var sessionRepo = mock(SessionRepo.class);
+
+    var sessionId = IdGenerator.generateID();
+    var selectedIdpIssuer = "https://aok-testfalen.example.com";
+
+    when(sessionRepo.load(sessionId)).thenReturn(null);
+
+    var sut = new AuthEndpoint(BASE_URI, null, sessionRepo, null, null);
+
+    // when
+    var res = sut.postSelectIdp(sessionId, selectedIdpIssuer);
+
+    // then
+    verify(sessionRepo).load(sessionId);
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
+  }
+
+  @Test
+  void selectIdp_nothingSelected() {
+
+    var sessionId = "1234";
+    var sut = new AuthEndpoint(BASE_URI, null, null, null, null);
+
+    // when
+    var res = sut.postSelectIdp(sessionId, null);
+
+    // then
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
   }
 }
