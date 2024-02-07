@@ -20,8 +20,8 @@ class OpenIdEndpointTest {
   @Test
   void openIdConfiguration() {
 
-    var config = new RelyingPartyConfig(0, BASE_URI, null, null);
-    var sut = new OpenIdEndpoint(config, null);
+    var config = new RelyingPartyConfig(null, null);
+    var sut = new OpenIdEndpoint(BASE_URI, config, null);
 
     // when
     OpenIdConfiguration body;
@@ -48,7 +48,7 @@ class OpenIdEndpointTest {
     var keyStore = mock(KeyStore.class);
     when(keyStore.signingKey()).thenReturn(key);
 
-    var sut = new OpenIdEndpoint(null, keyStore);
+    var sut = new OpenIdEndpoint(BASE_URI, null, keyStore);
 
     try (var res = sut.jwks()) {
       var jwks = res.readEntity(JWKSet.class);

@@ -35,28 +35,48 @@ export EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=sig_jwks.json
 export EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback
 export EHEALTHID_RP_ES_TTL=PT5M
 
-# boots the relying party server
+# starts the relying party server
 ./start.sh
+
+# send in the generated XML to Gematik in order to register your IDP
+cat federation_registration_form.xml
 ```
+
+Once the server is booted, it will:
+
+1. Expose an OpenID Discovery document at `$EHEALTHID_RP_BASE_URI/.well-known/openid-configuration`
+   ```shell
+    curl $BASE_URI/.well-known/openid-configuration | jq .
+    ```
+
+2. Expose an OpenID Federation entity configuration
+   at `$EHEALTHID_RP_BASE_URI/.well-known/openid-federation`
+   ```shell
+    curl $BASE_URI/.well-known/openid-federation | jwt decode -j - | jq .payload
+    ```
+   **IMPORTANT:** Once the entity configuration is reachable in the internet it can be registered
+   with Gematik. You can directly send in the XML generated in the second step, the file is called `federation_registration_form.xml`. See documentation further below.
+
+3. Be ready to handle OpenID Connect flows and handle them via Germany's GesundheitsID federation.
+
+The discovery document can be used to configure the relying party in an existing identity provider.
 
 # Configuration
 
 Use environment variables to configure the relying party server.
 
-| Name                                    | Description                                                                                                                                      | Example                                        |
-|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
-| `EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH` | Path to a JWKS with at least one keypair for encryption of ID tokens.                                                                            | `./enc_jwks.json`                              |
-| `EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH` | Path to a JWKS with at least one keypair for signature withing the federation. All these keys __MUST__ be registered with the federation master. | `./sig_jwks.json`                              |
-| `EHEALTHID_RP_REDIRECT_URIS`            | Valid redirection URIs for OpenID connect.                                                                                                       | `https://sso-mydiga.example.com/auth/callback` |
-| `EHEALTHID_RP_BASE_URI`                 | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.   | `https://mydiga-rp.example.com`                |
-| `EHEALTHID_RP_HOST`                     | Host to bind to.                                                                                                                                 | `0.0.0.0`                                      |
-| `EHEALTHID_RP_PORT`                     | Port to bind to.                                                                                                                                 | `1234`                                         |
-| `EHEALTHID_RP_FEDERATION_MASTER`        | The URI of the federation master.                                                                                                                | `https://app-test.federationmaster.de`         |
-| `EHEALTHID_RP_APP_NAME`                 | The application name within the federation.                                                                                                      | `Awesome DiGA`                                 |
-| `EHEALTHID_RP_ES_TTL`                   | The time to live for the entity statement. In ISO8601 format.                                                                                    | `PT12H`                                        |
-| `EHEALTHID_RP_SCOPES`                   | The comma separated list of scopes requested in the federation. This __MUST__ match what was registered with the federation master.              | `openid,urn:telematik:email,urn:telematik:display_name`                                      |
-
-
+| Name                                    | Description                                                                                                                                      | Example                                                 |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| `EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH` | Path to a JWKS with at least one keypair for encryption of ID tokens.                                                                            | `./enc_jwks.json`                                       |
+| `EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH` | Path to a JWKS with at least one keypair for signature withing the federation. All these keys __MUST__ be registered with the federation master. | `./sig_jwks.json`                                       |
+| `EHEALTHID_RP_REDIRECT_URIS`            | Valid redirection URIs for OpenID connect.                                                                                                       | `https://sso-mydiga.example.com/auth/callback`          |
+| `EHEALTHID_RP_BASE_URI`                 | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.   | `https://mydiga-rp.example.com`                         |
+| `EHEALTHID_RP_HOST`                     | Host to bind to.                                                                                                                                 | `0.0.0.0`                                               |
+| `EHEALTHID_RP_PORT`                     | Port to bind to.                                                                                                                                 | `1234`                                                  |
+| `EHEALTHID_RP_FEDERATION_MASTER`        | The URI of the federation master.                                                                                                                | `https://app-test.federationmaster.de`                  |
+| `EHEALTHID_RP_APP_NAME`                 | The application name within the federation.                                                                                                      | `Awesome DiGA`                                          |
+| `EHEALTHID_RP_ES_TTL`                   | The time to live for the entity statement. In ISO8601 format.                                                                                    | `PT12H`                                                 |
+| `EHEALTHID_RP_SCOPES`                   | The comma separated list of scopes requested in the federation. This __MUST__ match what was registered with the federation master.              | `openid,urn:telematik:email,urn:telematik:display_name` |
 
 # Generate Keys & Register for Federation
 
@@ -85,6 +105,9 @@ export MEMBER_ID=FDmyDiGa0112TU
     --member-id="$MEMBER_ID" \
     --organisation-name="My DiGA" \
     --generate-keys
+    
+# send in the generated XML to Gematik
+cat federation_registration_form.xml
 ```
 
 ### Re-use Existing Keys and Prepare Registration
@@ -106,6 +129,9 @@ export ENVIRONMENT=RU
     --environment=$ENVIRONMENT \
     --signing-jwks=./sig_jwks.json \
     --encryption-jwks=./enc_jwks.json
+    
+# send in the generated XML to Gematik
+cat federation_registration_form.xml
 ```
 
 ## Library IntegrationTest flow with Gematik Reference IDP
