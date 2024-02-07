@@ -47,6 +47,11 @@ public class App extends Application {
         new JacksonJsonProvider(configureObjectMapper()));
   }
 
+  @Override
+  public Set<Class<?>> getClasses() {
+    return Set.of(ThrowableExceptionMapper.class);
+  }
+
   private ObjectMapper configureObjectMapper() {
     var om = new ObjectMapper();
     om.registerModule(new JoseModule());

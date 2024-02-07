@@ -37,6 +37,21 @@ class FederationMasterClientImplTest {
   private final Clock clock = Clock.fixed(NOW, ZoneId.of("UTC"));
   @Mock FederationApiClient federationApiClient;
 
+  public static JWKSet toPublicJwks(ECKey key) {
+    try {
+
+      if (key.getKeyID() == null || key.getKeyID().isBlank()) {
+        key = new ECKey.Builder(key).keyIDFromThumbprint().build();
+      }
+
+      var pub = key.toPublicJWK();
+
+      return new JWKSet(pub);
+    } catch (JOSEException e) {
+      throw new IllegalArgumentException("bad key", e);
+    }
+  }
+
   @Test
   void getList() {
     var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
@@ -96,7 +111,7 @@ class FederationMasterClientImplTest {
         .thenReturn(fedmasterEntityConfigurationJws);
 
     // when
-    var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
 
     // then
     assertEquals(
@@ -121,7 +136,7 @@ class FederationMasterClientImplTest {
         .thenReturn(fedmasterEntityConfigurationJws);
 
     // when
-    var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
 
     // then
     assertEquals(
@@ -160,7 +175,7 @@ class FederationMasterClientImplTest {
         .thenReturn(sectoralEntityConfiguration);
 
     // when
-    var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
 
     // then
     assertEquals("federation statement untrusted: sub=https://idp-tk.example.com", e.getMessage());
@@ -201,7 +216,7 @@ class FederationMasterClientImplTest {
         .thenReturn(sectoralEntityConfiguration);
 
     // when
-    var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
 
     // then
     assertEquals("federation statement untrusted: sub=https://idp-tk.example.com", e.getMessage());
@@ -238,7 +253,7 @@ class FederationMasterClientImplTest {
         .thenReturn(sectoralEntityConfiguration);
 
     // when
-    var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
 
     // then
     assertEquals(
@@ -271,7 +286,7 @@ class FederationMasterClientImplTest {
         .thenReturn(trustedFederationStatement);
 
     // when
-    var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
 
     // then
     assertEquals(
@@ -306,7 +321,7 @@ class FederationMasterClientImplTest {
         .thenReturn(trustedFederationStatement);
 
     // when
-    var e = assertThrows(RuntimeException.class, () -> client.establishIdpTrust(issuer));
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
 
     // then
     assertEquals(
@@ -492,20 +507,5 @@ class FederationMasterClientImplTest {
     var signed = JwsUtils.toJws(unrelatedKey, JsonCodec.writeValueAsString(body));
 
     return new EntityStatementJWS(signed, body);
-  }
-
-  public static JWKSet toPublicJwks(ECKey key) {
-    try {
-
-      if (key.getKeyID() == null || key.getKeyID().isBlank()) {
-        key = new ECKey.Builder(key).keyIDFromThumbprint().build();
-      }
-
-      var pub = key.toPublicJWK();
-
-      return new JWKSet(pub);
-    } catch (JOSEException e) {
-      throw new IllegalArgumentException("bad key", e);
-    }
   }
 }

@@ -52,6 +52,11 @@ public class Main {
   public void run() throws ExecutionException, InterruptedException {
 
     logger.atInfo().log("\n" + BANNER);
+    var pkg = Main.class.getPackage();
+    logger.atInfo().log(
+        "booting '{}' at version '{}'",
+        pkg.getImplementationTitle(),
+        pkg.getImplementationVersion());
 
     var configReader = new ConfigReader(configProvider);
 

@@ -67,13 +67,15 @@ class OpenIdClientTest {
 
     var base = URI.create(wm.getHttpBaseUrl());
 
+    var tokenEndpoint = base.resolve(path);
+
     var e =
         assertThrows(
-            Exception.class,
-            () -> client.exchangePkceCode(base.resolve(path), null, null, null, null));
+            HttpException.class,
+            () -> client.exchangePkceCode(tokenEndpoint, null, null, null, null));
 
     assertEquals(
-        "failed to request 'POST %s/auth/token': bad status 400".formatted(wm.getHttpBaseUrl()),
+        "http request failed: bad status 'POST %s' status=400".formatted(tokenEndpoint),
         e.getMessage());
   }
 
@@ -146,14 +148,13 @@ class OpenIdClientTest {
     stubFor(post(path).willReturn(badRequest()));
 
     var base = URI.create(wm.getHttpBaseUrl());
+    var parUri = base.resolve(path);
 
     var e =
         assertThrows(
-            Exception.class,
-            () -> client.requestPushedUri(base.resolve(path), ParBodyBuilder.create()));
+            HttpException.class, () -> client.requestPushedUri(parUri, ParBodyBuilder.create()));
 
     assertEquals(
-        "failed to request 'POST %s/auth/par': bad status 400".formatted(wm.getHttpBaseUrl()),
-        e.getMessage());
+        "http request failed: bad status 'POST %s' status=400".formatted(parUri), e.getMessage());
   }
 }
