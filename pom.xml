@@ -20,18 +20,18 @@
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
     <version.jboss-logging>3.5.3.Final</version.jboss-logging>
-    <version.slf4j>2.0.10</version.slf4j>
+    <version.slf4j>2.0.12</version.slf4j>
     <version.nimbus-jose-jwt>9.37.3</version.nimbus-jose-jwt>
     <version.logback.classic>1.4.14</version.logback.classic>
     <version.logback.encoder>7.4</version.logback.encoder>
 
-    <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless-maven-plugin.google-java-format.version>1.18.1
     </spotless-maven-plugin.google-java-format.version>
     <jacoco.version>0.8.11</jacoco.version>
 
 
-    <maven-shade.version>3.2.4</maven-shade.version>
+    <maven-shade.version>3.5.1</maven-shade.version>
 
     <sonar.organization>oviva-ag</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -151,7 +151,7 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>1.19.4</version>
+        <version>1.19.5</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -270,22 +270,22 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.0.0-M1</version>
+          <version>3.1.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.0.0-M1</version>
+          <version>3.1.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.1</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -303,7 +303,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.9.1</version>
+          <version>3.12.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
