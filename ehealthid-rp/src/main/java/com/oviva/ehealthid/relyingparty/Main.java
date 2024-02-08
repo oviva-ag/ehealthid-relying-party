@@ -1,5 +1,7 @@
 package com.oviva.ehealthid.relyingparty;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.auth.AuthenticationFlow;
 import com.oviva.ehealthid.fedclient.FederationMasterClientImpl;
@@ -8,12 +10,19 @@ import com.oviva.ehealthid.fedclient.api.FederationApiClientImpl;
 import com.oviva.ehealthid.fedclient.api.InMemoryCacheImpl;
 import com.oviva.ehealthid.fedclient.api.JavaHttpClient;
 import com.oviva.ehealthid.fedclient.api.OpenIdClient;
+import com.oviva.ehealthid.relyingparty.ConfigReader.CodeStoreConfig;
+import com.oviva.ehealthid.relyingparty.ConfigReader.SessionStoreConfig;
 import com.oviva.ehealthid.relyingparty.cfg.ConfigProvider;
 import com.oviva.ehealthid.relyingparty.cfg.EnvConfigProvider;
 import com.oviva.ehealthid.relyingparty.poc.GematikHeaderDecoratorHttpClient;
-import com.oviva.ehealthid.relyingparty.svc.InMemoryCodeRepo;
-import com.oviva.ehealthid.relyingparty.svc.InMemorySessionRepo;
+import com.oviva.ehealthid.relyingparty.svc.AfterCreatedExpiry;
+import com.oviva.ehealthid.relyingparty.svc.CaffeineCodeRepo;
+import com.oviva.ehealthid.relyingparty.svc.CaffeineSessionRepo;
+import com.oviva.ehealthid.relyingparty.svc.CodeRepo;
 import com.oviva.ehealthid.relyingparty.svc.KeyStore;
+import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
+import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
+import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
 import com.oviva.ehealthid.relyingparty.ws.App;
 import jakarta.ws.rs.SeBootstrap;
@@ -63,8 +72,9 @@ public class Main {
     var config = configReader.read();
 
     var keyStore = new KeyStore();
-    var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, new InMemoryCodeRepo());
-    var sessionRepo = new InMemorySessionRepo();
+    var codeRepo = buildCodeRepo(config.codeStoreConfig());
+    var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, codeRepo);
+    var sessionRepo = buildSessionRepo(config.sessionStore());
 
     var authFlow =
         buildAuthFlow(
@@ -109,5 +119,22 @@ public class Main {
 
     return new AuthenticationFlow(
         selfIssuer, fedmasterClient, openIdClient, encJwks::getKeyByKeyId);
+  }
+
+  private SessionRepo buildSessionRepo(SessionStoreConfig config) {
+    Cache<String, Session> store = buildCache(config.ttl(), config.maxEntries());
+    return new CaffeineSessionRepo(store, config.ttl());
+  }
+
+  private CodeRepo buildCodeRepo(CodeStoreConfig config) {
+    Cache<String, Code> store = buildCache(config.ttl(), config.maxEntries());
+    return new CaffeineCodeRepo(store);
+  }
+
+  private <T> Cache<String, T> buildCache(Duration ttl, int maxSize) {
+    return Caffeine.newBuilder()
+        .expireAfter(new AfterCreatedExpiry(ttl.toNanos()))
+        .maximumSize(maxSize)
+        .build();
   }
 }

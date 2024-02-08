@@ -14,6 +14,7 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.oviva.ehealthid.auth.IdTokenJWS;
 import com.oviva.ehealthid.auth.IdTokenJWS.IdToken;
+import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import java.net.URI;
 import java.text.ParseException;
@@ -32,7 +33,7 @@ class TokenIssuerImplTest {
 
     var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
 
-    var session = new SessionRepo.Session(null, null, null, null, null, null, null, null);
+    var session = Session.create().build();
 
     // when
     var c1 = sut.issueCode(session, null);
@@ -55,7 +56,7 @@ class TokenIssuerImplTest {
 
     var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
 
-    var session = new SessionRepo.Session(null, null, null, null, null, null, null, null);
+    var session = Session.create().build();
 
     // when
     var c1 = sut.issueCode(session, null);
@@ -78,8 +79,7 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com/callback");
     var clientId = "myapp";
 
-    var session =
-        new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null, null);
+    var session = Session.create().nonce(nonce).redirectUri(redirectUri).clientId(clientId).build();
 
     // when
     var code = sut.issueCode(session, null);
@@ -100,8 +100,7 @@ class TokenIssuerImplTest {
     var redirectUri = URI.create("https://myapp.example.com/callback");
     var clientId = "myapp";
 
-    var session =
-        new SessionRepo.Session(null, null, nonce, redirectUri, clientId, null, null, null);
+    var session = Session.create().nonce(nonce).redirectUri(redirectUri).clientId(clientId).build();
 
     // when
     var code = sut.issueCode(session, null);

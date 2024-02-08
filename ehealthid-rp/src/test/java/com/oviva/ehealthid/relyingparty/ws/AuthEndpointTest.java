@@ -221,8 +221,15 @@ class AuthEndpointTest {
     var trustedIdpStep = mock(TrustedSectoralIdpStep.class);
 
     var session =
-        new SessionRepo.Session(
-            sessionId, state, nonce, REDIRECT_URI, clientId, null, null, trustedIdpStep);
+        Session.create()
+            .id(sessionId)
+            .state(state)
+            .nonce(nonce)
+            .redirectUri(REDIRECT_URI)
+            .clientId(clientId)
+            .trustedSectoralIdpStep(trustedIdpStep)
+            .build();
+
     when(sessionRepo.load(sessionId)).thenReturn(session);
 
     var code = "6238e4504332468aa0c12e300787fded";
@@ -342,8 +349,7 @@ class AuthEndpointTest {
     when(selectIdpStep.redirectToSectoralIdp(selectedIdpIssuer)).thenReturn(trustedIdpStep);
     when(trustedIdpStep.idpRedirectUri()).thenReturn(idpRedirect);
 
-    var session =
-        new SessionRepo.Session(sessionId, null, null, null, null, null, selectIdpStep, null);
+    var session = Session.create().id(sessionId).selectSectoralIdpStep(selectIdpStep).build();
     when(sessionRepo.load(sessionId)).thenReturn(session);
 
     var sut = new AuthEndpoint(BASE_URI, null, sessionRepo, null, null);

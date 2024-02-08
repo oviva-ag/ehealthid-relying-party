@@ -25,6 +25,12 @@ public class ConfigReader {
   public static final String CONFIG_APP_NAME = "app_name";
   public static final String CONFIG_SCOPES = "scopes";
 
+  public static final String CONFIG_SESSION_STORE_TTL = "session_store_ttl";
+  public static final String CONFIG_SESSION_STORE_MAX_ENTRIES = "session_store_max_entries";
+
+  public static final String CONFIG_CODE_STORE_TTL = "code_store_ttl";
+  public static final String CONFIG_CODE_STORE_MAX_ENTRIES = "code_store_max_entries";
+
   private final ConfigProvider configProvider;
 
   public ConfigReader(ConfigProvider configProvider) {
@@ -78,7 +84,26 @@ public class ConfigReader {
     var relyingPartyConfig =
         new RelyingPartyConfig(supportedResponseTypes, loadAllowedRedirectUrls());
 
-    return new Config(relyingPartyConfig, federationConfig, host, port, baseUri);
+    return new Config(
+        relyingPartyConfig,
+        federationConfig,
+        host,
+        port,
+        baseUri,
+        sessionStoreConfig(),
+        codeStoreConfig());
+  }
+
+  private SessionStoreConfig sessionStoreConfig() {
+    var ttl = getDurationOrDefault(CONFIG_SESSION_STORE_TTL, Duration.ofMinutes(20));
+    var maxEntries = getIntOrDefault(CONFIG_SESSION_STORE_MAX_ENTRIES, 1000);
+    return new SessionStoreConfig(ttl, maxEntries);
+  }
+
+  private CodeStoreConfig codeStoreConfig() {
+    var ttl = getDurationOrDefault(CONFIG_CODE_STORE_TTL, Duration.ofMinutes(5));
+    var maxEntries = getIntOrDefault(CONFIG_CODE_STORE_MAX_ENTRIES, 1000);
+    return new CodeStoreConfig(ttl, maxEntries);
   }
 
   private List<URI> loadAllowedRedirectUrls() {
@@ -86,6 +111,14 @@ public class ConfigReader {
         .flatMap(Strings::mustParseCommaList)
         .map(URI::create)
         .toList();
+  }
+
+  private Duration getDurationOrDefault(String config, Duration defaultValue) {
+    return configProvider.get(config).map(Duration::parse).orElse(defaultValue);
+  }
+
+  private int getIntOrDefault(String config, int defaultValue) {
+    return configProvider.get(config).map(Integer::parseInt).orElse(defaultValue);
   }
 
   private List<String> getScopes() {
@@ -127,5 +160,11 @@ public class ConfigReader {
       FederationConfig federation,
       String host,
       int port,
-      URI baseUri) {}
+      URI baseUri,
+      SessionStoreConfig sessionStore,
+      CodeStoreConfig codeStoreConfig) {}
+
+  public record SessionStoreConfig(Duration ttl, int maxEntries) {}
+
+  public record CodeStoreConfig(Duration ttl, int maxEntries) {}
 }
