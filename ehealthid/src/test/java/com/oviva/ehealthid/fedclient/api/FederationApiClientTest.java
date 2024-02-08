@@ -158,9 +158,12 @@ class FederationApiClientTest {
 
     var e =
         assertThrows(
-            Exception.class, () -> client.fetchEntityConfiguration(URI.create(federationMaster)));
+            HttpException.class,
+            () -> client.fetchEntityConfiguration(URI.create(federationMaster)));
 
-    var expected = "failed to request 'GET %s'".formatted(federationMaster + openidFederationPath);
+    var expected =
+        "http request failed: http request failed 'GET %s'"
+            .formatted(federationMaster + openidFederationPath);
 
     assertEquals(expected, e.getMessage());
     assertNotNull(e.getCause());
@@ -181,10 +184,11 @@ class FederationApiClientTest {
 
     var e =
         assertThrows(
-            Exception.class, () -> client.fetchEntityConfiguration(URI.create(federationMaster)));
+            HttpException.class,
+            () -> client.fetchEntityConfiguration(URI.create(federationMaster)));
 
     var expected =
-        "failed to request 'GET %s': bad status 400"
+        "http request failed: bad status 'GET %s' status=400"
             .formatted(federationMaster + openidFederationPath);
 
     assertEquals(expected, e.getMessage());

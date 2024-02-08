@@ -109,16 +109,6 @@ public class TokenIssuerImpl implements TokenIssuer {
       // Specification 4.2.4  - A_22989 -
       claimsBuilder.claim("urn:telematik:claims:id", federatedIdToken.body().telematikKvnr());
 
-      // GesundheitsID specific claims according to Gematik reference IDP:
-      //
-      // "acr" : "gematik-ehealth-loa-high",
-      // "amr" : "TODO amr",
-      // "email" : null,
-      // "urn:telematik:claims:profession" : "1.2.276.0.76.4.49",
-      // "urn:telematik:claims:given_name" : null,
-      // "urn:telematik:claims:id" : "X110411675",
-      // "urn:telematik:claims:email" : "darius_michael@mail.boedefeld.de"
-
       var claims = claimsBuilder.build();
 
       var signedJWT =
