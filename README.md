@@ -3,7 +3,6 @@
 
 # TODO
 In order of priority:
-- [ ] Health endpoint - sanity check whether Jakarta ws is up should be enough. I.e. `/health`
 - [ ] Continuous Deployment
 - [ ] Helm chart (externally)
 - [ ] Internationalization (ResourceBundles) for templates (en & de)

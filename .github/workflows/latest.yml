@@ -2,8 +2,8 @@ name: Build and Publish Application Image
 
 on:
   push:
-    tags:
-      - 'ehealthid-relying-party/v[0-9]+.[0-9]+.[0-9]+-[a-z]+.[0-9]+'
+    branches:
+      - main
 
 env:
   REGISTRY: ghcr.io
@@ -11,9 +11,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup Java
@@ -22,12 +19,6 @@ jobs:
           java-version: 21
           distribution: 'temurin'
           cache: 'maven'
-      - name: Get version
-        id: version
-        run: |
-          echo "parsing version from ref '$GITHUB_REF'"
-          VERSION=$(echo "$GITHUB_REF" | sed -e 's|.*/ehealthid-relying-party/v\(.*\)|\1|g')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
@@ -39,14 +30,9 @@ jobs:
       - id: buildx
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Update Version
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          echo "updating version to '$VERSION'"
-          make update-version "VERSION=$VERSION"
       - name: Build and push Image
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          make dist RELEASE_TAG=v$VERSION
+          make dist RELEASE_TAG=latest
+    permissions:
+      contents: read
+      packages: write
