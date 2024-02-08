@@ -133,7 +133,7 @@ public class Main {
 
   private <T> Cache<String, T> buildCache(Duration ttl, int maxSize) {
     return Caffeine.newBuilder()
-        .expireAfter(new AfterCreatedExpiry(ttl.toNanos()))
+        .expireAfter(new AfterCreatedExpiry<>(ttl.toNanos()))
         .maximumSize(maxSize)
         .build();
   }
