@@ -2,12 +2,25 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=coverage&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 
 # TODO
-- [ ] Internationalization (ResourceBundles) for templates
-- [ ] Basic ExceptionMapper
-- [ ] Health & Metrics endpoints
-- [ ] Dockerfile & Helm chart
+In order of priority:
+- [ ] Health endpoint - sanity check whether Jakarta ws is up should be enough. I.e. `/health`
+- [ ] Dockerfile + CI/CD
+- [ ] Helm chart (externally)
+- [ ] Better in-memory stores. Should have some expiry and size limits.
+    - com.oviva.ehealthid.relyingparty.svc.SessionRepo
+    - com.oviva.ehealthid.relyingparty.svc.CodeRepo
+- [ ] Internationalization (ResourceBundles) for templates (en & de)
+  - see [Mustache Library](https://github.com/spullara/mustache.java/blob/main/compiler/src/main/java/com/github/mustachejava/functions/BundleFunctions.java)
+- [ ] Metrics endpoint
+    - in-memory store sizes (entries of SessionRepo and CodeRepo)
+    - count of flows with their result
 
 # OpenID Connect Relying Party for GesundheitsID (eHealthID)
+
+The goal is to provide a simple standalone server exposing Germany's 'GesundheitsID' (eHealthID) as
+a good old OpenID Connect Relying Party (OIDC RP).
+
+Identity Providers such as Keycloak can link accounts with OIDC out-of-the-box
 
 ## Contents
 
@@ -19,11 +32,19 @@
     - Models for the EntityStatments, IDP list endpoints etc.
     - Narrow support for the 'Fachdienst' use-case.
 
+## Limitations
+
+- for now sessions are stored in-memory, this implies:
+    - rebooting the server will force users currently logging-in to restart
+    - if multiple instances run, sessions must be sticky (e.g. use `session_id` cookie)
+    - though it would be relatively straight forward to use a database instead
+- this is tested in the 'Testumgebung' against the Gematik IDP due to a lack of other options
+
 # Quickstart
 
 ```shell
 # build everything
-mvn clean verify
+./mvnw clean verify
 
 # generate keys for the application, keep those safe
 ./gen_keys.sh \
@@ -61,7 +82,8 @@ Once the server is booted, it will:
     curl $BASE_URI/.well-known/openid-federation | jwt decode -j - | jq .payload
     ```
    **IMPORTANT:** Once the entity configuration is reachable in the internet it can be registered
-   with Gematik. You can directly send in the XML generated in the second step, the file is called `federation_registration_form.xml`. See documentation further below.
+   with Gematik. You can directly send in the XML generated in the second step, the file is
+   called `federation_registration_form.xml`. See documentation further below.
 
 3. Be ready to handle OpenID Connect flows and handle them via Germany's GesundheitsID federation.
 
@@ -212,14 +234,15 @@ Setting up a proxy with a header filter can get around that limitation though.
 **Prerequisite:** Install some Chrome-ish browser
 like [Thorium](https://github.com/Alex313031/Thorium-MacOS/releases) or Chromium.
 
-1.
+1. launch `mitmweb`
+    ```
+    mitmweb -p 8881 --web-port=8882 --set "modify_headers=/~q & ~d gsi.dev.gematik.solutions/X-Authorization/<value goes here>"
+    ```
 
-launch `mitmweb`: `mitmweb -p 8881 --web-port=8882 --set "modify_headers=/~q & ~d gsi.dev.gematik.solutions/X-Authorization/<value goes here>"`
-
-2. launch Chrome-like browser
+2. launch a Chrome-like browser
     ```
     /Applications/Thorium.app/Contents/MacOS/Thorium --proxy-server=http://localhost:8881
-   ```
+    ```
 
 ## Setup Test VM
 
