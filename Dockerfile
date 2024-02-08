@@ -26,4 +26,7 @@ COPY --chown=1001 ehealthid-rp/target/ehealthid-rp-jar-with-dependencies.jar /de
 
 USER 1001
 
+# The default port, configurable though.
+EXPOSE 1234
+
 ENTRYPOINT [ "/deployments/run-java.sh" ]
