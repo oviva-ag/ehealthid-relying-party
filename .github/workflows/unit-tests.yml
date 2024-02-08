@@ -11,22 +11,16 @@ on:
 
 jobs:
   test:
-    env:
-      MAVEN_USERNAME: continuousintegration-oviva
-      MAVEN_PASSWORD: ${{ secrets.MAVEN_REPO_TOKEN }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'temurin'
-          server-id: github
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
           cache: 'maven'
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
