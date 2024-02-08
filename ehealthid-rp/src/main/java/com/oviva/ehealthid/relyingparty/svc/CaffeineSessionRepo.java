@@ -34,4 +34,14 @@ public class CaffeineSessionRepo implements SessionRepo {
     }
     return session;
   }
+
+  @Nullable
+  @Override
+  public Session remove(@NonNull String sessionId) {
+    var session = store.asMap().remove(sessionId);
+    if (session == null || session.createdAt().plus(timeToLive).isBefore(Instant.now())) {
+      return null;
+    }
+    return session;
+  }
 }

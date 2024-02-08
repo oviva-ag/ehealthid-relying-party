@@ -214,11 +214,16 @@ public class AuthEndpoint {
 
     var session = findSession(sessionId);
     if (session == null) {
-      return badRequest("Oops, no session unknown or expired. Please start again.");
+      return badRequest("Oops, session unknown or expired. Please start again.");
     }
 
     var idToken =
         session.trustedSectoralIdpStep().exchangeSectoralIdpCode(code, session.codeVerifier());
+
+    session = removeSession(sessionId);
+    if (session == null) {
+      return badRequest("Oops, session unknown or expired. Please start again.");
+    }
 
     var issued = tokenIssuer.issueCode(session, idToken);
 
@@ -263,6 +268,16 @@ public class AuthEndpoint {
                 redeemed.idToken()))
         .cacheControl(cacheControl)
         .build();
+  }
+
+  @Nullable
+  private Session removeSession(@Nullable String id) {
+
+    if (id == null || id.isBlank()) {
+      return null;
+    }
+
+    return sessionRepo.remove(id);
   }
 
   @Nullable

@@ -13,6 +13,8 @@ public interface SessionRepo {
 
   Session load(@NonNull String sessionId);
 
+  Session remove(@NonNull String sessionId);
+
   record Session(
       String id,
       Instant createdAt,

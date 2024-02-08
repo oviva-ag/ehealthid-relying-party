@@ -231,6 +231,7 @@ class AuthEndpointTest {
             .build();
 
     when(sessionRepo.load(sessionId)).thenReturn(session);
+    when(sessionRepo.remove(sessionId)).thenReturn(session);
 
     var code = "6238e4504332468aa0c12e300787fded";
 
@@ -246,6 +247,8 @@ class AuthEndpointTest {
       assertEquals(
           "https://myapp.example.com?code=6238e4504332468aa0c12e300787fded&state=mySuperDuperState",
           res.getHeaderString("location"));
+
+      verify(sessionRepo).remove(sessionId);
     }
   }
 
