@@ -149,8 +149,18 @@ public class AuthEndpoint {
 
     // store session
     var sessionId = IdGenerator.generateID();
+
     var session =
-        new Session(sessionId, state, nonce, parsedRedirect, clientId, verifier, step1, null);
+        Session.create()
+            .id(sessionId)
+            .state(state)
+            .nonce(nonce)
+            .redirectUri(parsedRedirect)
+            .clientId(clientId)
+            .codeVerifier(verifier)
+            .selectSectoralIdpStep(step1)
+            .build();
+
     sessionRepo.save(session);
 
     return Response.ok(form, MediaType.TEXT_HTML_TYPE)
@@ -189,16 +199,7 @@ public class AuthEndpoint {
 
     var federatedLogin = step2.idpRedirectUri();
 
-    var newSession =
-        new SessionRepo.Session(
-            session.id(),
-            session.state(),
-            session.nonce(),
-            session.redirectUri(),
-            session.clientId(),
-            session.codeVerifier(),
-            session.selectSectoralIdpStep(),
-            step2);
+    var newSession = session.toBuilder().trustedSectoralIdpStep(step2).build();
 
     sessionRepo.save(newSession);
 
@@ -213,11 +214,16 @@ public class AuthEndpoint {
 
     var session = findSession(sessionId);
     if (session == null) {
-      return badRequest("Oops, no session unknown or expired. Please start again.");
+      return badRequest("Oops, session unknown or expired. Please start again.");
     }
 
     var idToken =
         session.trustedSectoralIdpStep().exchangeSectoralIdpCode(code, session.codeVerifier());
+
+    session = removeSession(sessionId);
+    if (session == null) {
+      return badRequest("Oops, session unknown or expired. Please start again.");
+    }
 
     var issued = tokenIssuer.issueCode(session, idToken);
 
@@ -262,6 +268,16 @@ public class AuthEndpoint {
                 redeemed.idToken()))
         .cacheControl(cacheControl)
         .build();
+  }
+
+  @Nullable
+  private Session removeSession(@Nullable String id) {
+
+    if (id == null || id.isBlank()) {
+      return null;
+    }
+
+    return sessionRepo.remove(id);
   }
 
   @Nullable
