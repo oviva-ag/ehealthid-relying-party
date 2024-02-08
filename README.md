@@ -6,9 +6,6 @@ In order of priority:
 - [ ] Health endpoint - sanity check whether Jakarta ws is up should be enough. I.e. `/health`
 - [ ] Dockerfile + CI/CD
 - [ ] Helm chart (externally)
-- [ ] Better in-memory stores. Should have some expiry and size limits.
-    - com.oviva.ehealthid.relyingparty.svc.SessionRepo
-    - com.oviva.ehealthid.relyingparty.svc.CodeRepo
 - [ ] Internationalization (ResourceBundles) for templates (en & de)
   - see [Mustache Library](https://github.com/spullara/mustache.java/blob/main/compiler/src/main/java/com/github/mustachejava/functions/BundleFunctions.java)
 - [ ] Metrics endpoint
