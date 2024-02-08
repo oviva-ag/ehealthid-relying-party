@@ -1,8 +1,11 @@
 
 MVN=./mvnw
-IMAGE_NAME=ehealthid-relying-party
+
 VERSION?=$(shell $(MVN) -q -Dexec.executable=echo -Dexec.args='$${project.version}' --non-recursive exec:exec)
-export DOCKER_REPO?=europe-docker.pkg.dev/oviva-pkg/ovi/
+
+DOCKER_REPO=ghcr.io/oviva-ag/
+IMAGE_NAME=ehealthid-relying-party
+
 GIT_COMMIT=`git rev-parse HEAD`
 
 .PHONY: update-version test unit-test integration-test setup dist build clean install docker
