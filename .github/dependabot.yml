@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    registries: "*"
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "NA:"
+    groups:
+      maven-non-breaking-changes:
+        update-types:
+          - 'minor'
+          - 'patch'
+  - package-ecosystem: docker
+    registries: "*"
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "NA:"
