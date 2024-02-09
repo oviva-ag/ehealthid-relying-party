@@ -1,4 +1,4 @@
-name: Build and Publish Application Image
+name: Build and Publish a tagged Application Image
 
 on:
   push:

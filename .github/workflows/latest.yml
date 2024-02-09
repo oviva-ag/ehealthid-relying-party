@@ -1,4 +1,4 @@
-name: Build and Publish Application Image
+name: Build and Publish the latest and greatest Application Image
 
 on:
   push:
