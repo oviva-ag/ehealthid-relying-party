@@ -44,7 +44,8 @@ public class App extends Application {
         new AuthEndpoint(
             config.baseUri(), config.relyingParty(), sessionRepo, tokenIssuer, authenticationFlow),
         new OpenIdEndpoint(config.baseUri(), config.relyingParty(), keyStore),
-        new JacksonJsonProvider(configureObjectMapper()));
+        new JacksonJsonProvider(configureObjectMapper()),
+        new HealthEndpoint());
   }
 
   @Override
