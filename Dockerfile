@@ -27,7 +27,7 @@ echo "securerandom.strongAlgorithms=NativePRNGNonBlocking:SUN,DRBG:SUN" >> /etc/
 EOF
 
 # Configure the JAVA_OPTIONS, you can add -XshowSettings:vm to also display the heap size.
-ENV JAVA_OPTIONS="-javaagent:/opentelemetry-javaagent.jar -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_OPTIONS="-javaagent:/opentelemetry-javaagent.jar -Dquarkus.http.host=0.0.0.0"
 
 # Configure OpenTelemetry
 ENV OTEL_JAVAAGENT_DEBUG=false
