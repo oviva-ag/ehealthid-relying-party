@@ -1,7 +1,6 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=alert_status&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=coverage&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 
-
 # OpenID Connect Relying Party for GesundheitsID (eHealthID)
 
 The goal is to provide a simple standalone server exposing Germany's 'GesundheitsID' (eHealthID) as
@@ -343,6 +342,7 @@ In order of priority:
 
 # Helpful Links
 
+- [Gematik Fachdienst Specifications v1.5.0](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_FD_V1.5.0.pdf)
 - [Gematik Sectoral IDP Specifications v2.0.1](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf)
 - [AppFlow - Authentication flow to implement](https://wiki.gematik.de/display/IDPKB/App-App+Flow#AppAppFlow-0-FederationMaster)
 - [Sektoraler IDP - Examples & Reference Implementation](https://wiki.gematik.de/display/IDPKB/Sektoraler+IDP+-+Referenzimplementierung+und+Beispiele)
