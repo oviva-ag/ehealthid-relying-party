@@ -1,15 +1,6 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=alert_status&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=oviva-ag_ehealthid-relying-party&metric=coverage&token=ee904c8acea811b217358c63297ebe91fd6aee14)](https://sonarcloud.io/summary/new_code?id=oviva-ag_ehealthid-relying-party)
 
-# TODO
-In order of priority:
-- [ ] Continuous Deployment
-- [ ] Helm chart (externally)
-- [ ] Internationalization (ResourceBundles) for templates (en & de)
-  - see [Mustache Library](https://github.com/spullara/mustache.java/blob/main/compiler/src/main/java/com/github/mustachejava/functions/BundleFunctions.java)
-- [ ] Metrics endpoint
-    - in-memory store sizes (entries of SessionRepo and CodeRepo)
-    - count of flows with their result
 
 # OpenID Connect Relying Party for GesundheitsID (eHealthID)
 
@@ -17,6 +8,24 @@ The goal is to provide a simple standalone server exposing Germany's 'Gesundheit
 a good old OpenID Connect Relying Party (OIDC RP).
 
 Identity Providers such as Keycloak can link accounts with OIDC out-of-the-box
+
+## Authentication Flow IDP / Relying Party
+
+```mermaid
+sequenceDiagram
+    participant app as Mobile App
+    participant idp as Your IDP
+    participant rp as Relying Party
+    app ->> idp: login
+    idp -->> app: redirect to Relying Party (OIDC)
+    app ->> rp: login
+    note over app, rp: login via eHealthID handled by Relying Party (RP)
+    rp -->> app: redirect to IDP with code
+    app ->> idp: success, callback to IDP
+    idp ->> rp: redeem code
+    rp -->> idp: id_token
+    idp -->> app: success! redirect
+```
 
 ## Contents
 
@@ -43,8 +52,11 @@ Identity Providers such as Keycloak can link accounts with OIDC out-of-the-box
 ./gen_keys.sh \
     --issuer-uri=https://mydiga.example.com \
     --member-id="$MEMBER_ID" \
-    --organisation-name="My DiGA" \
+    --organisation-name="Awesome DiGA" \
     --generate-keys
+    
+# afterwards the XML for registration in the federation can be found here
+cat federation_registration_form.xml
 
 # run the application
 docker run --rm \
@@ -59,8 +71,6 @@ docker run --rm \
     -e 'EHEALTHID_RP_ES_TTL=PT5M' \
     ghcr.io/oviva-ag/ehealthid-relying-party:latest
 
-# send in the generated XML to Gematik in order to register your IDP
-cat federation_registration_form.xml
 ```
 
 Once the server is booted, it will:
@@ -87,22 +97,25 @@ The discovery document can be used to configure the relying party in an existing
 
 Use environment variables to configure the relying party server.
 
+(*) required configuration
+
 | Name                                     | Description                                                                                                                                      | Example                                                 |
 |------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| `EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH`  | Path to a JWKS with at least one keypair for encryption of ID tokens.                                                                            | `./enc_jwks.json`                                       |
-| `EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH`  | Path to a JWKS with at least one keypair for signature withing the federation. All these keys __MUST__ be registered with the federation master. | `./sig_jwks.json`                                       |
-| `EHEALTHID_RP_REDIRECT_URIS`             | Valid redirection URIs for OpenID connect.                                                                                                       | `https://sso-mydiga.example.com/auth/callback`          |
-| `EHEALTHID_RP_BASE_URI`                  | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.   | `https://mydiga-rp.example.com`                         |
+| `EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH`* | Path to a JWKS with at least one keypair for encryption of ID tokens.                                                                            | `./enc_jwks.json`                                       |
+| `EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH`* | Path to a JWKS with at least one keypair for signature withing the federation. All these keys __MUST__ be registered with the federation master. | `./sig_jwks.json`                                       |
+| `EHEALTHID_RP_REDIRECT_URIS`*            | Valid redirection URIs for OpenID connect.                                                                                                       | `https://sso-mydiga.example.com/auth/callback`          |
+| `EHEALTHID_RP_BASE_URI`*                 | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.   | `https://mydiga-rp.example.com`                         |
+| `EHEALTHID_RP_FEDERATION_MASTER`*        | The URI of the federation master.                                                                                                                | `https://app-test.federationmaster.de`                  |
+| `EHEALTHID_RP_APP_NAME`*                 | The application name within the federation.                                                                                                      | `Awesome DiGA`                                          |
 | `EHEALTHID_RP_HOST`                      | Host to bind to.                                                                                                                                 | `0.0.0.0`                                               |
 | `EHEALTHID_RP_PORT`                      | Port to bind to.                                                                                                                                 | `1234`                                                  |
-| `EHEALTHID_RP_FEDERATION_MASTER`         | The URI of the federation master.                                                                                                                | `https://app-test.federationmaster.de`                  |
-| `EHEALTHID_RP_APP_NAME`                  | The application name within the federation.                                                                                                      | `Awesome DiGA`                                          |
 | `EHEALTHID_RP_ES_TTL`                    | The time to live for the entity statement. In ISO8601 format.                                                                                    | `PT12H`                                                 |
 | `EHEALTHID_RP_SCOPES`                    | The comma separated list of scopes requested in the federation. This __MUST__ match what was registered with the federation master.              | `openid,urn:telematik:email,urn:telematik:display_name` |
 | `EHEALTHID_RP_SESSION_STORE_TTL`         | The time to live for sessions. In ISO8601 format.                                                                                                | `PT20M`                                                 |
 | `EHEALTHID_RP_SESSION_STORE_MAX_ENTRIES` | The maximum number of sessions to store. Keeps memory bounded.                                                                                   | `1000`                                                  |
 | `EHEALTHID_RP_CODE_STORE_TTL`            | The time to live for codes, i.e. successful logins where the code is not redeemed yet. In ISO8601 format.                                        | `PT5M`                                                  |
 | `EHEALTHID_RP_CODE_STORE_MAX_ENTRIES`    | The maximum number of codes to store. Keeps memory bounded.                                                                                      | `1000`                                                  |
+| `EHEALTHID_RP_LOG_LEVEL`                 | The log level.                                                                                                                                   | `INFO`                                                  |
 
 # Generate Keys & Register for Federation
 
@@ -160,7 +173,46 @@ export ENVIRONMENT=RU
 cat federation_registration_form.xml
 ```
 
-## Library IntegrationTest flow with Gematik Reference IDP
+## Authentication flow between all involved parties
+
+**NOTE:** There are some additional interactions within the federation, for a more complete flow see
+[AppFlow](https://wiki.gematik.de/display/IDPKB/App-App+Flow#AppAppFlow-0-FederationMaster) in the
+Gematik documentation.
+
+```mermaid
+sequenceDiagram
+    participant app as Mobile App
+    participant idp as Your IDP
+    participant rp as Relyin Party
+    participant secIdp as Sectoral IDP
+    participant fedmaster as Federation Master
+    app ->> idp: login
+    idp -->> app: redirect to Relying Party (OIDC)
+    app ->> rp: login
+    alt relying party & eHealthID federation
+        rp ->> fedmaster: fetch list of sectoral IDPs
+        fedmaster -->> rp: list of sectoral IDPs
+        rp -->> app: show list of IDPs to select from
+        app ->> rp: select an IDP
+        rp ->> secIdp: get redirect url (PAR)
+        secIdp -->> rp: redirect_uri
+        rp -->> app: redirect to sectoral authentication (e.g. ident app)
+        alt proprietary flow
+            app ->> secIdp: authenticate
+            secIdp ->> app: success, redirect to relying party
+        end
+        app ->> rp: success, callback to relying party
+        rp ->> secIdp: fetch id_token
+        secIdp -->> rp: id_token
+    end
+    rp -->> app: redirect to IDP with code
+    app ->> idp: success, callback to IDP
+    idp ->> rp: redeem code
+    rp -->> idp: id_token
+    idp -->> app: success! redirect
+```
+
+# Library IntegrationTest flow with Gematik Reference IDP
 
 **Prerequisites**:
 
@@ -221,6 +273,8 @@ public class Example {
 
 See [AuthenticationFlowExampleTest](https://github.com/oviva-ag/ehealthid-relying-party/blob/main/ehealthid/src/test/java/com/oviva/ehealthid/auth/AuthenticationFlowExampleTest.java)
 
+# Testing
+
 ## Working with Gematik Test Environment
 
 ### Gematik Test Sektoraler IdP in Browser
@@ -269,7 +323,25 @@ sudo systemctl disable --now caddy
 sudo caddy reverse-proxy --from=$DOMAIN --to=:1234
 ```
 
-## Helpful Links
+# Open Points
+
+In order of priority:
+
+- [ ] Continuous Deployment
+- [ ] Helm chart (externally)
+- [ ] Internationalization (ResourceBundles) for templates (en & de),
+  see [Mustache Library](https://github.com/spullara/mustache.java/blob/main/compiler/src/main/java/com/github/mustachejava/functions/BundleFunctions.java)
+- [ ] Metrics endpoint
+    - in-memory store sizes (entries of SessionRepo and CodeRepo)
+    - count of flows with their result
+
+# Wishlist
+
+- Accept base URI's with paths.
+- MySQL or Postgres backed session and code repos
+- PKCE flow on OIDC side
+
+# Helpful Links
 
 - [Gematik Sectoral IDP Specifications v2.0.1](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf)
 - [AppFlow - Authentication flow to implement](https://wiki.gematik.de/display/IDPKB/App-App+Flow#AppAppFlow-0-FederationMaster)

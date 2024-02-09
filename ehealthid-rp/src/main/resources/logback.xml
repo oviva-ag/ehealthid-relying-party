@@ -27,7 +27,7 @@
       </providers>
     </encoder>
   </appender>
-  <root level="INFO">
+  <root level="${EHEALTHID_RP_LOG_LEVEL:-INFO}">
     <appender-ref ref="json"/>
   </root>
 </configuration>
