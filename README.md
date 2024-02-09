@@ -50,13 +50,13 @@ Identity Providers such as Keycloak can link accounts with OIDC out-of-the-box
 docker run --rm \
     -v "$(pwd)"/enc_jwks.json:/secrets/enc_jwks.json:ro \
     -v "$(pwd)"/sig_jwks.json:/secrets/sig_jwks.json:ro \
-    -e EHEALTHID_RP_APP_NAME=Awesome DiGA \
-    -e EHEALTHID_RP_BASE_URI=https://mydiga.example.com \
-    -e EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=/secrets/enc_jwks.json \
-    -e EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=/secrets/sig_jwks.json \
-    -e EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de \
-    -e EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback \
-    -e EHEALTHID_RP_ES_TTL=PT5M \
+    -e 'EHEALTHID_RP_APP_NAME=Awesome DiGA' \
+    -e 'EHEALTHID_RP_BASE_URI=https://mydiga.example.com' \
+    -e 'EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=/secrets/enc_jwks.json' \
+    -e 'EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=/secrets/sig_jwks.json' \
+    -e 'EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de' \
+    -e 'EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback' \
+    -e 'EHEALTHID_RP_ES_TTL=PT5M' \
     ghcr.io/oviva-ag/ehealthid-relying-party:latest
 
 # send in the generated XML to Gematik in order to register your IDP
