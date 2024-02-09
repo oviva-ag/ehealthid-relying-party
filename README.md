@@ -39,27 +39,25 @@ Identity Providers such as Keycloak can link accounts with OIDC out-of-the-box
 # Quickstart
 
 ```shell
-# build everything
-./mvnw clean verify
-
 # generate keys for the application, keep those safe
 ./gen_keys.sh \
     --issuer-uri=https://mydiga.example.com \
     --member-id="$MEMBER_ID" \
     --organisation-name="My DiGA" \
     --generate-keys
-    
-# configure the application
-export EHEALTHID_RP_APP_NAME=Awesome DiGA
-export EHEALTHID_RP_BASE_URI=https://mydiga.example.com
-export EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=enc_jwks.json
-export EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de
-export EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=sig_jwks.json
-export EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback
-export EHEALTHID_RP_ES_TTL=PT5M
 
-# starts the relying party server
-./start.sh
+# run the application
+docker run --rm \
+    -v "$(pwd)"/enc_jwks.json:/secrets/enc_jwks.json:ro \
+    -v "$(pwd)"/sig_jwks.json:/secrets/sig_jwks.json:ro \
+    -e EHEALTHID_RP_APP_NAME=Awesome DiGA \
+    -e EHEALTHID_RP_BASE_URI=https://mydiga.example.com \
+    -e EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=/secrets/enc_jwks.json \
+    -e EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=/secrets/sig_jwks.json \
+    -e EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de \
+    -e EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback \
+    -e EHEALTHID_RP_ES_TTL=PT5M \
+    ghcr.io/oviva-ag/ehealthid-relying-party:latest
 
 # send in the generated XML to Gematik in order to register your IDP
 cat federation_registration_form.xml
