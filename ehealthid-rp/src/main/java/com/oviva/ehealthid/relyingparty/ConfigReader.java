@@ -72,8 +72,12 @@ public class ConfigReader {
             .appName(appName)
             .federationMaster(fedmaster)
             .entitySigningKey(federationSigJwksPath.getKeys().get(0).toECKey())
+
+            // safety, remove the private key as we don't need it here
             .entitySigningKeys(federationSigJwksPath.toPublicJWKSet())
-            .relyingPartyEncKeys(federationEncJwksPath.toPublicJWKSet())
+
+            // _MUST NOT_ be public. We need it for decryption.
+            .relyingPartyEncKeys(federationEncJwksPath)
             .ttl(entityStatementTtl)
             .scopes(getScopes())
             .redirectUris(List.of(baseUri.resolve("/auth/callback").toString()))

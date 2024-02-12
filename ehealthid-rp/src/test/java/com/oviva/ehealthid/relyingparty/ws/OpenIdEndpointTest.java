@@ -33,7 +33,7 @@ class OpenIdEndpointTest {
     assertEquals(BASE_URI.toString(), body.issuer());
     assertEquals(BASE_URI.resolve("/auth").toString(), body.authorizationEndpoint());
     assertEquals(BASE_URI.resolve("/jwks.json").toString(), body.jwksUri());
-    assertEquals(BASE_URI.resolve("/token").toString(), body.tokenEndpoint());
+    assertEquals(BASE_URI.resolve("/auth/token").toString(), body.tokenEndpoint());
     assertEquals(List.of("ES256"), body.idTokenSigningAlgValuesSupported());
   }
 

@@ -35,7 +35,7 @@ public class OpenIdEndpoint {
         new OpenIdConfiguration(
             baseUri.toString(),
             baseUri.resolve("/auth").toString(),
-            baseUri.resolve("/token").toString(),
+            baseUri.resolve("/auth/token").toString(),
             baseUri.resolve("/jwks.json").toString(),
             List.of("openid"),
             relyingPartyConfig.supportedResponseTypes(),
