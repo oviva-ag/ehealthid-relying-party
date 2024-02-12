@@ -116,9 +116,9 @@ a {
       <label for="idp-selection">Select your GesundheitsID Provider</label>
       <select name="identityProvider" id="idp-selection">
           <option value="https://a.example.com">AoK Tesfalen</option>
+          <option value="https://d.example.com">Barmer</option>
           <option value="https://b.example.com">Siemens</option>
           <option value="https://c.example.com">Zuse</option>
-          <option value="https://d.example.com">Barmer</option>
       </select>
       <input type="submit" value="Login">
     </form>
