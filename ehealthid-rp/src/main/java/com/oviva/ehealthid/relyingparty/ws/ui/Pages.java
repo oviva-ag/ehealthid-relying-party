@@ -14,7 +14,8 @@ public class Pages {
   }
 
   public String selectIdpForm(List<IdpEntry> identityProviders) {
-    identityProviders.sort(Comparator.comparing(IdpEntry::name));
+    identityProviders =
+        identityProviders.stream().sorted(Comparator.comparing(IdpEntry::name)).toList();
     return renderer.render(
         "select-idp.html.mustache", Map.of("identityProviders", identityProviders));
   }
