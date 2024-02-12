@@ -1,6 +1,7 @@
 package com.oviva.ehealthid.relyingparty.ws.ui;
 
 import com.oviva.ehealthid.fedclient.IdpEntry;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ public class Pages {
   }
 
   public String selectIdpForm(List<IdpEntry> identityProviders) {
+    identityProviders.sort(Comparator.comparing(IdpEntry::name));
     return renderer.render(
         "select-idp.html.mustache", Map.of("identityProviders", identityProviders));
   }
