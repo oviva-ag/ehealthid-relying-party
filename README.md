@@ -47,11 +47,19 @@ sequenceDiagram
 # Quickstart
 
 ```shell
+# a string received from Gematik as part of the registration process
+export MEMBER_ID=FDmyDiGa0112TU
+
+export "ORG_NAME=Awesome DiGA"
+
+# the URI where your relying-party will run
+export ISSUER_URI=https://mydiga.example.com
+
 # generate keys for the application, keep those safe
 ./gen_keys.sh \
-    --issuer-uri=https://mydiga.example.com \
+    --issuer-uri=$ISSUER_URI \
     --member-id="$MEMBER_ID" \
-    --organisation-name="Awesome DiGA" \
+    --organisation-name="$ORG_NAME" \
     --generate-keys
     
 # afterwards the XML for registration in the federation can be found here
@@ -61,8 +69,8 @@ cat federation_registration_form.xml
 docker run --rm \
     -v "$(pwd)"/enc_jwks.json:/secrets/enc_jwks.json:ro \
     -v "$(pwd)"/sig_jwks.json:/secrets/sig_jwks.json:ro \
-    -e 'EHEALTHID_RP_APP_NAME=Awesome DiGA' \
-    -e 'EHEALTHID_RP_BASE_URI=https://mydiga.example.com' \
+    -e "EHEALTHID_RP_APP_NAME=$ORG_NAME" \
+    -e "EHEALTHID_RP_BASE_URI=$ISSUER_URI" \
     -e 'EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=/secrets/enc_jwks.json' \
     -e 'EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=/secrets/sig_jwks.json' \
     -e 'EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de' \
@@ -342,7 +350,7 @@ In order of priority:
 
 # Helpful Links
 
-- [Gematik Fachdienst Specifications v1.5.0](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_FD_V1.5.0.pdf)
+- [Gematik Fachdienst Specifications v1.7.0](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_FD_V1.7.0.pdf)
 - [Gematik Sectoral IDP Specifications v2.0.1](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf)
 - [AppFlow - Authentication flow to implement](https://wiki.gematik.de/display/IDPKB/App-App+Flow#AppAppFlow-0-FederationMaster)
 - [Sektoraler IDP - Examples & Reference Implementation](https://wiki.gematik.de/display/IDPKB/Sektoraler+IDP+-+Referenzimplementierung+und+Beispiele)
