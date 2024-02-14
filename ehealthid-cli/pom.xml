@@ -10,7 +10,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>esgen</artifactId>
+  <artifactId>ehealthid-cli</artifactId>
   <description>
     Generator for entity-statements in the TI federation. This can generate the necessary
     keys as well as the registration xml.
@@ -41,6 +41,12 @@
     <dependency>
       <groupId>com.github.spullara.mustache.java</groupId>
       <artifactId>compiler</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.oviva.ehealthid</groupId>
+      <artifactId>ehealthid</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -97,7 +103,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.oviva.ehealthid.esgen.Main</mainClass>
+              <mainClass>com.oviva.ehealthid.esgen.RootCommand</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
