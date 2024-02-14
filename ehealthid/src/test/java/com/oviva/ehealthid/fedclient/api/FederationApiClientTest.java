@@ -25,15 +25,17 @@ import org.junit.jupiter.api.Test;
 @WireMockTest
 class FederationApiClientTest {
 
+  private final HttpClient javaHttpClient =
+      new JavaHttpClient(java.net.http.HttpClient.newHttpClient());
+
   private static final String MEDIA_TYPE_ENTITY_STATEMENT =
       "application/entity-statement+jwt;charset=UTF-8";
 
   @Test
   @Disabled("e2e")
   void fetchReferenceEnvironment() {
-    var httpClient = new JavaHttpClient();
 
-    var apiClient = new FederationApiClientImpl(httpClient);
+    var apiClient = new FederationApiClientImpl(javaHttpClient);
 
     var federationMaster = "https://app-ref.federationmaster.de";
 
@@ -65,7 +67,7 @@ class FederationApiClientTest {
   @Disabled("e2e")
   void fetchTuGematikIdp() {
     // we need an extra header for the test environment
-    var httpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient());
+    var httpClient = new GematikHeaderDecoratorHttpClient(javaHttpClient);
 
     var apiClient = new FederationApiClientImpl(httpClient);
 
@@ -102,9 +104,7 @@ class FederationApiClientTest {
                     .withHeader(ContentTypeHeader.KEY, MEDIA_TYPE_ENTITY_STATEMENT)
                     .withBody(body)));
 
-    var httpClient = new JavaHttpClient();
-
-    var client = new FederationApiClientImpl(httpClient);
+    var client = new FederationApiClientImpl(javaHttpClient);
 
     var federationMaster = wm.getHttpBaseUrl();
 
@@ -129,9 +129,7 @@ class FederationApiClientTest {
         get(idpListPath)
             .willReturn(aResponse().withHeader(ContentTypeHeader.KEY, ct).withBody(body)));
 
-    var httpClient = new JavaHttpClient();
-
-    var client = new FederationApiClientImpl(httpClient);
+    var client = new FederationApiClientImpl(javaHttpClient);
 
     var federationMaster = wm.getHttpBaseUrl();
 
@@ -150,9 +148,7 @@ class FederationApiClientTest {
         get(openidFederationPath)
             .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
-    var httpClient = new JavaHttpClient();
-
-    var client = new FederationApiClientImpl(httpClient);
+    var client = new FederationApiClientImpl(javaHttpClient);
 
     var federationMaster = wm.getHttpBaseUrl();
 
@@ -176,9 +172,7 @@ class FederationApiClientTest {
 
     stubFor(get(openidFederationPath).willReturn(badRequest()));
 
-    var httpClient = new JavaHttpClient();
-
-    var client = new FederationApiClientImpl(httpClient);
+    var client = new FederationApiClientImpl(javaHttpClient);
 
     var federationMaster = wm.getHttpBaseUrl();
 
@@ -208,9 +202,7 @@ class FederationApiClientTest {
                     .withHeader(ContentTypeHeader.KEY, MEDIA_TYPE_ENTITY_STATEMENT)
                     .withBody(body)));
 
-    var httpClient = new JavaHttpClient();
-
-    var client = new FederationApiClientImpl(httpClient);
+    var client = new FederationApiClientImpl(javaHttpClient);
 
     var federationMaster = wm.getHttpBaseUrl();
 

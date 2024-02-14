@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,8 @@ import org.junit.jupiter.api.Test;
 @WireMockTest
 class OpenIdClientTest {
 
-  private final OpenIdClient client = new OpenIdClient(new JavaHttpClient());
+  private final OpenIdClient client =
+      new OpenIdClient(new JavaHttpClient(HttpClient.newHttpClient()));
 
   @Test
   void exchangePkceCode(WireMockRuntimeInfo wm) {

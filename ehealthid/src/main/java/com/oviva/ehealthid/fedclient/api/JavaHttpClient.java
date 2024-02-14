@@ -10,7 +10,11 @@ import java.util.stream.Stream;
 
 public class JavaHttpClient implements HttpClient {
 
-  private final java.net.http.HttpClient httpClient = java.net.http.HttpClient.newHttpClient();
+  private final java.net.http.HttpClient httpClient;
+
+  public JavaHttpClient(java.net.http.HttpClient httpClient) {
+    this.httpClient = httpClient;
+  }
 
   @Override
   public Response call(Request req) {

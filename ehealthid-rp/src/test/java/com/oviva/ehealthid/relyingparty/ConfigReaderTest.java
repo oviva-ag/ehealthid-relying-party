@@ -18,6 +18,7 @@ class ConfigReaderTest {
     var sut = new ConfigReader(provider);
 
     var baseUri = "https://rp.example.com";
+    var idpDiscoveryUri = "https://sso.example.com/.well-known/openid-configuration";
     var appName = "Awesome DiGA";
 
     when(provider.get(ConfigReader.CONFIG_FEDERATION_ENC_JWKS_PATH))
@@ -26,6 +27,8 @@ class ConfigReaderTest {
         .thenReturn(Optional.of("./src/test/resources/fixtures/example_sig_jwks.json"));
     when(provider.get(ConfigReader.CONFIG_BASE_URI)).thenReturn(Optional.of(baseUri));
     when(provider.get(ConfigReader.CONFIG_APP_NAME)).thenReturn(Optional.of(appName));
+    when(provider.get(ConfigReader.CONFIG_IDP_DISCOVERY_URI))
+        .thenReturn(Optional.of(idpDiscoveryUri));
 
     // when
     var config = sut.read();

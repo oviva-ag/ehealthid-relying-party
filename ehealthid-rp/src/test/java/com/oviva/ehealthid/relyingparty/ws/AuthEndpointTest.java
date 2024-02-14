@@ -14,9 +14,7 @@ import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
-import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Token;
 import com.oviva.ehealthid.relyingparty.util.IdGenerator;
-import com.oviva.ehealthid.relyingparty.ws.AuthEndpoint.TokenResponse;
 import jakarta.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.util.List;
@@ -249,90 +247,6 @@ class AuthEndpointTest {
           res.getHeaderString("location"));
 
       verify(sessionRepo).remove(sessionId);
-    }
-  }
-
-  @Test
-  void token_badGrantType() {
-
-    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
-
-    var tokenIssuer = mock(TokenIssuer.class);
-
-    var sut = new AuthEndpoint(BASE_URI, config, null, tokenIssuer, null);
-
-    var clientId = "myapp";
-
-    var grantType = "yolo";
-
-    var code = "6238e4504332468aa0c12e300787fded";
-
-    when(tokenIssuer.redeem(code, null, null)).thenReturn(null);
-
-    // when
-    try (var res = sut.token(code, grantType, REDIRECT_URI.toString(), clientId)) {
-
-      // then
-      assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
-    }
-  }
-
-  @Test
-  void token_badCode() {
-
-    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
-
-    var tokenIssuer = mock(TokenIssuer.class);
-
-    var sut = new AuthEndpoint(BASE_URI, config, null, tokenIssuer, null);
-
-    var clientId = "myapp";
-
-    var grantType = "authorization_code";
-
-    var code = "6238e4504332468aa0c12e300787fded";
-
-    when(tokenIssuer.redeem(code, REDIRECT_URI.toString(), clientId)).thenReturn(null);
-
-    // when
-    try (var res = sut.token(code, grantType, REDIRECT_URI.toString(), clientId)) {
-
-      // then
-      assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
-    }
-  }
-
-  @Test
-  void token() {
-
-    var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
-
-    var tokenIssuer = mock(TokenIssuer.class);
-
-    var sut = new AuthEndpoint(BASE_URI, config, null, tokenIssuer, null);
-
-    var clientId = "myapp";
-
-    var grantType = "authorization_code";
-
-    var idToken = UUID.randomUUID().toString();
-    var accessToken = UUID.randomUUID().toString();
-    var expiresIn = 3600;
-
-    var code = "6238e4504332468aa0c12e300787fded";
-    var token = new Token(accessToken, idToken, expiresIn);
-    when(tokenIssuer.redeem(code, REDIRECT_URI.toString(), clientId)).thenReturn(token);
-
-    // when
-    try (var res = sut.token(code, grantType, REDIRECT_URI.toString(), clientId)) {
-
-      // then
-      assertEquals(Status.OK.getStatusCode(), res.getStatus());
-      var got = res.readEntity(TokenResponse.class);
-
-      assertEquals(idToken, got.idToken());
-      assertEquals(accessToken, got.accessToken());
-      assertEquals(expiresIn, got.expiresIn());
     }
   }
 

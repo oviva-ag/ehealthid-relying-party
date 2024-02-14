@@ -43,7 +43,8 @@ public class OpenIdEndpoint {
             List.of("public"),
             List.of("ES256"),
             List.of(),
-            List.of());
+            List.of(),
+            List.of("private_key_jwt"));
 
     return Response.ok(body).build();
   }
