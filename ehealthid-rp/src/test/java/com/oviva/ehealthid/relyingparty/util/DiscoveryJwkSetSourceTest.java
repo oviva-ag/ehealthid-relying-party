@@ -17,7 +17,7 @@ import java.net.http.HttpClient;
 import org.junit.jupiter.api.Test;
 
 @WireMockTest
-class DiscoveryJwkSourceTest {
+class DiscoveryJwkSetSourceTest {
   private static final String DISCOVERY_PATH = "/.well-known/openid-configuration";
   private static final String JWKS_PATH = "/jwks";
 
@@ -50,7 +50,7 @@ class DiscoveryJwkSourceTest {
 
     stubFor(get(JWKS_PATH).willReturn(okJson(jwks)));
 
-    var sut = new DiscoveryJwkSource<>(HttpClient.newHttpClient(), discoveryUrl);
+    var sut = new DiscoveryJwkSetSource<>(HttpClient.newHttpClient(), discoveryUrl);
 
     var gotJwks = sut.getJWKSet(null, 0, null);
     assertNotNull(gotJwks.getKeyByKeyId(kid));
@@ -70,7 +70,7 @@ class DiscoveryJwkSourceTest {
 
     stubFor(get(JWKS_PATH).willReturn(okJson(jwks)));
 
-    var sut = new DiscoveryJwkSource<>(HttpClient.newHttpClient(), discoveryUrl);
+    var sut = new DiscoveryJwkSetSource<>(HttpClient.newHttpClient(), discoveryUrl);
 
     var gotJwks = sut.getJWKSet(null, 0, null);
     assertTrue(gotJwks.getKeys().isEmpty());
@@ -87,7 +87,7 @@ class DiscoveryJwkSourceTest {
 
     stubFor(get(JWKS_PATH).willReturn(serviceUnavailable()));
 
-    var sut = new DiscoveryJwkSource<>(HttpClient.newHttpClient(), discoveryUrl);
+    var sut = new DiscoveryJwkSetSource<>(HttpClient.newHttpClient(), discoveryUrl);
 
     assertThrows(JWKSetRetrievalException.class, () -> sut.getJWKSet(null, 0, null));
   }
@@ -97,7 +97,7 @@ class DiscoveryJwkSourceTest {
 
     var discoveryUrl = URI.create("http://badURi");
 
-    var sut = new DiscoveryJwkSource<>(HttpClient.newHttpClient(), discoveryUrl);
+    var sut = new DiscoveryJwkSetSource<>(HttpClient.newHttpClient(), discoveryUrl);
 
     assertThrows(RemoteKeySourceException.class, () -> sut.getJWKSet(null, 0, null));
   }
@@ -109,7 +109,7 @@ class DiscoveryJwkSourceTest {
 
     stubFor(get(DISCOVERY_PATH).willReturn(serverError()));
 
-    var sut = new DiscoveryJwkSource<>(HttpClient.newHttpClient(), discoveryUrl);
+    var sut = new DiscoveryJwkSetSource<>(HttpClient.newHttpClient(), discoveryUrl);
 
     assertThrows(RemoteKeySourceException.class, () -> sut.getJWKSet(null, 0, null));
   }
@@ -121,7 +121,7 @@ class DiscoveryJwkSourceTest {
 
     stubFor(get(DISCOVERY_PATH).willReturn(okJson("{\"jwks_uri\": null}")));
 
-    var sut = new DiscoveryJwkSource<>(HttpClient.newHttpClient(), discoveryUrl);
+    var sut = new DiscoveryJwkSetSource<>(HttpClient.newHttpClient(), discoveryUrl);
 
     assertThrows(RemoteKeySourceException.class, () -> sut.getJWKSet(null, 0, null));
   }
@@ -137,7 +137,7 @@ class DiscoveryJwkSourceTest {
 
     stubFor(get(JWKS_PATH).willReturn(serviceUnavailable()));
 
-    var sut = new DiscoveryJwkSource<>(HttpClient.newHttpClient(), discoveryUrl);
+    var sut = new DiscoveryJwkSetSource<>(HttpClient.newHttpClient(), discoveryUrl);
 
     assertThrows(RemoteKeySourceException.class, () -> sut.getJWKSet(null, 0, null));
   }

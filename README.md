@@ -105,7 +105,7 @@ The discovery document can be used to configure the relying party in an existing
 
 ## Configure Identity Provider
 
-General:
+Generic settings:
 
 - the relying party OpenID configuration is at `$ISSUER_URI/.well-known/openid-configuration`
     - token_url: `/auth/token`

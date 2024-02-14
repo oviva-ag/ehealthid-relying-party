@@ -26,19 +26,22 @@ import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
-import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSource;
+import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSetSource;
 import com.oviva.ehealthid.relyingparty.ws.App;
 import jakarta.ws.rs.SeBootstrap;
 import jakarta.ws.rs.SeBootstrap.Configuration;
+import jakarta.ws.rs.SeBootstrap.Instance;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Main {
+public class Main implements AutoCloseable {
 
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
   private static final String BANNER =
@@ -52,14 +55,17 @@ public class Main {
   private static final String CONFIG_PREFIX = "EHEALTHID_RP";
   private final ConfigProvider configProvider;
 
+  private Instance server;
+
+  private CountDownLatch shutdown = new CountDownLatch(1);
+
   public Main(ConfigProvider configProvider) {
     this.configProvider = configProvider;
   }
 
-  public static void main(String[] args) throws ExecutionException {
+  public static void main(String[] args) throws Exception {
 
-    var main = new Main(new EnvConfigProvider(CONFIG_PREFIX, System::getenv));
-    try {
+    try (var main = new Main(new EnvConfigProvider(CONFIG_PREFIX, System::getenv))) {
       main.run();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -70,6 +76,17 @@ public class Main {
   }
 
   public void run() throws ExecutionException, InterruptedException {
+    start();
+
+    // wait for shutdown
+    shutdown.await();
+  }
+
+  public URI baseUri() {
+    return server.configuration().baseUri();
+  }
+
+  public void start() throws ExecutionException, InterruptedException {
 
     logger.atInfo().log("\n" + BANNER);
     var pkg = Main.class.getPackage();
@@ -97,24 +114,21 @@ public class Main {
             httpClient);
 
     var jwkSource =
-        JWKSourceBuilder.create(new DiscoveryJwkSource<>(httpClient, config.idpDiscoveryUri()))
+        JWKSourceBuilder.create(new DiscoveryJwkSetSource<>(httpClient, config.idpDiscoveryUri()))
             .refreshAheadCache(true)
             .build();
 
     var clientAuthenticator = new ClientAuthenticator(jwkSource, config.baseUri());
 
-    var instance =
+    server =
         SeBootstrap.start(
                 new App(config, sessionRepo, keyStore, tokenIssuer, authFlow, clientAuthenticator),
                 Configuration.builder().host(config.host()).port(config.port()).build())
             .toCompletableFuture()
             .get();
 
-    var localUri = instance.configuration().baseUri();
+    var localUri = server.configuration().baseUri();
     logger.atInfo().log("Magic at {} ({})", config.baseUri(), localUri);
-
-    // wait forever
-    Thread.currentThread().join();
   }
 
   private AuthenticationFlow buildAuthFlow(
@@ -158,5 +172,11 @@ public class Main {
         .expireAfter(new AfterCreatedExpiry<>(ttl.toNanos()))
         .maximumSize(maxSize)
         .build();
+  }
+
+  @Override
+  public void close() throws Exception {
+    server.stop().toCompletableFuture().get(10, TimeUnit.SECONDS);
+    shutdown.countDown();
   }
 }

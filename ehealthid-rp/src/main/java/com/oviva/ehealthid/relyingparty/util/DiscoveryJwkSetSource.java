@@ -22,12 +22,12 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 
 /** A JWK source that always fetches the latest JWKS from a given OpenID Discovery document URL */
-public class DiscoveryJwkSource<T extends SecurityContext> implements JWKSetSource<T> {
+public class DiscoveryJwkSetSource<T extends SecurityContext> implements JWKSetSource<T> {
 
   private final HttpClient httpClient;
   private final URI discoveryUrl;
 
-  public DiscoveryJwkSource(HttpClient httpClient, URI discoveryUrl) {
+  public DiscoveryJwkSetSource(HttpClient httpClient, URI discoveryUrl) {
     this.httpClient = httpClient;
     this.discoveryUrl = discoveryUrl;
   }

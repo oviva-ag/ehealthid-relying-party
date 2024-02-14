@@ -62,7 +62,8 @@ class AuthenticationFlowExampleTest {
     // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
     // test environment
     // see: https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen
-    var httpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient());
+    var httpClient =
+        new GematikHeaderDecoratorHttpClient(new JavaHttpClient(HttpClient.newHttpClient()));
 
     // setup as needed
     var clock = Clock.systemUTC();
