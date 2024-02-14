@@ -20,6 +20,8 @@ public class ConfigReader {
   public static final String CONFIG_HOST = "host";
   public static final String CONFIG_PORT = "port";
   public static final String CONFIG_REDIRECT_URIS = "redirect_uris";
+
+  public static final String CONFIG_IDP_DISCOVERY_URI = "idp_discovery_uri";
   public static final String CONFIG_FEDERATION_MASTER = "federation_master";
   public static final String CONFIG_ES_TTL = "es_ttl";
   public static final String CONFIG_APP_NAME = "app_name";
@@ -47,6 +49,15 @@ public class ConfigReader {
             .get(CONFIG_BASE_URI)
             .map(URI::create)
             .orElseThrow(() -> new IllegalArgumentException("no 'base_uri' configured"));
+
+    var idpDiscoveryUri =
+        configProvider
+            .get(CONFIG_IDP_DISCOVERY_URI)
+            .map(URI::create)
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "no '%s' configured".formatted(CONFIG_IDP_DISCOVERY_URI)));
 
     var host = configProvider.get(CONFIG_HOST).orElse("0.0.0.0");
     var port = getPortConfig();
@@ -94,6 +105,7 @@ public class ConfigReader {
         host,
         port,
         baseUri,
+        idpDiscoveryUri,
         sessionStoreConfig(),
         codeStoreConfig());
   }
@@ -165,6 +177,7 @@ public class ConfigReader {
       String host,
       int port,
       URI baseUri,
+      URI idpDiscoveryUri,
       SessionStoreConfig sessionStore,
       CodeStoreConfig codeStoreConfig) {}
 

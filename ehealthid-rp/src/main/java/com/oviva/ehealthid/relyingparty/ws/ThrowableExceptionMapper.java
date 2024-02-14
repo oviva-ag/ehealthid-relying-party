@@ -1,5 +1,6 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
+import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
 import jakarta.ws.rs.WebApplicationException;
@@ -30,6 +31,18 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable exception) {
+
+    if (exception instanceof WebApplicationException w) {
+      var res = w.getResponse();
+      if (res.getStatus() >= 500) {
+        log(w);
+      }
+      return res;
+    }
+
+    if (exception instanceof AuthenticationException) {
+      return Response.status(Status.UNAUTHORIZED).build();
+    }
 
     log(exception);
 

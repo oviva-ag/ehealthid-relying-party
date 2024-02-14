@@ -3,6 +3,7 @@ package com.oviva.ehealthid.relyingparty;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.oviva.ehealthid.auth.AuthenticationFlow;
 import com.oviva.ehealthid.fedclient.FederationMasterClientImpl;
 import com.oviva.ehealthid.fedclient.api.CachedFederationApiClient;
@@ -18,16 +19,19 @@ import com.oviva.ehealthid.relyingparty.poc.GematikHeaderDecoratorHttpClient;
 import com.oviva.ehealthid.relyingparty.svc.AfterCreatedExpiry;
 import com.oviva.ehealthid.relyingparty.svc.CaffeineCodeRepo;
 import com.oviva.ehealthid.relyingparty.svc.CaffeineSessionRepo;
+import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
 import com.oviva.ehealthid.relyingparty.svc.CodeRepo;
 import com.oviva.ehealthid.relyingparty.svc.KeyStore;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
+import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSource;
 import com.oviva.ehealthid.relyingparty.ws.App;
 import jakarta.ws.rs.SeBootstrap;
 import jakarta.ws.rs.SeBootstrap.Configuration;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
@@ -52,10 +56,17 @@ public class Main {
     this.configProvider = configProvider;
   }
 
-  public static void main(String[] args) throws ExecutionException, InterruptedException {
+  public static void main(String[] args) throws ExecutionException {
 
     var main = new Main(new EnvConfigProvider(CONFIG_PREFIX, System::getenv));
-    main.run();
+    try {
+      main.run();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    } catch (Exception e) {
+      logger.atError().setCause(e).log("server unexpectedly stopped");
+      throw e;
+    }
   }
 
   public void run() throws ExecutionException, InterruptedException {
@@ -76,15 +87,25 @@ public class Main {
     var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, codeRepo);
     var sessionRepo = buildSessionRepo(config.sessionStore());
 
+    var httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+
     var authFlow =
         buildAuthFlow(
             config.baseUri(),
             config.federation().federationMaster(),
-            config.federation().relyingPartyEncKeys());
+            config.federation().relyingPartyEncKeys(),
+            httpClient);
+
+    var jwkSource =
+        JWKSourceBuilder.create(new DiscoveryJwkSource<>(httpClient, config.idpDiscoveryUri()))
+            .refreshAheadCache(true)
+            .build();
+
+    var clientAuthenticator = new ClientAuthenticator(jwkSource, config.baseUri());
 
     var instance =
         SeBootstrap.start(
-                new App(config, sessionRepo, keyStore, tokenIssuer, authFlow),
+                new App(config, sessionRepo, keyStore, tokenIssuer, authFlow, clientAuthenticator),
                 Configuration.builder().host(config.host()).port(config.port()).build())
             .toCompletableFuture()
             .get();
@@ -96,12 +117,13 @@ public class Main {
     Thread.currentThread().join();
   }
 
-  private AuthenticationFlow buildAuthFlow(URI selfIssuer, URI fedmaster, JWKSet encJwks) {
+  private AuthenticationFlow buildAuthFlow(
+      URI selfIssuer, URI fedmaster, JWKSet encJwks, HttpClient httpClient) {
 
     // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
     // test environment
     // see: https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen
-    var httpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient());
+    var fedHttpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient(httpClient));
 
     // setup as needed
     var clock = Clock.systemUTC();
@@ -109,13 +131,13 @@ public class Main {
 
     var federationApiClient =
         new CachedFederationApiClient(
-            new FederationApiClientImpl(httpClient),
+            new FederationApiClientImpl(fedHttpClient),
             new InMemoryCacheImpl<>(clock, ttl),
             new InMemoryCacheImpl<>(clock, ttl),
             new InMemoryCacheImpl<>(clock, ttl));
 
     var fedmasterClient = new FederationMasterClientImpl(fedmaster, federationApiClient, clock);
-    var openIdClient = new OpenIdClient(httpClient);
+    var openIdClient = new OpenIdClient(fedHttpClient);
 
     return new AuthenticationFlow(
         selfIssuer, fedmasterClient, openIdClient, encJwks::getKeyByKeyId);

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Request;
@@ -54,8 +55,6 @@ class ThrowableExceptionMapperTest {
   @Test
   void toResponse_propagateWebApplicationException() {
 
-    when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
-
     var ex = new NotFoundException();
 
     // when
@@ -63,6 +62,21 @@ class ThrowableExceptionMapperTest {
 
     // then
     assertEquals(404, res.getStatus());
+  }
+
+  @Test
+  void toResponse_propagateWebApplicationException_forbidden() {
+
+    when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
+
+    var status = 500;
+    var ex = new ServerErrorException(status);
+
+    // when
+    var res = mapper.toResponse(ex);
+
+    // then
+    assertEquals(status, res.getStatus());
   }
 
   @Test
