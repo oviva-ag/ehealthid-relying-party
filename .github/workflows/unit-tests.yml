@@ -22,14 +22,20 @@ jobs:
           java-version: 21
           distribution: 'temurin'
           cache: 'maven'
+      - name: Run unit tests
+        run: ./mvnw -B verify
       - name: Cache SonarCloud packages
+        if: ${{ github.event.pull_request == null || github.event.pull_request.head.repo.full_name == 'oviva-ag/ehealthid-relying-party' }}
         uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Run unit tests
+      - name: Run Sonar
+        if: ${{ github.event.pull_request == null || github.event.pull_request.head.repo.full_name == 'oviva-ag/ehealthid-relying-party' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+
+
