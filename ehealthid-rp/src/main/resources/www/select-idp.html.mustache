@@ -2,10 +2,14 @@
   {{$head}}
     <style>
       .form-inline {
+        flex: 1;
         display: flex;
-        flex-flow: row wrap;
         flex-direction: column;
-        align-items: stretch;
+        justify-content: space-between;
+      }
+
+      .form-inline .provider-wrapper {
+        margin: auto 0;
       }
 
       .form-inline label {
@@ -19,9 +23,10 @@
       }
 
       .form-inline select, .form-inline input {
-        vertical-align: middle;
-        padding: 0 16px;
+        width: 100%;
         height: 40px;
+
+        padding: 0 16px;
         margin: 10px 0;
 
         border-radius: 8px;
@@ -36,6 +41,7 @@
       }
 
       .form-inline select {
+        outline: none;
         font-weight: 400;
       }
 
@@ -56,12 +62,14 @@
   {{$body}}
     <h1>GesundheitsID</h1>
     <form action="/auth/select-idp" method="post" class="form-inline">
-      <label for="idp-selection">Select your GesundheitsID Provider</label>
-      <select name="identityProvider" id="idp-selection">
-        {{#identityProviders}}
-          <option value="{{iss}}">{{name}}</option>
-        {{/identityProviders}}
-      </select>
+      <div class="provider-wrapper">
+        <label for="idp-selection">Select your GesundheitsID Provider</label>
+        <select name="identityProvider" id="idp-selection">
+          {{#identityProviders}}
+            <option value="{{iss}}">{{name}}</option>
+          {{/identityProviders}}
+        </select>
+      </div>
       <input type="submit" value="Login">
     </form>
   {{/body}}
