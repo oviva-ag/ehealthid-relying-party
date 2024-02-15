@@ -58,5 +58,5 @@ jobs:
           body: |
             Docker image: `ghcr.io/oviva-ag/ehealthid-relying-party:v${{ steps.version.outputs.version }}`
           files: |
-            ehealthid-cli/target/ehealthidcli.jar
+            ehealthid-cli/target/ehealthcli.jar
             ehealthid-rp/target/ehealthid-rp-jar-with-dependencies.jar
