@@ -28,6 +28,9 @@ import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
 import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSetSource;
 import com.oviva.ehealthid.relyingparty.ws.App;
+import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import jakarta.ws.rs.SeBootstrap;
 import jakarta.ws.rs.SeBootstrap.Configuration;
 import jakarta.ws.rs.SeBootstrap.Instance;
@@ -100,9 +103,10 @@ public class Main implements AutoCloseable {
     var config = configReader.read();
 
     var keyStore = new KeyStore();
-    var codeRepo = buildCodeRepo(config.codeStoreConfig());
+    var meterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    var codeRepo = buildCodeRepo(config.codeStoreConfig(), meterRegistry);
     var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, codeRepo);
-    var sessionRepo = buildSessionRepo(config.sessionStore());
+    var sessionRepo = buildSessionRepo(config.sessionStore(), meterRegistry);
 
     var httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 
@@ -122,7 +126,14 @@ public class Main implements AutoCloseable {
 
     server =
         SeBootstrap.start(
-                new App(config, sessionRepo, keyStore, tokenIssuer, authFlow, clientAuthenticator),
+                new App(
+                    config,
+                    sessionRepo,
+                    keyStore,
+                    tokenIssuer,
+                    authFlow,
+                    clientAuthenticator,
+                    meterRegistry),
                 Configuration.builder().host(config.host()).port(config.port()).build())
             .toCompletableFuture()
             .get();
@@ -157,13 +168,24 @@ public class Main implements AutoCloseable {
         selfIssuer, fedmasterClient, openIdClient, encJwks::getKeyByKeyId);
   }
 
-  private SessionRepo buildSessionRepo(SessionStoreConfig config) {
+  private SessionRepo buildSessionRepo(
+      SessionStoreConfig config, PrometheusMeterRegistry meterRegistry) {
     Cache<String, Session> store = buildCache(config.ttl(), config.maxEntries());
+
+    CaffeineCacheMetrics<String, Session, Cache<String, Session>> metrics =
+        new CaffeineCacheMetrics<>(store, "sessionCache", null);
+    metrics.bindTo(meterRegistry);
+
     return new CaffeineSessionRepo(store, config.ttl());
   }
 
-  private CodeRepo buildCodeRepo(CodeStoreConfig config) {
+  private CodeRepo buildCodeRepo(CodeStoreConfig config, PrometheusMeterRegistry meterRegistry) {
     Cache<String, Code> store = buildCache(config.ttl(), config.maxEntries());
+
+    CaffeineCacheMetrics<String, Code, Cache<String, Code>> metrics =
+        new CaffeineCacheMetrics<>(store, "codeCache", null);
+    metrics.bindTo(meterRegistry);
+
     return new CaffeineCodeRepo(store);
   }
 
@@ -171,6 +193,7 @@ public class Main implements AutoCloseable {
     return Caffeine.newBuilder()
         .expireAfter(new AfterCreatedExpiry<>(ttl.toNanos()))
         .maximumSize(maxSize)
+        .recordStats()
         .build();
   }
 
