@@ -101,6 +101,8 @@
         <artifactId>maven-assembly-plugin</artifactId>
 
         <configuration>
+          <finalName>ehealthcli</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
               <mainClass>com.oviva.ehealthid.esgen.RootCommand</mainClass>

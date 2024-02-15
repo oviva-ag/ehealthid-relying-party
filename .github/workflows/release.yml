@@ -50,3 +50,35 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           make dist RELEASE_TAG=v$VERSION
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+          release_name: Release v${{ steps.version.outputs.version }}
+          body: |
+            Docker image: `ghcr.io/oviva-ag/ehealthid-relying-party:v${{ steps.version.outputs.version }}`
+      - name: Upload CLI Asset
+        id: upload-release-asset-cli
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ehealthid-cli/target/ehealthidcli.jar
+          asset_name: ehealthidcli.jar
+          asset_content_type: application/java-archive
+      - name: Upload Server Asset
+        id: upload-release-asset-server
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ehealthid-rp/target/ehealthid-rp-jar-with-dependencies.jar
+          asset_name: ehealthid-rp.jar
+          asset_content_type: application/java-archive
