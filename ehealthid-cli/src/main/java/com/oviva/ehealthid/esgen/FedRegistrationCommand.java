@@ -70,7 +70,7 @@ public class FedRegistrationCommand implements Callable<Integer> {
     System.exit(exitCode);
   }
 
-  public Integer call() throws Exception { // your business logic goes here...
+  public Integer call() throws Exception {
 
     var entityConfiguration = fetchEntityConfiguration();
     for (var key : entityConfiguration.jwks().getKeys()) {
