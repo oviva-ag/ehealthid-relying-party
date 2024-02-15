@@ -39,7 +39,7 @@
     <sonar.projectKey>oviva-ag_ehealthid-relying-party</sonar.projectKey>
     <sonar.moduleKey>${project.groupId}_${project.artifactId}</sonar.moduleKey>
     <sonar.cpd.exclusions></sonar.cpd.exclusions>
-    <sonar.coverage.exclusions>esgen/**</sonar.coverage.exclusions>
+    <sonar.coverage.exclusions>ehealthid-cli/**</sonar.coverage.exclusions>
     <sonar.coverage.jacoco.xmlReportPaths>
       ${maven.multiModuleProjectDirectory}/reports/target/site/jacoco-aggregate/jacoco.xml
     </sonar.coverage.jacoco.xmlReportPaths>
@@ -60,9 +60,9 @@
   </scm>
 
   <modules>
+    <module>ehealthid-cli</module>
     <module>ehealthid-rp</module>
     <module>ehealthid</module>
-    <module>esgen</module>
     <module>reports</module>
   </modules>
 
