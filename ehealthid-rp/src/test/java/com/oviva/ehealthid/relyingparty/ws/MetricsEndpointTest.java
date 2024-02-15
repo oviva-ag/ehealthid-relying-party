@@ -15,6 +15,10 @@ public class MetricsEndpointTest {
     // given
     var prometheusMeterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
+    var counter = prometheusMeterRegistry.counter("test.counter");
+
+    counter.increment(2.0);
+
     var sut = new MetricsEndpoint(prometheusMeterRegistry);
 
     // when
@@ -22,5 +26,6 @@ public class MetricsEndpointTest {
 
     // then
     assertEquals(Status.OK.getStatusCode(), res.getStatus());
+    assertTrue(res.getEntity().toString().contains("test_counter_total 2.0"));
   }
 }
