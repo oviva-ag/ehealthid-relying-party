@@ -21,6 +21,7 @@
 
     <version.jboss-logging>3.5.3.Final</version.jboss-logging>
     <version.slf4j>2.0.12</version.slf4j>
+    <version.micrometer>1.12.3</version.micrometer>
     <version.nimbus-jose-jwt>9.37.3</version.nimbus-jose-jwt>
     <version.logback.classic>1.4.14</version.logback.classic>
     <version.logback.encoder>7.4</version.logback.encoder>
@@ -92,6 +93,16 @@
         <version>${version.slf4j}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-core</artifactId>
+        <version>${version.micrometer}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-registry-prometheus</artifactId>
+        <version>${version.micrometer}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.logging</groupId>
