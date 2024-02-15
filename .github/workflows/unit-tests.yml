@@ -31,9 +31,6 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Check Coverage
-        if: ${{ github.event.pull_request.head.repo.full_name != 'oviva-ag/ehealthid-relying-party' }}
-        run:
       - name: Run Sonar
         if: ${{ github.event.pull_request.head.repo.full_name == 'oviva-ag/ehealthid-relying-party' }}
         env:
