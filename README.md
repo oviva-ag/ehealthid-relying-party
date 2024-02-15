@@ -46,32 +46,21 @@ sequenceDiagram
 
 # Quickstart
 
-## Generate Keys & Boot the Relying Party
-
 ```shell
-# a string received from Gematik as part of the registration process
-export MEMBER_ID=FDmyDiGa0112TU
 
-export "ORG_NAME=Awesome DiGA"
-
-# the URI where your relying-party will run
+#---- 1. generate keys
+# the URI where your relying-party will run, 
+# for the registration this _MUST_ be publicly reachable
 export ISSUER_URI=https://mydiga.example.com
 
-# generate keys for the application, keep those safe
-./gen_keys.sh \
-    --issuer-uri=$ISSUER_URI \
-    --member-id="$MEMBER_ID" \
-    --organisation-name="$ORG_NAME" \
-    --generate-keys
-    
-# afterwards the XML for registration in the federation can be found here
-cat federation_registration_form.xml
+# generate keys for the application, keep those safe and secure
+./cli.sh keygen
 
-# run the application
+#---- 2. deploy the relying party
 docker run --rm \
     -v "$(pwd)"/enc_jwks.json:/secrets/enc_jwks.json:ro \
     -v "$(pwd)"/sig_jwks.json:/secrets/sig_jwks.json:ro \
-    -e "EHEALTHID_RP_APP_NAME=$ORG_NAME" \
+    -e "EHEALTHID_RP_APP_NAME=Awesome DiGA" \
     -e "EHEALTHID_RP_BASE_URI=$ISSUER_URI" \
     -e 'EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=/secrets/enc_jwks.json' \
     -e 'EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH=/secrets/sig_jwks.json' \
@@ -81,7 +70,30 @@ docker run --rm \
     -e 'EHEALTHID_RP_IDP_DISCOVERY_URI=https://sso-mydiga.example.com/.well-known/openid-configuration' \
     ghcr.io/oviva-ag/ehealthid-relying-party:latest
 
+#---- 3. register with the federation master
+
+# a string received from Gematik as part of the registration process
+# see: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
+export MEMBER_ID=FDmyDiGa0112TU
+
+# generate the registration XML and send it to gematik
+./cli.sh \
+    --environment=TU \
+    --issuer-uri=$ISSUER_URI \
+    --member-id="$MEMBER_ID"
+    
+# afterwards the XML for registration in the federation can be found below, send it
+# as an email attachment to Gematik 
+# see: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
+cat federation_registration_form.xml
 ```
+
+**IMPORTANT:**
+
+- The relying party __MUST__
+  be [registered within the OpenID federation](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583)
+  to work fully.
+- In order to register for the federation, your entity statment __MUST__ be publicly available.
 
 Once the server is booted, it will:
 
@@ -95,13 +107,8 @@ Once the server is booted, it will:
    ```shell
     curl $BASE_URI/.well-known/openid-federation | jwt decode -j - | jq .payload
     ```
-   **IMPORTANT:** Once the entity configuration is reachable in the internet it can be registered
-   with Gematik. You can directly send in the XML generated in the second step, the file is
-   called `federation_registration_form.xml`. See documentation further below.
 
 3. Be ready to handle OpenID Connect flows and handle them via Germany's GesundheitsID federation.
-
-The discovery document can be used to configure the relying party in an existing identity provider.
 
 ## Configure Identity Provider
 
