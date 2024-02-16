@@ -51,7 +51,12 @@ public class App extends Application {
     return Set.of(
         new FederationEndpoint(config.federation()),
         new AuthEndpoint(
-            config.baseUri(), config.relyingParty(), sessionRepo, tokenIssuer, authenticationFlow),
+            config.baseUri(),
+            config.relyingParty(),
+            sessionRepo,
+            tokenIssuer,
+            authenticationFlow,
+            prometheusMeterRegistry),
         new TokenEndpoint(tokenIssuer, clientAuthenticator),
         new OpenIdEndpoint(config.baseUri(), config.relyingParty(), keyStore),
         new JacksonJsonProvider(configureObjectMapper()),

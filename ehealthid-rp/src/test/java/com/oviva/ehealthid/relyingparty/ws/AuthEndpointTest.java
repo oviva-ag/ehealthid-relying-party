@@ -15,6 +15,8 @@ import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.util.IdGenerator;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import jakarta.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.util.List;
@@ -29,13 +31,15 @@ class AuthEndpointTest {
 
   private static final URI BASE_URI = URI.create("https://idp.example.com");
   private static final URI REDIRECT_URI = URI.create("https://myapp.example.com");
+  private static final PrometheusMeterRegistry prometheusMeterRegistry =
+      new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
   @Test
   void auth_badScopes() {
 
     var rpConfig = new RelyingPartyConfig(null, List.of(REDIRECT_URI));
 
-    var sut = new AuthEndpoint(BASE_URI, rpConfig, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, rpConfig, null, null, null, prometheusMeterRegistry);
 
     var scope = "openid email";
     var state = UUID.randomUUID().toString();
@@ -59,7 +63,7 @@ class AuthEndpointTest {
   void auth_malformedRedirect() {
     var config = new RelyingPartyConfig(null, List.of(REDIRECT_URI));
 
-    var sut = new AuthEndpoint(BASE_URI, config, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, null, null, prometheusMeterRegistry);
 
     var scope = "openid email";
     var state = UUID.randomUUID().toString();
@@ -79,7 +83,7 @@ class AuthEndpointTest {
   void auth_untrustedRedirect() {
     var config = new RelyingPartyConfig(null, List.of(REDIRECT_URI));
 
-    var sut = new AuthEndpoint(BASE_URI, config, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, null, null, prometheusMeterRegistry);
 
     var scope = "openid email";
     var state = UUID.randomUUID().toString();
@@ -103,7 +107,7 @@ class AuthEndpointTest {
     var config = new RelyingPartyConfig(List.of("code"), List.of(REDIRECT_URI));
 
     var sessionRepo = mock(SessionRepo.class);
-    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, null, prometheusMeterRegistry);
 
     var scope = "openid";
     var state = UUID.randomUUID().toString();
@@ -141,7 +145,8 @@ class AuthEndpointTest {
     when(authFlow.start(any())).thenReturn(selectIdpStep);
 
     var sessionRepo = mock(SessionRepo.class);
-    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, authFlow);
+    var sut =
+        new AuthEndpoint(BASE_URI, config, sessionRepo, null, authFlow, prometheusMeterRegistry);
 
     var scope = "openid";
     var state = UUID.randomUUID().toString();
@@ -169,7 +174,7 @@ class AuthEndpointTest {
 
     var config = new RelyingPartyConfig(null, null);
 
-    var sut = new AuthEndpoint(BASE_URI, config, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, null, null, null, prometheusMeterRegistry);
 
     // when
     try (var res = sut.callback(sessionId, "")) {
@@ -186,7 +191,7 @@ class AuthEndpointTest {
 
     var sessionRepo = mock(SessionRepo.class);
 
-    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, null);
+    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, null, null, prometheusMeterRegistry);
 
     var sessionId = UUID.randomUUID().toString();
 
@@ -208,7 +213,8 @@ class AuthEndpointTest {
     var sessionRepo = mock(SessionRepo.class);
     var tokenIssuer = mock(TokenIssuer.class);
 
-    var sut = new AuthEndpoint(BASE_URI, config, sessionRepo, tokenIssuer, null);
+    var sut =
+        new AuthEndpoint(BASE_URI, config, sessionRepo, tokenIssuer, null, prometheusMeterRegistry);
 
     var sessionId = UUID.randomUUID().toString();
 
@@ -269,7 +275,7 @@ class AuthEndpointTest {
     var session = Session.create().id(sessionId).selectSectoralIdpStep(selectIdpStep).build();
     when(sessionRepo.load(sessionId)).thenReturn(session);
 
-    var sut = new AuthEndpoint(BASE_URI, null, sessionRepo, null, null);
+    var sut = new AuthEndpoint(BASE_URI, null, sessionRepo, null, null, prometheusMeterRegistry);
 
     // when
     var res = sut.postSelectIdp(sessionId, selectedIdpIssuer);
@@ -293,7 +299,7 @@ class AuthEndpointTest {
 
     when(sessionRepo.load(sessionId)).thenReturn(null);
 
-    var sut = new AuthEndpoint(BASE_URI, null, sessionRepo, null, null);
+    var sut = new AuthEndpoint(BASE_URI, null, sessionRepo, null, null, prometheusMeterRegistry);
 
     // when
     var res = sut.postSelectIdp(sessionId, selectedIdpIssuer);
@@ -307,7 +313,7 @@ class AuthEndpointTest {
   void selectIdp_nothingSelected() {
 
     var sessionId = "1234";
-    var sut = new AuthEndpoint(BASE_URI, null, null, null, null);
+    var sut = new AuthEndpoint(BASE_URI, null, null, null, null, prometheusMeterRegistry);
 
     // when
     var res = sut.postSelectIdp(sessionId, null);
