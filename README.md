@@ -77,7 +77,7 @@ docker run --rm \
 export MEMBER_ID=FDmyDiGa0112TU
 
 # generate the registration XML and send it to gematik
-./cli.sh \
+./cli.sh fedreg \
     --environment=TU \
     --issuer-uri=$ISSUER_URI \
     --member-id="$MEMBER_ID"

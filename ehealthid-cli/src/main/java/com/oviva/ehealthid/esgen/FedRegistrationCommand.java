@@ -57,6 +57,11 @@ public class FedRegistrationCommand implements Callable<Integer> {
       required = true)
   private URI issuerUri;
 
+  @Option(
+      names = {"-f", "--file"},
+      description = "the file to write to")
+  private Path file;
+
   public static void main(String[] args) {
 
     int exitCode = 1;
@@ -77,24 +82,36 @@ public class FedRegistrationCommand implements Callable<Integer> {
       validateKey(key, KeyUse.SIGNATURE);
     }
 
-    writeRegistrationForm(entityConfiguration);
+    if (file != null) {
+      writeRegistrationForm(entityConfiguration);
+    } else {
+      printRegistrationForm(entityConfiguration);
+    }
+
     return 0;
   }
 
-  private void writeRegistrationForm(EntityConfiguration entityConfiguration) throws IOException {
-    var registrationForm =
-        RegistratonFormRenderer.render(
-            new Model(
-                memberId,
-                entityConfiguration.orgName(),
-                issuerUri,
-                environment,
-                entityConfiguration.scopes(),
-                entityConfiguration.jwks()));
+  private String renderRegistrationForm(EntityConfiguration entityConfiguration) {
+    return RegistratonFormRenderer.render(
+        new Model(
+            memberId,
+            entityConfiguration.orgName(),
+            issuerUri,
+            environment,
+            entityConfiguration.scopes(),
+            entityConfiguration.jwks()));
+  }
 
-    var path = Path.of("federation_registration_form.xml");
-    logger.atInfo().log("writing registration form to '{}'", path);
-    Files.writeString(path, registrationForm);
+  private void printRegistrationForm(EntityConfiguration entityConfiguration) {
+    var registrationForm = renderRegistrationForm(entityConfiguration);
+    System.out.println(registrationForm);
+  }
+
+  private void writeRegistrationForm(EntityConfiguration entityConfiguration) throws IOException {
+    var registrationForm = renderRegistrationForm(entityConfiguration);
+
+    logger.atInfo().log("writing registration form to '{}'", file);
+    Files.writeString(file, registrationForm);
   }
 
   private EntityConfiguration fetchEntityConfiguration() {
