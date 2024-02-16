@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.err</target>
     <encoder>
       <pattern>%d{HH:mm:ss} %highlight(%-5level) %msg %kvp%n</pattern>
     </encoder>
