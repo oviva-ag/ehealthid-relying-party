@@ -10,6 +10,8 @@ import com.oviva.ehealthid.relyingparty.ws.OpenIdErrorResponses.ErrorCode;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.FormParam;
@@ -45,17 +47,23 @@ public class AuthEndpoint {
 
   private final Pages pages = new Pages(new TemplateRenderer());
 
+  private final Counter authRequests;
+  private final Counter authSuccesses;
+
   public AuthEndpoint(
       URI baseUri,
       RelyingPartyConfig relyingPartyConfig,
       SessionRepo sessionRepo,
       TokenIssuer tokenIssuer,
-      AuthenticationFlow authenticationFlow) {
+      AuthenticationFlow authenticationFlow,
+      PrometheusMeterRegistry prometheusMeterRegistry) {
     this.baseUri = baseUri;
     this.relyingPartyConfig = relyingPartyConfig;
     this.sessionRepo = sessionRepo;
     this.tokenIssuer = tokenIssuer;
     this.authenticationFlow = authenticationFlow;
+    this.authRequests = prometheusMeterRegistry.counter("auth.requests");
+    this.authSuccesses = prometheusMeterRegistry.counter("auth.requests.success");
   }
 
   private static String calculateS256CodeChallenge(String codeVerifier) {
@@ -86,6 +94,7 @@ public class AuthEndpoint {
       @QueryParam("client_id") String clientId,
       @QueryParam("redirect_uri") String redirectUri,
       @QueryParam("nonce") String nonce) {
+    authRequests.increment();
 
     URI parsedRedirect = null;
     try {
@@ -230,6 +239,7 @@ public class AuthEndpoint {
             .queryParam("state", session.state())
             .build();
 
+    authSuccesses.increment();
     return Response.seeOther(redirectUri).build();
   }
 
