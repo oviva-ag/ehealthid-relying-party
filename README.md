@@ -159,51 +159,10 @@ To simplify matter, here a script to generate fresh keys as well as the XML nece
 with Gematik.
 
 See [Gematik documentation](https://wiki.gematik.de/pages/viewpage.action?pageId=544316583) for
-details
-on the registration process.
+details on the registration process.
 
 ```shell
-./gen_keys.sh --help
-```
-
-### Generate Fresh Keys and Prepare Registration
-
-```shell
-# a string received from Gematik as part of the registration process
-export MEMBER_ID=FDmyDiGa0112TU
-
-./gen_keys.sh \
-    --issuer-uri=https://mydiga.example.com \
-    --member-id="$MEMBER_ID" \
-    --organisation-name="My DiGA" \
-    --generate-keys
-    
-# send in the generated XML to Gematik
-cat federation_registration_form.xml
-```
-
-### Re-use Existing Keys and Prepare Registration
-
-```shell
-# a string received from Gematik as part of the registration process
-export MEMBER_ID=FDmyDiGa0112TU
-
-# specify the environment, either 
-# TU -> test environment
-# RU -> reference environment
-# PU -> productive environment
-export ENVIRONMENT=RU
-
-./gen_keys.sh \
-    --issuer-uri=https://mydiga.example.com \
-    --member-id="$MEMBER_ID" \
-    --organisation-name="My DiGA" \
-    --environment=$ENVIRONMENT \
-    --signing-jwks=./sig_jwks.json \
-    --encryption-jwks=./enc_jwks.json
-    
-# send in the generated XML to Gematik
-cat federation_registration_form.xml
+./cli.sh --help
 ```
 
 ## Authentication flow between all involved parties
