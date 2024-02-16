@@ -192,12 +192,14 @@ sequenceDiagram
     rp -->> app: redirect to IDP with code
     app ->> idp: success, callback to IDP
     idp ->> rp: redeem code
-    note right of rp: client authenticated via 'private_key_jwt'
-    rp ->> idp: fetch OpenID discovery document
-    idp -->> rp: discovery document
-    rp ->> idp: fetch JWKS
-    idp -->> rp: JWKS
-    note right of rp: verifies client JWT with discovered JWKS
+    alt client authentication
+      note right of rp: client authenticated via 'private_key_jwt'
+      rp ->> idp: fetch OpenID discovery document
+      idp -->> rp: discovery document
+      rp ->> idp: fetch JWKS
+      idp -->> rp: JWKS
+      note right of rp: verifies client JWT with discovered JWKS
+    end
     rp -->> idp: id_token
     idp -->> app: success! redirect
 ```
