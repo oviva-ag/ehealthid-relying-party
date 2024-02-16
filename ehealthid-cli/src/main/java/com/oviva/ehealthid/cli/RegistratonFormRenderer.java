@@ -1,10 +1,10 @@
-package com.oviva.ehealthid.esgen;
+package com.oviva.ehealthid.cli;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.oviva.ehealthid.esgen.RegistratonFormRenderer.Model.Scope;
+import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Scope;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;

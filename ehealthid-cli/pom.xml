@@ -105,7 +105,7 @@
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
-              <mainClass>com.oviva.ehealthid.esgen.RootCommand</mainClass>
+              <mainClass>com.oviva.ehealthid.cli.RootCommand</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

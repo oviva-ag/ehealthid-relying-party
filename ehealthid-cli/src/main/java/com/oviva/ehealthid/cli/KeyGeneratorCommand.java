@@ -1,4 +1,4 @@
-package com.oviva.ehealthid.esgen;
+package com.oviva.ehealthid.cli;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
