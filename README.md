@@ -221,9 +221,6 @@ In order of priority:
 
 - [ ] Internationalization (ResourceBundles) for templates (en & de),
   see [Mustache Library](https://github.com/spullara/mustache.java/blob/main/compiler/src/main/java/com/github/mustachejava/functions/BundleFunctions.java)
-- [ ] Metrics endpoint
-    - in-memory store sizes (entries of SessionRepo and CodeRepo)
-    - count of flows with their result
 
 # Wishlist
 
