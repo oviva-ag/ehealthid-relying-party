@@ -7,7 +7,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import jakarta.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 
-public class MetricsEndpointTest {
+class MetricsEndpointTest {
 
   @Test
   void get() {
