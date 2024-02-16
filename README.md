@@ -36,14 +36,6 @@ sequenceDiagram
     - Models for the EntityStatments, IDP list endpoints etc.
     - Narrow support for the 'Fachdienst' use-case.
 
-## Limitations
-
-- for now sessions are stored in-memory, this implies:
-    - rebooting the server will force users currently logging-in to restart
-    - if multiple instances run, sessions must be sticky (e.g. use `session_id` cookie)
-    - though it would be relatively straight forward to use a database instead
-- this is tested in the 'Testumgebung' (TU) against the Gematik IDP due to a lack of other options
-
 # Quickstart
 
 ```shell
@@ -213,6 +205,14 @@ sequenceDiagram
 # Testing
 
 **See [TESTING](./TESTING.md).**
+
+# Limitations
+
+- for now sessions are stored in-memory, this implies:
+    - rebooting the server will force users currently logging-in to restart
+    - if multiple instances run, sessions must be sticky (e.g. use `session_id` cookie)
+    - though it would be relatively straight forward to use a database instead
+- this is tested in the 'Testumgebung' (TU) against the Gematik IDP due to a lack of other options
 
 # Open Points
 
