@@ -2,6 +2,7 @@ package com.oviva.ehealthid.relyingparty.ws;
 
 import com.oviva.ehealthid.auth.AuthenticationFlow;
 import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
+import com.oviva.ehealthid.relyingparty.fed.FederationConfig;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
@@ -32,7 +33,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.List;
 
 @Path("/auth")
 public class AuthEndpoint {
@@ -49,16 +49,19 @@ public class AuthEndpoint {
 
   private final Counter authRequests;
   private final Counter authSuccesses;
+  private final FederationConfig federationConfig;
 
   public AuthEndpoint(
       URI baseUri,
       RelyingPartyConfig relyingPartyConfig,
+      FederationConfig federationConfig,
       SessionRepo sessionRepo,
       TokenIssuer tokenIssuer,
       AuthenticationFlow authenticationFlow,
       PrometheusMeterRegistry prometheusMeterRegistry) {
     this.baseUri = baseUri;
     this.relyingPartyConfig = relyingPartyConfig;
+    this.federationConfig = federationConfig;
     this.sessionRepo = sessionRepo;
     this.tokenIssuer = tokenIssuer;
     this.authenticationFlow = authenticationFlow;
@@ -135,9 +138,6 @@ public class AuthEndpoint {
 
     // === federated flow starts
 
-    // those _MUST_ be at most the ones you requested when handing in the entity statement
-    var scopes = List.of("openid", "urn:telematik:email", "urn:telematik:versicherter");
-
     // these should come from the client in the real world
     var codeChallenge = calculateS256CodeChallenge(verifier);
 
@@ -147,7 +147,7 @@ public class AuthEndpoint {
     var step1 =
         authenticationFlow.start(
             new AuthenticationFlow.Session(
-                state, nonce, relyingPartyCallback, codeChallenge, scopes));
+                state, nonce, relyingPartyCallback, codeChallenge, federationConfig.scopes()));
 
     // ==== 2) get the list of available IDPs
     var identityProviders = step1.fetchIdpOptions();
