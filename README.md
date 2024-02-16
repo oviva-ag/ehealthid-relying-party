@@ -218,7 +218,6 @@ sequenceDiagram
 
 In order of priority:
 
-- [ ] Continuous Deployment & Helm chart (externally)
 - [ ] Internationalization (ResourceBundles) for templates (en & de),
   see [Mustache Library](https://github.com/spullara/mustache.java/blob/main/compiler/src/main/java/com/github/mustachejava/functions/BundleFunctions.java)
 - [ ] Metrics endpoint
