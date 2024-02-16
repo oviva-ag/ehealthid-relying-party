@@ -68,16 +68,15 @@ docker run --rm \
 # see: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
 export MEMBER_ID=FDmyDiGa0112TU
 
-# generate the registration XML and send it to gematik
+# generate the registration XML from an existing entity statement
 ./cli.sh fedreg \
     --environment=TU \
     --issuer-uri=$ISSUER_URI \
     --member-id="$MEMBER_ID"
     
-# afterwards the XML for registration in the federation can be found below, send it
+# this prints the XML for registration in the federation, send it
 # as an email attachment to Gematik 
 # see: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
-cat federation_registration_form.xml
 ```
 
 **IMPORTANT:**

@@ -53,6 +53,7 @@ public class App extends Application {
         new AuthEndpoint(
             config.baseUri(),
             config.relyingParty(),
+            config.federation(),
             sessionRepo,
             tokenIssuer,
             authenticationFlow,
