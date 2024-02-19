@@ -127,9 +127,9 @@ a {
 </head>
 <body>
 <div class="container">
-      <h1>GesundheitsID</h1>
-    <form action="/auth/select-idp" method="post" class="form-inline">
+      <form action="/auth/select-idp" method="post" class="form-inline">
       <div class="provider-wrapper">
+        <h1>GesundheitsID</h1>
         <label for="idp-selection">Select your GesundheitsID Provider</label>
         <select name="identityProvider" id="idp-selection">
             <option value="https://a.example.com">AoK Tesfalen</option>

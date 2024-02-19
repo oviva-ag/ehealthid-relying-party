@@ -60,9 +60,9 @@
     </style>
   {{/head}}
   {{$body}}
-    <h1>GesundheitsID</h1>
     <form action="/auth/select-idp" method="post" class="form-inline">
       <div class="provider-wrapper">
+        <h1>GesundheitsID</h1>
         <label for="idp-selection">Select your GesundheitsID Provider</label>
         <select name="identityProvider" id="idp-selection">
           {{#identityProviders}}
