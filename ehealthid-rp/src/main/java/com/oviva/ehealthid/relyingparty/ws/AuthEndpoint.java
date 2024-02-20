@@ -1,6 +1,7 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
 import com.oviva.ehealthid.auth.AuthenticationFlow;
+import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.ehealthid.relyingparty.fed.FederationConfig;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
@@ -27,7 +28,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON})
@@ -103,17 +104,23 @@ public class AuthEndpoint {
       return badRequest(e.getMessage());
     }
 
-    var maybeError =
-        validateOpenIdRequestSettings(parsedRedirect, scope, state, responseType);
+    var maybeError = validateOpenIdRequestSettings(parsedRedirect, scope, state, responseType);
     if (maybeError.isPresent()) {
-        return maybeError.get();
+      return maybeError.get();
     }
 
+    FederatedFlowResult result = federatedFlow(state, clientId, nonce, parsedRedirect);
 
+    var form = pages.selectIdpForm(result.identityProviders());
+
+    return Response.ok(form, MediaType.TEXT_HTML_TYPE)
+        .cookie(createSessionCookie(result.sessionId()))
+        .build();
+  }
+
+  private FederatedFlowResult federatedFlow(
+      String state, String clientId, String nonce, URI parsedRedirect) {
     var verifier = generateCodeVerifier(); // for PKCE
-
-    // === federated flow starts
-
     // these should come from the client in the real world
     var codeChallenge = calculateS256CodeChallenge(verifier);
 
@@ -144,12 +151,10 @@ public class AuthEndpoint {
 
     sessionRepo.save(session);
 
-    var form = pages.selectIdpForm(identityProviders);
-
-    return Response.ok(form, MediaType.TEXT_HTML_TYPE)
-        .cookie(createSessionCookie(sessionId))
-        .build();
+    return new FederatedFlowResult(sessionId, identityProviders);
   }
+
+  private record FederatedFlowResult(String sessionId, List<IdpEntry> identityProviders) {}
 
   private URI parseAndValidateRedirect(String redirectUri) throws BadRequestException {
 
@@ -174,9 +179,11 @@ public class AuthEndpoint {
     return parsedRedirect;
   }
 
-  private Optional<Response> validateOpenIdRequestSettings(URI parsedRedirect, String scope, String state, String responseType) {
+  private Optional<Response> validateOpenIdRequestSettings(
+      URI parsedRedirect, String scope, String state, String responseType) {
     if (!"openid".equals(scope)) {
-      return Optional.ofNullable(OpenIdErrorResponses.redirectWithError(
+      return Optional.ofNullable(
+          OpenIdErrorResponses.redirectWithError(
               parsedRedirect,
               ErrorCode.INVALID_SCOPE,
               state,
@@ -184,7 +191,8 @@ public class AuthEndpoint {
     }
 
     if (!relyingPartyConfig.supportedResponseTypes().contains(responseType)) {
-      return Optional.ofNullable(OpenIdErrorResponses.redirectWithError(
+      return Optional.ofNullable(
+          OpenIdErrorResponses.redirectWithError(
               parsedRedirect,
               ErrorCode.UNSUPPORTED_RESPONSE_TYPE,
               state,
