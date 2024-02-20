@@ -13,13 +13,7 @@ import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.CookieParam;
-import jakarta.ws.rs.FormParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.NewCookie.SameSite;
@@ -33,7 +27,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Map;
+import java.util.Optional;
 
+@Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON})
 @Path("/auth")
 public class AuthEndpoint {
 
@@ -101,38 +98,17 @@ public class AuthEndpoint {
 
     URI parsedRedirect = null;
     try {
-      parsedRedirect = new URI(redirectUri);
-    } catch (URISyntaxException e) {
-      return badRequest(
-          "Bad redirect_uri='%s'. Passed link is not valid.".formatted(parsedRedirect));
+      parsedRedirect = parseAndValidateRedirect(redirectUri);
+    } catch (BadRequestException e) {
+      return badRequest(e.getMessage());
     }
 
-    if (!"https".equals(parsedRedirect.getScheme())) {
-      return badRequest(
-          "Insecure redirect_uri='%s'. Misconfigured server, please use 'https'."
-              .formatted(parsedRedirect));
+    var maybeError =
+        validateOpenIdRequestSettings(parsedRedirect, scope, state, responseType);
+    if (maybeError.isPresent()) {
+        return maybeError.get();
     }
 
-    if (!relyingPartyConfig.validRedirectUris().contains(parsedRedirect)) {
-      return badRequest(
-          "Untrusted redirect_uri=%s. Misconfigured server.".formatted(parsedRedirect));
-    }
-
-    if (!"openid".equals(scope)) {
-      return OpenIdErrorResponses.redirectWithError(
-          parsedRedirect,
-          ErrorCode.INVALID_SCOPE,
-          state,
-          "scope '%s' not supported".formatted(scope));
-    }
-
-    if (!relyingPartyConfig.supportedResponseTypes().contains(responseType)) {
-      return OpenIdErrorResponses.redirectWithError(
-          parsedRedirect,
-          ErrorCode.UNSUPPORTED_RESPONSE_TYPE,
-          state,
-          "unsupported response type: '%s'".formatted(responseType));
-    }
 
     var verifier = generateCodeVerifier(); // for PKCE
 
@@ -151,7 +127,6 @@ public class AuthEndpoint {
 
     // ==== 2) get the list of available IDPs
     var identityProviders = step1.fetchIdpOptions();
-    var form = pages.selectIdpForm(identityProviders);
 
     // store session
     var sessionId = IdGenerator.generateID();
@@ -169,9 +144,54 @@ public class AuthEndpoint {
 
     sessionRepo.save(session);
 
+    var form = pages.selectIdpForm(identityProviders);
+
     return Response.ok(form, MediaType.TEXT_HTML_TYPE)
         .cookie(createSessionCookie(sessionId))
         .build();
+  }
+
+  private URI parseAndValidateRedirect(String redirectUri) throws BadRequestException {
+
+    URI parsedRedirect = null;
+    try {
+      parsedRedirect = new URI(redirectUri);
+    } catch (URISyntaxException e) {
+      throw new BadRequestException(
+          "Bad redirect_uri='%s'. Passed link is not valid.".formatted(redirectUri));
+    }
+
+    if (!"https".equals(parsedRedirect.getScheme())) {
+      throw new BadRequestException(
+          "Insecure redirect_uri='%s'. Misconfigured server, please use 'https'."
+              .formatted(parsedRedirect));
+    }
+
+    if (!relyingPartyConfig.validRedirectUris().contains(parsedRedirect)) {
+      throw new BadRequestException(
+          "Untrusted redirect_uri='%s'. Misconfigured server.".formatted(parsedRedirect));
+    }
+    return parsedRedirect;
+  }
+
+  private Optional<Response> validateOpenIdRequestSettings(URI parsedRedirect, String scope, String state, String responseType) {
+    if (!"openid".equals(scope)) {
+      return Optional.ofNullable(OpenIdErrorResponses.redirectWithError(
+              parsedRedirect,
+              ErrorCode.INVALID_SCOPE,
+              state,
+              "scope '%s' not supported".formatted(scope)));
+    }
+
+    if (!relyingPartyConfig.supportedResponseTypes().contains(responseType)) {
+      return Optional.ofNullable(OpenIdErrorResponses.redirectWithError(
+              parsedRedirect,
+              ErrorCode.UNSUPPORTED_RESPONSE_TYPE,
+              state,
+              "unsupported response type: '%s'".formatted(responseType)));
+    }
+
+    return Optional.empty();
   }
 
   private NewCookie createSessionCookie(String sessionId) {
@@ -263,6 +283,7 @@ public class AuthEndpoint {
     return sessionRepo.load(id);
   }
 
+  @Produces(MediaType.TEXT_HTML)
   private Response badRequest(String message) {
     return Response.status(Status.BAD_REQUEST)
         .entity(pages.error(message))
