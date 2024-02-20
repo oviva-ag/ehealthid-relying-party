@@ -89,6 +89,7 @@ public class AuthEndpoint {
   // Authorization Request
   // https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.1
   @GET
+  @Produces(MediaType.TEXT_HTML)
   public Response auth(
       @QueryParam("scope") String scope,
       @QueryParam("state") String state,
@@ -158,7 +159,6 @@ public class AuthEndpoint {
   private record FederatedFlowResult(String sessionId, List<IdpEntry> identityProviders) {}
 
   private URI parseAndValidateRedirect(String redirectUri) throws BadRequestException {
-
     URI parsedRedirect = null;
     try {
       parsedRedirect = new URI(redirectUri);
@@ -202,6 +202,7 @@ public class AuthEndpoint {
 
     return Optional.empty();
   }
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response authJSON(
@@ -212,7 +213,25 @@ public class AuthEndpoint {
       @QueryParam("redirect_uri") String redirectUri,
       @QueryParam("nonce") String nonce) {
     // TODO: implement and test
-    return Response.ok().build();
+    authRequests.increment();
+
+    URI parsedRedirect = null;
+    try {
+      parsedRedirect = parseAndValidateRedirect(redirectUri);
+    } catch (BadRequestException e) {
+      return badRequestJSON(e.getMessage());
+    }
+
+    var maybeError = validateOpenIdRequestSettings(parsedRedirect, scope, state, responseType);
+    if (maybeError.isPresent()) {
+      return maybeError.get();
+    }
+
+    FederatedFlowResult result = federatedFlow(state, clientId, nonce, parsedRedirect);
+
+    return Response.ok(Map.of("idps", result.identityProviders()), MediaType.APPLICATION_JSON_TYPE)
+        .cookie(createSessionCookie(result.sessionId()))
+        .build();
   }
 
   private NewCookie createSessionCookie(String sessionId) {
