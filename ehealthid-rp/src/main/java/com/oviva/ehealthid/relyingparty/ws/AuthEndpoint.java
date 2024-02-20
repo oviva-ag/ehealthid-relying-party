@@ -159,6 +159,10 @@ public class AuthEndpoint {
   private record FederatedFlowResult(String sessionId, List<IdpEntry> identityProviders) {}
 
   private URI parseAndValidateRedirect(String redirectUri) throws BadRequestException {
+    if (redirectUri == null || redirectUri.isBlank()) {
+      throw new BadRequestException("Missing redirect_uri. Please provide a valid redirect URI.");
+    }
+
     URI parsedRedirect = null;
     try {
       parsedRedirect = new URI(redirectUri);
