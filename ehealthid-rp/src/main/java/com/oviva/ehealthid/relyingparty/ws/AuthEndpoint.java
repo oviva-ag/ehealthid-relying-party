@@ -163,6 +163,8 @@ public class AuthEndpoint {
       throw new BadRequestException("Missing redirect_uri. Please provide a valid redirect URI.");
     }
 
+    // TODO: Discuss with Thomas about the reflection of client provided values
+
     URI parsedRedirect = null;
     try {
       parsedRedirect = new URI(redirectUri);
