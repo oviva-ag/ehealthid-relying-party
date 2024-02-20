@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON})
@@ -201,6 +202,18 @@ public class AuthEndpoint {
 
     return Optional.empty();
   }
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response authJSON(
+      @QueryParam("scope") String scope,
+      @QueryParam("state") String state,
+      @QueryParam("response_type") String responseType,
+      @QueryParam("client_id") String clientId,
+      @QueryParam("redirect_uri") String redirectUri,
+      @QueryParam("nonce") String nonce) {
+    // TODO: implement and test
+    return Response.ok().build();
+  }
 
   private NewCookie createSessionCookie(String sessionId) {
     return new NewCookie.Builder("session_id")
@@ -296,6 +309,14 @@ public class AuthEndpoint {
     return Response.status(Status.BAD_REQUEST)
         .entity(pages.error(message))
         .type(MediaType.TEXT_HTML_TYPE)
+        .build();
+  }
+
+  @Produces(MediaType.APPLICATION_JSON)
+  private Response badRequestJSON(String message) {
+    return Response.status(Status.BAD_REQUEST)
+        .entity(Map.of("error", message))
+        .type(MediaType.APPLICATION_JSON)
         .build();
   }
 }
