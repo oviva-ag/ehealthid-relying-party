@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import jakarta.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 
 class MetricsEndpointTest {
@@ -25,7 +24,6 @@ class MetricsEndpointTest {
     var res = sut.get();
 
     // then
-    assertEquals(Status.OK.getStatusCode(), res.getStatus());
-    assertTrue(res.getEntity().toString().contains("test_counter_total 2.0"));
+    assertTrue(res.contains("test_counter_total 2.0"));
   }
 }
