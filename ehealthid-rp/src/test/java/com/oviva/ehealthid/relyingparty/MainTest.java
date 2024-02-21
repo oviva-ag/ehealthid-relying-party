@@ -1,18 +1,15 @@
 package com.oviva.ehealthid.relyingparty;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.junit.jupiter.api.Assertions.*;
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.containsString;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.oviva.ehealthid.relyingparty.cfg.ConfigProvider;
+import io.restassured.http.ContentType;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -80,43 +77,30 @@ class MainTest {
     var baseUri = application.baseUri();
 
     // then
-    tryGet(baseUri.resolve(DISCOVERY_PATH));
-    tryGet(baseUri.resolve(JWKS_PATH));
-    tryGet(baseUri.resolve(FEDERATION_CONFIG_PATH));
-    tryGet(baseUri.resolve(HEALTH_PATH));
-    tryGet(baseUri.resolve(METRICS_PATH));
+    assertGetOk(baseUri.resolve(DISCOVERY_PATH));
+    assertGetOk(baseUri.resolve(JWKS_PATH));
+    assertGetOk(baseUri.resolve(FEDERATION_CONFIG_PATH));
+    assertGetOk(baseUri.resolve(HEALTH_PATH));
+    assertGetOk(baseUri.resolve(METRICS_PATH));
   }
 
   @Test
-  void run_metrics() throws Exception {
+  void run_metrics() {
 
     var baseUri = application.baseUri();
 
-    // when
-    var body = tryGet(baseUri.resolve(METRICS_PATH));
-
-    // then
-    var metrics = new String(body, StandardCharsets.UTF_8);
-    assertTrue(metrics.contains("cache_gets_total{cache=\"sessionCache\""));
-    assertTrue(metrics.contains("cache_gets_total{cache=\"codeCache\""));
-    assertTrue(metrics.contains("jvm_memory_used_bytes{area=\"heap\""));
-    assertTrue(metrics.contains("jvm_gc_memory_allocated_bytes_total "));
+    // when & then
+    get(baseUri.resolve(METRICS_PATH))
+        .then()
+        .contentType(ContentType.TEXT)
+        .body(containsString("cache_gets_total{cache=\"sessionCache\""))
+        .body(containsString("cache_gets_total{cache=\"codeCache\""))
+        .body(containsString("jvm_memory_used_bytes{area=\"heap\""))
+        .body(containsString("jvm_gc_memory_allocated_bytes_total "));
   }
 
-  private byte[] tryGet(URI uri) throws IOException, InterruptedException {
-
-    var client = HttpClient.newHttpClient();
-    for (int i = 0; i < 100; i++) {
-      var req = HttpRequest.newBuilder(uri).GET().build();
-
-      var res = client.send(req, BodyHandlers.ofByteArray());
-      if (res.statusCode() == 200) {
-        return res.body();
-      }
-      Thread.sleep(Duration.ofMillis(500).toMillis());
-    }
-    fail();
-    return null;
+  private void assertGetOk(URI uri) {
+    get(uri).then().statusCode(200);
   }
 
   record StaticConfig(Map<Object, Object> values) implements ConfigProvider {
