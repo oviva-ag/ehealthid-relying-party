@@ -27,5 +27,6 @@ class MetricsEndpointTest {
     // then
     assertEquals(Status.OK.getStatusCode(), res.getStatus());
     assertTrue(res.getEntity().toString().contains("test_counter_total 2.0"));
+    assertEquals("[text/plain]", res.getHeaders().get("Content-Type").toString());
   }
 }
