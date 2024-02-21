@@ -8,7 +8,8 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/metrics")
 public class MetricsEndpoint {
@@ -26,7 +27,8 @@ public class MetricsEndpoint {
   }
 
   @GET
-  public Response get() {
-    return Response.ok(this.registry.scrape()).build();
+  @Produces(MediaType.TEXT_PLAIN)
+  public String get() {
+    return registry.scrape();
   }
 }
