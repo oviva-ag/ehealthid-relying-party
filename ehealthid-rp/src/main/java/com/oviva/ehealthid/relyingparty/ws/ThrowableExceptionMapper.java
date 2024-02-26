@@ -1,6 +1,8 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
+import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
 import jakarta.ws.rs.WebApplicationException;
@@ -22,11 +24,14 @@ import org.slf4j.spi.LoggingEventBuilder;
 
 public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
+  private static final String SERVER_ERROR_MESSAGE =
+      "Ohh no! Unexpected server error. Please try again.";
   private final Pages pages = new Pages(new TemplateRenderer());
-
   @Context UriInfo uriInfo;
   @Context Request request;
   @Context HttpHeaders headers;
+
+  // Note: MUST be non-final for mocking
   private Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
 
   @Override
@@ -44,18 +49,44 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
       return Response.status(Status.UNAUTHORIZED).build();
     }
 
+    if (exception instanceof ValidationException ve) {
+      if (ve.seeOther() != null) {
+        return Response.seeOther(ve.seeOther()).build();
+      }
+
+      return buildContentNegotiatedErrorResponse(ve.getMessage(), Status.BAD_REQUEST);
+    }
+
     log(exception);
 
-    var acceptable = headers.getAcceptableMediaTypes();
     var status = determineStatus(exception);
 
-    if (acceptable.contains(MediaType.WILDCARD_TYPE)
-        || acceptable.contains(MediaType.TEXT_HTML_TYPE)) {
-      var body = pages.error("Ohh no! Unexpected server error. Please try again.");
+    return buildContentNegotiatedErrorResponse(SERVER_ERROR_MESSAGE, status);
+  }
+
+  private Response buildContentNegotiatedErrorResponse(String message, StatusType status) {
+
+    if (acceptsTextHtml()) {
+      var body = pages.error(message);
       return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
+    }
+    if (acceptsJson()) {
+      var body = new Problem("/server_error", message);
+      return Response.status(status).entity(body).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
     return Response.status(status).build();
+  }
+
+  private boolean acceptsJson() {
+    var acceptable = headers.getAcceptableMediaTypes();
+    return acceptable.contains(MediaType.APPLICATION_JSON_TYPE);
+  }
+
+  private boolean acceptsTextHtml() {
+    var acceptable = headers.getAcceptableMediaTypes();
+    return acceptable.contains(MediaType.WILDCARD_TYPE)
+        || acceptable.contains(MediaType.TEXT_HTML_TYPE);
   }
 
   private StatusType determineStatus(Throwable exception) {
@@ -139,4 +170,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
       return new Traceparent(spanId, traceId);
     }
   }
+
+  public record Problem(@JsonProperty("type") String type, @JsonProperty("title") String title) {}
 }
