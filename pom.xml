@@ -32,7 +32,7 @@
     <jacoco.version>0.8.11</jacoco.version>
 
 
-    <maven-shade.version>3.5.1</maven-shade.version>
+    <maven-shade.version>3.5.2</maven-shade.version>
 
     <sonar.organization>oviva-ag</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -168,7 +168,7 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>1.19.5</version>
+        <version>1.19.6</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -209,7 +209,7 @@
       <dependency>
         <groupId>org.wiremock</groupId>
         <artifactId>wiremock</artifactId>
-        <version>3.4.0</version>
+        <version>3.4.2</version>
         <exclusions>
           <exclusion>
             <groupId>com.github.jknack</groupId>
