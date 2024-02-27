@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  rp:
+    build: .
+    container_name: rp
+    ports:
+      - "1234:1234"
+    volumes:
+      - ./enc_jwks.json:/secrets/enc_jwks.json:ro
+      - ./sig_jwks.json:/secrets/sig_jwks.json:ro
+    environment:
+      ENV: local
+      EHEALTHID_RP_APP_NAME: Una Health for Diabetes
+      EHEALTHID_RP_BASE_URI: https://rp.d.uhhq.dev
+      EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH: /secrets/enc_jwks.json
+      EHEALTHID_RP_FEDERATION_SIG_JWKS_PATH: /secrets/sig_jwks.json
+      EHEALTHID_RP_FEDERATION_MASTER: https://app-test.federationmaster.de
+      EHEALTHID_RP_REDIRECT_URIS: https://rp.d.uhhq.dev/auth/callback
+      EHEALTHID_RP_ES_TTL: PT5M
+      EHEALTHID_RP_IDP_DISCOVERY_URI: https://rp.d.uhhq.dev/.well-known/openid-configuration
+    # entrypoint: ["tail", "-f", "/dev/null"]
+    # networks:
+    #   - default
