@@ -13,8 +13,13 @@ import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -32,18 +37,13 @@ class ThrowableExceptionMapperTest {
   @Spy Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
   @InjectMocks ThrowableExceptionMapper mapper = new ThrowableExceptionMapper();
 
-  @Test
-  void toResponse() {
+  @ParameterizedTest
+  @MethodSource("listValidLocale")
+  void toResponse(String locales) {
 
     when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
 
-    doReturn("00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01")
-        .when(headers)
-        .getHeaderString("traceparent");
-    doReturn(
-            "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko)")
-        .when(headers)
-        .getHeaderString("user-agent");
+    mockHeaders(locales);
 
     // when
     var res = mapper.toResponse(new IllegalArgumentException());
@@ -83,6 +83,7 @@ class ThrowableExceptionMapperTest {
   void toResponse_isLogged() {
 
     when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
+    mockHeaders("de-DE");
 
     // when
     mapper.toResponse(new UnsupportedOperationException());
@@ -95,8 +96,8 @@ class ThrowableExceptionMapperTest {
   void toResponse_withBody() {
 
     when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
-
     when(headers.getAcceptableMediaTypes()).thenReturn(List.of(MediaType.WILDCARD_TYPE));
+    mockHeaders("de-DE");
 
     // when
     var res = mapper.toResponse(new IllegalArgumentException());
@@ -105,5 +106,40 @@ class ThrowableExceptionMapperTest {
     assertEquals(500, res.getStatus());
     assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
     assertNotNull(res.getEntity());
+  }
+
+  @Test
+  void toResponse_withBody_fallbackToDefault() {
+
+    when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
+
+    mockHeaders("it-IT,ch-CH");
+
+    when(headers.getAcceptableMediaTypes()).thenReturn(List.of(MediaType.WILDCARD_TYPE));
+
+    // when
+    var res = mapper.toResponse(new IllegalArgumentException());
+
+    // then
+    assertEquals(Locale.GERMAN, res.getLanguage());
+  }
+
+  private void mockHeaders(String locales) {
+    doReturn(locales).when(headers).getHeaderString("Accept-Language");
+    doReturn("00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01")
+        .when(headers)
+        .getHeaderString("traceparent");
+    doReturn(
+            "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko)")
+        .when(headers)
+        .getHeaderString("user-agent");
+  }
+
+  private static Stream<Arguments> listValidLocale() {
+    return Stream.of(
+        Arguments.of("en-US,de-DE"),
+        Arguments.of("en-US"),
+        Arguments.of("de-DE"),
+        Arguments.of("de-DE,it-IT"));
   }
 }

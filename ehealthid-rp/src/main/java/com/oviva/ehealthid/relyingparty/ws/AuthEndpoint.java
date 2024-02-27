@@ -15,8 +15,10 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
@@ -96,26 +98,23 @@ public class AuthEndpoint {
       @QueryParam("response_type") String responseType,
       @QueryParam("client_id") String clientId,
       @QueryParam("redirect_uri") String redirectUri,
-      @QueryParam("nonce") String nonce) {
+      @QueryParam("nonce") String nonce,
+      @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
     authRequests.increment();
 
-    URI parsedRedirect = null;
+    URI parsedRedirect;
     try {
       parsedRedirect = new URI(redirectUri);
     } catch (URISyntaxException e) {
-      return badRequest(
-          "Bad redirect_uri='%s'. Passed link is not valid.".formatted(parsedRedirect));
+      return badRequest("error.badRedirect", redirectUri, acceptLanguage);
     }
 
     if (!"https".equals(parsedRedirect.getScheme())) {
-      return badRequest(
-          "Insecure redirect_uri='%s'. Misconfigured server, please use 'https'."
-              .formatted(parsedRedirect));
+      return badRequest("error.insecureRedirect", parsedRedirect.toString(), acceptLanguage);
     }
 
     if (!relyingPartyConfig.validRedirectUris().contains(parsedRedirect)) {
-      return badRequest(
-          "Untrusted redirect_uri=%s. Misconfigured server.".formatted(parsedRedirect));
+      return badRequest("error.untrustedRedirect", parsedRedirect.toString(), acceptLanguage);
     }
 
     if (!"openid".equals(scope)) {
@@ -151,7 +150,7 @@ public class AuthEndpoint {
 
     // ==== 2) get the list of available IDPs
     var identityProviders = step1.fetchIdpOptions();
-    var form = pages.selectIdpForm(identityProviders);
+    var form = pages.selectIdpForm(identityProviders, acceptLanguage);
 
     // store session
     var sessionId = IdGenerator.generateID();
@@ -190,15 +189,16 @@ public class AuthEndpoint {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response postSelectIdp(
       @CookieParam("session_id") String sessionId,
-      @FormParam("identityProvider") String identityProvider) {
+      @FormParam("identityProvider") String identityProvider,
+      @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     if (identityProvider == null || identityProvider.isBlank()) {
-      return badRequest("No identity provider selected. Please go back.");
+      return badRequest("error.noProvider", "", acceptLanguage);
     }
 
     var session = findSession(sessionId);
     if (session == null) {
-      return badRequest("Oops, no session unknown or expired. Please start again.");
+      return badRequest("error.invalidSession", "", acceptLanguage);
     }
 
     var step2 = session.selectSectoralIdpStep().redirectToSectoralIdp(identityProvider);
@@ -216,11 +216,13 @@ public class AuthEndpoint {
   @Path("/callback")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response callback(
-      @CookieParam("session_id") String sessionId, @QueryParam("code") String code) {
+      @CookieParam("session_id") String sessionId,
+      @QueryParam("code") String code,
+      @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     var session = findSession(sessionId);
     if (session == null) {
-      return badRequest("Oops, session unknown or expired. Please start again.");
+      return badRequest("error.invalidSession", "", acceptLanguage);
     }
 
     var idToken =
@@ -228,7 +230,7 @@ public class AuthEndpoint {
 
     session = removeSession(sessionId);
     if (session == null) {
-      return badRequest("Oops, session unknown or expired. Please start again.");
+      return badRequest("error.invalidSession", "", acceptLanguage);
     }
 
     var issued = tokenIssuer.issueCode(session, idToken);
@@ -263,9 +265,9 @@ public class AuthEndpoint {
     return sessionRepo.load(id);
   }
 
-  private Response badRequest(String message) {
+  private Response badRequest(String message, String dynamicContent, String language) {
     return Response.status(Status.BAD_REQUEST)
-        .entity(pages.error(message))
+        .entity(pages.error(message, dynamicContent, language))
         .type(MediaType.TEXT_HTML_TYPE)
         .build();
   }

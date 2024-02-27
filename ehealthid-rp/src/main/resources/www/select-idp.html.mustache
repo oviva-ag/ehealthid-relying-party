@@ -63,14 +63,14 @@
     <form action="/auth/select-idp" method="post" class="form-inline">
       <div class="provider-wrapper">
         <h1>GesundheitsID</h1>
-        <label for="idp-selection">Select your GesundheitsID Provider</label>
+        <label for="idp-selection">{{#trans}}idp.selection{{/trans}}</label>
         <select name="identityProvider" id="idp-selection">
           {{#identityProviders}}
             <option value="{{iss}}">{{name}}</option>
           {{/identityProviders}}
         </select>
       </div>
-      <input type="submit" value="Login">
+      <input type="submit" value="{{#trans}}idp.login{{/trans}}">
     </form>
   {{/body}}
 {{/layout.html.mustache}}

@@ -1,5 +1,7 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
+import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.parseAcceptLanguageHeader;
+
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
@@ -13,8 +15,12 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.Response.StatusType;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,13 +55,35 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
     var acceptable = headers.getAcceptableMediaTypes();
     var status = determineStatus(exception);
 
+    var headerString = headers.getHeaderString("Accept-Language");
+
+    var acceptedLocales = Set.of(Locale.US, Locale.GERMAN);
+    var defaultLocale = Locale.GERMAN;
+
+    var acceptableLanguages = parseAcceptLanguageHeader(headerString, acceptedLocales);
+
+    if (isDefaultLanguageNeeded(acceptableLanguages)) {
+      acceptableLanguages = Collections.singletonList(defaultLocale);
+    }
+
     if (acceptable.contains(MediaType.WILDCARD_TYPE)
         || acceptable.contains(MediaType.TEXT_HTML_TYPE)) {
-      var body = pages.error("Ohh no! Unexpected server error. Please try again.");
-      return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
+      var body = pages.error("error.serverError", "", String.valueOf(acceptableLanguages.get(0)));
+      return Response.status(status)
+          .entity(body)
+          .type(MediaType.TEXT_HTML_TYPE)
+          .language(acceptableLanguages.get(0))
+          .build();
     }
 
     return Response.status(status).build();
+  }
+
+  private boolean isDefaultLanguageNeeded(List<Locale> acceptableLanguages) {
+    return acceptableLanguages == null
+        || acceptableLanguages.isEmpty()
+        || (acceptableLanguages.stream().noneMatch(Locale.US::equals)
+            && acceptableLanguages.stream().noneMatch(Locale.GERMAN::equals));
   }
 
   private StatusType determineStatus(Throwable exception) {

@@ -47,9 +47,11 @@ class AuthEndpointTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "code";
     var clientId = "myapp";
+    var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce)) {
+    try (var res =
+        sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce, language)) {
       // then
       assertEquals(Status.SEE_OTHER.getStatusCode(), res.getStatus());
       var location = res.getHeaderString("location");
@@ -72,9 +74,10 @@ class AuthEndpointTest {
     var responseType = "code";
     var clientId = "myapp";
     var redirectUri = "httpyolo://yolo!";
+    var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, redirectUri, nonce)) {
+    try (var res = sut.auth(scope, state, responseType, clientId, redirectUri, nonce, language)) {
       // then
       assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
     }
@@ -92,9 +95,10 @@ class AuthEndpointTest {
     var responseType = "code";
     var clientId = "myapp";
     var redirectUri = "https://bad.example.com/evil";
+    var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, redirectUri, nonce)) {
+    try (var res = sut.auth(scope, state, responseType, clientId, redirectUri, nonce, language)) {
       // then
       assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
 
@@ -116,9 +120,11 @@ class AuthEndpointTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "badtype";
     var clientId = "myapp";
+    var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce)) {
+    try (var res =
+        sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce, language)) {
 
       // then
       assertEquals(Status.SEE_OTHER.getStatusCode(), res.getStatus());
@@ -157,9 +163,11 @@ class AuthEndpointTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "code";
     var clientId = "myapp";
+    var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce)) {
+    try (var res =
+        sut.auth(scope, state, responseType, clientId, REDIRECT_URI.toString(), nonce, language)) {
 
       // then
 
@@ -181,7 +189,7 @@ class AuthEndpointTest {
     var sut = new AuthEndpoint(BASE_URI, config, null, null, null, null, prometheusMeterRegistry);
 
     // when
-    try (var res = sut.callback(sessionId, "")) {
+    try (var res = sut.callback(sessionId, "", "de-DE")) {
 
       // then
       assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
@@ -203,7 +211,7 @@ class AuthEndpointTest {
     when(sessionRepo.load(sessionId)).thenReturn(null);
 
     // when
-    try (var res = sut.callback(sessionId, null)) {
+    try (var res = sut.callback(sessionId, null, "de-DE")) {
 
       // then
       assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
@@ -251,7 +259,7 @@ class AuthEndpointTest {
     when(tokenIssuer.issueCode(session, null)).thenReturn(issued);
 
     // when
-    try (var res = sut.callback(sessionId, null)) {
+    try (var res = sut.callback(sessionId, null, "de-DE")) {
 
       // then
       assertEquals(
@@ -285,7 +293,7 @@ class AuthEndpointTest {
         new AuthEndpoint(BASE_URI, null, null, sessionRepo, null, null, prometheusMeterRegistry);
 
     // when
-    var res = sut.postSelectIdp(sessionId, selectedIdpIssuer);
+    var res = sut.postSelectIdp(sessionId, selectedIdpIssuer, "de-DE");
 
     // then
     assertEquals(idpRedirect, res.getLocation());
@@ -310,7 +318,7 @@ class AuthEndpointTest {
         new AuthEndpoint(BASE_URI, null, null, sessionRepo, null, null, prometheusMeterRegistry);
 
     // when
-    var res = sut.postSelectIdp(sessionId, selectedIdpIssuer);
+    var res = sut.postSelectIdp(sessionId, selectedIdpIssuer, "de-DE");
 
     // then
     verify(sessionRepo).load(sessionId);
@@ -324,7 +332,7 @@ class AuthEndpointTest {
     var sut = new AuthEndpoint(BASE_URI, null, null, null, null, null, prometheusMeterRegistry);
 
     // when
-    var res = sut.postSelectIdp(sessionId, null);
+    var res = sut.postSelectIdp(sessionId, null, "de-DE");
 
     // then
     assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());

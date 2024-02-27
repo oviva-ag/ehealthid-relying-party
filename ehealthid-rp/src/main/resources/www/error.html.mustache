@@ -1,11 +1,8 @@
 {{<layout.html.mustache}}
   {{$body}}
-    <h1>Log in with GesundheitsID</h1>
+    <h1>{{#trans}}error.login{{/trans}}</h1>
     <p>
-      {{#message}}{{message}}{{/message}}
-      {{^message}}
-        Oops, something unexpected happened. Please go back and try again.
-      {{/message}}
+      {{#trans}}{{errorMessage}}{{/trans}}
     </p>
   {{/body}}
 {{/layout.html.mustache}}
