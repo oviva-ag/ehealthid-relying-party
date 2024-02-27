@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registrierungtifoederation>
+   <datendesantragstellers>
+     <teilnehmertyp>Fachdienst</teilnehmertyp>
+     <betriebsumgebung>TU</betriebsumgebung>
+     <organisationsname>Una Health for Diabetes</organisationsname>
+     <memberid>FDuna0219TU</memberid>
+     <zwg>ORG-0001:BT-0144</zwg>
+     <issueruri>https://rp.d.uhhq.dev</issueruri>
+     <scopes>
+       <scopealter>0</scopealter>
+       <scopeanzeigename>1</scopeanzeigename>
+       <scopeemail>1</scopeemail>
+       <scopegeschlecht>0</scopegeschlecht>
+       <scopegeburtsdatum>0</scopegeburtsdatum>
+       <scopevorname>0</scopevorname>
+       <scopeversicherter>1</scopeversicherter>
+     </scopes>
+     <publickeys>
+       <kidjwt>RkLXbqaVrnNi8Bt-lnx257CPHG-D1It5AScCWcoRUDI</kidjwt>
+       <pubkeyjwt>-----BEGIN PUBLIC KEY-----&#10;MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/eVv6nfyuSgMDHkpxWFZIqYm61PR&#10;vMb4OxCaNIStgxcWa0+IjaZQ2Dt8dlszDhHqaevhIWZtK/x1IgfkgVusMA&#61;&#61;&#10;-----END PUBLIC KEY-----&#10;</pubkeyjwt>
+     </publickeys>
+   </datendesantragstellers>
+</registrierungtifoederation>
