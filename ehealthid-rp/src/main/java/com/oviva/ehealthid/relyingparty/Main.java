@@ -17,6 +17,7 @@ import com.oviva.ehealthid.relyingparty.cfg.ConfigProvider;
 import com.oviva.ehealthid.relyingparty.cfg.EnvConfigProvider;
 import com.oviva.ehealthid.relyingparty.poc.GematikHeaderDecoratorHttpClient;
 import com.oviva.ehealthid.relyingparty.svc.AfterCreatedExpiry;
+import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.CaffeineCodeRepo;
 import com.oviva.ehealthid.relyingparty.svc.CaffeineSessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
@@ -124,16 +125,19 @@ public class Main implements AutoCloseable {
 
     var clientAuthenticator = new ClientAuthenticator(jwkSource, config.baseUri());
 
+    var authService =
+        new AuthService(
+            config.baseUri(),
+            config.relyingParty(),
+            config.federation(),
+            sessionRepo,
+            tokenIssuer,
+            authFlow);
+
     server =
         SeBootstrap.start(
                 new App(
-                    config,
-                    sessionRepo,
-                    keyStore,
-                    tokenIssuer,
-                    authFlow,
-                    clientAuthenticator,
-                    meterRegistry),
+                    config, keyStore, tokenIssuer, clientAuthenticator, meterRegistry, authService),
                 Configuration.builder().host(config.host()).port(config.port()).build())
             .toCompletableFuture()
             .get();
