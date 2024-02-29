@@ -1,15 +1,14 @@
-package com.oviva.ehealthid.relyingparty.ws;
+package com.oviva.ehealthid.relyingparty.svc;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import java.net.URI;
 
-public class OpenIdErrorResponses {
-  private OpenIdErrorResponses() {}
+public class OpenIdErrors {
+  private OpenIdErrors() {}
 
-  public static Response redirectWithError(
+  public static URI redirectWithError(
       @NonNull URI redirectUri,
       @NonNull ErrorCode code,
       @Nullable String state,
@@ -20,7 +19,7 @@ public class OpenIdErrorResponses {
     addNonBlankQueryParam(builder, "error_description", description);
     addNonBlankQueryParam(builder, "state", state);
 
-    return Response.seeOther(builder.build()).build();
+    return builder.build();
   }
 
   private static void addNonBlankQueryParam(UriBuilder builder, String name, String value) {

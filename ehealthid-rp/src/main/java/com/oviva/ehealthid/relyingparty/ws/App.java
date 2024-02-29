@@ -3,12 +3,11 @@ package com.oviva.ehealthid.relyingparty.ws;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
-import com.oviva.ehealthid.auth.AuthenticationFlow;
 import com.oviva.ehealthid.relyingparty.ConfigReader.Config;
 import com.oviva.ehealthid.relyingparty.fed.FederationEndpoint;
+import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
 import com.oviva.ehealthid.relyingparty.svc.KeyStore;
-import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.util.JoseModule;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
@@ -18,31 +17,26 @@ import java.util.Set;
 public class App extends Application {
 
   private final Config config;
-  private final SessionRepo sessionRepo;
-
   private final KeyStore keyStore;
   private final TokenIssuer tokenIssuer;
-
-  private final AuthenticationFlow authenticationFlow;
-
   private final ClientAuthenticator clientAuthenticator;
   private final PrometheusMeterRegistry prometheusMeterRegistry;
 
+  private final AuthService authService;
+
   public App(
       Config config,
-      SessionRepo sessionRepo,
       KeyStore keyStore,
       TokenIssuer tokenIssuer,
-      AuthenticationFlow authenticationFlow,
       ClientAuthenticator clientAuthenticator,
-      PrometheusMeterRegistry prometheusMeterRegistry) {
+      PrometheusMeterRegistry prometheusMeterRegistry,
+      AuthService authService) {
     this.config = config;
-    this.sessionRepo = sessionRepo;
     this.keyStore = keyStore;
     this.tokenIssuer = tokenIssuer;
-    this.authenticationFlow = authenticationFlow;
     this.clientAuthenticator = clientAuthenticator;
     this.prometheusMeterRegistry = prometheusMeterRegistry;
+    this.authService = authService;
   }
 
   @Override
@@ -50,14 +44,7 @@ public class App extends Application {
 
     return Set.of(
         new FederationEndpoint(config.federation()),
-        new AuthEndpoint(
-            config.baseUri(),
-            config.relyingParty(),
-            config.federation(),
-            sessionRepo,
-            tokenIssuer,
-            authenticationFlow,
-            prometheusMeterRegistry),
+        new AuthEndpoint(authService),
         new TokenEndpoint(tokenIssuer, clientAuthenticator),
         new OpenIdEndpoint(config.baseUri(), config.relyingParty(), keyStore),
         new JacksonJsonProvider(configureObjectMapper()),
