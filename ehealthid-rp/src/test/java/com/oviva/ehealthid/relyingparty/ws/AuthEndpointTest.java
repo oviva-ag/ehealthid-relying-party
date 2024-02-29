@@ -1,12 +1,9 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
@@ -40,11 +37,12 @@ class AuthEndpointTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "badtype";
     var clientId = "myapp";
+    var language = "de-DE";
 
     // when & then
     assertThrows(
         ValidationException.class,
-        () -> sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce));
+        () -> sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce, language));
   }
 
   @Test
@@ -60,9 +58,10 @@ class AuthEndpointTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "code";
     var clientId = "myapp";
+    var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce)) {
+    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce, language)) {
 
       // then
       var captor = ArgumentCaptor.forClass(AuthorizationRequest.class);
@@ -91,9 +90,10 @@ class AuthEndpointTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "code";
     var clientId = "myapp";
+    var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce)) {
+    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce, language)) {
 
       // then
       assertEquals(Status.OK.getStatusCode(), res.getStatus());

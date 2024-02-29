@@ -109,7 +109,7 @@ public class AuthService {
 
     var selectedIdp = request.selectedIdentityProvider();
     if (selectedIdp == null || selectedIdp.isBlank()) {
-      throw new ValidationException("No identity provider selected. Please go back.");
+      throw new ValidationException("error.noProvider");
     }
 
     var session = mustFindSession(request.sessionId());
@@ -137,7 +137,7 @@ public class AuthService {
 
     session = removeSession(request.sessionId());
     if (session == null) {
-      throw new ValidationException("Oops, session unknown or expired. Please start again.");
+      throw new ValidationException("error.invalidSession");
     }
 
     var issued = tokenIssuer.issueCode(session, idToken);
@@ -160,7 +160,7 @@ public class AuthService {
 
   @NonNull
   private Session mustFindSession(@Nullable String id) {
-    var msgNoSessionFound = "Oops, no session unknown or expired. Please start again.";
+    var msgNoSessionFound = "error.invalidSession";
     if (id == null || id.isBlank()) {
       throw new ValidationException(msgNoSessionFound);
     }
@@ -177,33 +177,46 @@ public class AuthService {
     var redirect = request.redirectUri();
 
     if (redirect == null) {
-      throw new ValidationException("no redirect_uri");
+      throw new ValidationException("error.noRedirect");
     }
 
     if (!"https".equals(redirect.getScheme())) {
-      throw new ValidationException(
-          "Insecure redirect_uri='%s'. Misconfigured server, please use 'https'."
-              .formatted(redirect));
+      var localizedMessage =
+          new ValidationException.LocalizedErrorMessage(
+              "error.insecureRedirect", redirect.toString());
+      throw new ValidationException(localizedMessage);
     }
 
     if (!relyingPartyConfig.validRedirectUris().contains(redirect)) {
-      throw new ValidationException(
-          "Untrusted redirect_uri=%s. Misconfigured server.".formatted(redirect));
+      var localizedMessage =
+          new ValidationException.LocalizedErrorMessage(
+              "error.untrustedRedirect", redirect.toString());
+      throw new ValidationException(localizedMessage);
     }
 
     if (!"openid".equals(request.scope())) {
-      var msg = "scope '%s' not supported".formatted(request.scope());
+      var localizedErrorMessage =
+          new ValidationException.LocalizedErrorMessage("error.unsupportedScope", request.scope());
       var uri =
-          OpenIdErrors.redirectWithError(redirect, ErrorCode.INVALID_SCOPE, request.state(), msg);
-      throw new ValidationException(msg, uri);
+          OpenIdErrors.redirectWithError(
+              redirect,
+              ErrorCode.INVALID_SCOPE,
+              request.state(),
+              localizedErrorMessage.messageKey());
+      throw new ValidationException(localizedErrorMessage, uri);
     }
 
     if (!relyingPartyConfig.supportedResponseTypes().contains(request.responseType())) {
-      var msg = "unsupported response type: '%s'".formatted(request.responseType());
+      var localizedErrorMessage =
+          new ValidationException.LocalizedErrorMessage(
+              "error.unsupportedResponseType", request.responseType());
       var uri =
           OpenIdErrors.redirectWithError(
-              redirect, ErrorCode.UNSUPPORTED_RESPONSE_TYPE, request.state(), msg);
-      throw new ValidationException(msg, uri);
+              redirect,
+              ErrorCode.UNSUPPORTED_RESPONSE_TYPE,
+              request.state(),
+              localizedErrorMessage.messageKey());
+      throw new ValidationException(localizedErrorMessage, uri);
     }
   }
 

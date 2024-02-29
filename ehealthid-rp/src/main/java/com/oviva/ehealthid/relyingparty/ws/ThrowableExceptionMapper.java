@@ -1,5 +1,7 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
+import static com.oviva.ehealthid.relyingparty.svc.ValidationException.*;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
@@ -27,8 +29,7 @@ import org.slf4j.spi.LoggingEventBuilder;
 
 public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
-  private static final String SERVER_ERROR_MESSAGE =
-      "Ohh no! Unexpected server error. Please try again.";
+  private static final String SERVER_ERROR_MESSAGE = "error.serverError";
   private final Pages pages = new Pages(new TemplateRenderer());
   @Context UriInfo uriInfo;
   @Context Request request;
@@ -41,7 +42,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable exception) {
-
     if (exception instanceof WebApplicationException w) {
       var res = w.getResponse();
       if (res.getStatus() >= 500) {
@@ -59,17 +59,21 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
         return Response.seeOther(ve.seeOther()).build();
       }
 
-      return buildContentNegotiatedErrorResponse(ve.getMessage(), Status.BAD_REQUEST);
+      return buildContentNegotiatedErrorResponse(ve.getLocalizedErrorMessage(), Status.BAD_REQUEST);
     }
 
     log(exception);
 
     var status = determineStatus(exception);
 
-    return buildContentNegotiatedErrorResponse(SERVER_ERROR_MESSAGE, status);
+    var errorMessage = new LocalizedErrorMessage(SERVER_ERROR_MESSAGE, null);
+    return buildContentNegotiatedErrorResponse(errorMessage, status);
   }
 
-  private Response buildContentNegotiatedErrorResponse(String message, StatusType status) {
+  private Response buildContentNegotiatedErrorResponse(
+      LocalizedErrorMessage message, StatusType status) {
+
+    var headerString = headers.getHeaderString("Accept-Language");
 
     var mediaType =
         mediaTypeNegotiator.bestMatch(
@@ -77,7 +81,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
             List.of(MediaType.TEXT_HTML_TYPE, MediaType.APPLICATION_JSON_TYPE));
 
     if (MediaType.TEXT_HTML_TYPE.equals(mediaType)) {
-      var body = pages.error(message);
+		var body = pages.error(message, headerString);
       return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
     }
 

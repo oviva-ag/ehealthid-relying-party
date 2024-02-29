@@ -1,20 +1,23 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
+import static com.oviva.ehealthid.relyingparty.svc.ValidationException.*;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.AuthorizationRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.CallbackRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.SelectedIdpRequest;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
-import com.oviva.ehealthid.relyingparty.ws.AuthEndpoint.AuthResponse.IdpEntry;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -47,7 +50,8 @@ public class AuthEndpoint {
       @QueryParam("response_type") String responseType,
       @QueryParam("client_id") String clientId,
       @QueryParam("redirect_uri") String redirectUri,
-      @QueryParam("nonce") String nonce) {
+      @QueryParam("nonce") String nonce,
+      @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     var uri = mustParse(redirectUri);
 
@@ -55,7 +59,7 @@ public class AuthEndpoint {
         authService.auth(
             new AuthorizationRequest(scope, state, responseType, clientId, uri, nonce));
 
-    var form = pages.selectIdpForm(res.identityProviders());
+    var form = pages.selectIdpForm(res.identityProviders(), acceptLanguage);
 
     return Response.ok(form, MediaType.TEXT_HTML_TYPE)
         .cookie(createSessionCookie(res.sessionId()))
@@ -93,12 +97,13 @@ public class AuthEndpoint {
   @NonNull
   private URI mustParse(@Nullable String uri) {
     if (uri == null || uri.isBlank()) {
-      throw new ValidationException("blank uri");
+      throw new ValidationException("error.blankUri");
     }
     try {
       return new URI(uri);
     } catch (URISyntaxException e) {
-      throw new ValidationException("bad uri='%s'".formatted(uri));
+      var localizedMessage = new LocalizedErrorMessage("error.badUri", uri);
+      throw new ValidationException(localizedMessage);
     }
   }
 
