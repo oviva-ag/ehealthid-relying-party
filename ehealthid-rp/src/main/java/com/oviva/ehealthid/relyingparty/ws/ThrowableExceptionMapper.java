@@ -1,5 +1,6 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
@@ -69,8 +70,17 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
       var body = pages.error(message);
       return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
     }
+    if (acceptsJson()) {
+      var body = new Problem("/server_error", message);
+      return Response.status(status).entity(body).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
 
     return Response.status(status).build();
+  }
+
+  private boolean acceptsJson() {
+    var acceptable = headers.getAcceptableMediaTypes();
+    return acceptable.contains(MediaType.APPLICATION_JSON_TYPE);
   }
 
   private boolean acceptsTextHtml() {
@@ -160,4 +170,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
       return new Traceparent(spanId, traceId);
     }
   }
+
+  public record Problem(@JsonProperty("type") String type, @JsonProperty("title") String title) {}
 }
