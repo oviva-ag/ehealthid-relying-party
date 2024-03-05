@@ -5,6 +5,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
+import com.oviva.ehealthid.relyingparty.svc.ValidationException;
+import com.oviva.ehealthid.relyingparty.ws.ThrowableExceptionMapper.Problem;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -92,6 +95,16 @@ class ThrowableExceptionMapperTest {
   }
 
   @Test
+  void toResponse_authentication() {
+
+    // when
+    var res = mapper.toResponse(new AuthenticationException(null));
+
+    // then
+    assertEquals(401, res.getStatus());
+  }
+
+  @Test
   void toResponse_withBody() {
 
     when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
@@ -105,5 +118,26 @@ class ThrowableExceptionMapperTest {
     assertEquals(500, res.getStatus());
     assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
     assertNotNull(res.getEntity());
+  }
+
+  @Test
+  void toResponse_withJson() {
+
+    when(headers.getAcceptableMediaTypes())
+        .thenReturn(
+            List.of(
+                MediaType.APPLICATION_JSON_TYPE,
+                MediaType.TEXT_HTML_TYPE,
+                MediaType.WILDCARD_TYPE));
+
+    var msg = "Ooops! An error :/";
+
+    // when
+    var res = mapper.toResponse(new ValidationException(msg));
+
+    // then
+    assertEquals(400, res.getStatus());
+    assertEquals(MediaType.APPLICATION_JSON_TYPE, res.getMediaType());
+    assertEquals(new Problem("/server_error", msg), res.getEntity());
   }
 }

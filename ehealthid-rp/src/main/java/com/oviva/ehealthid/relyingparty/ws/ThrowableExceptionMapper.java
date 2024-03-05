@@ -15,9 +15,12 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.Response.StatusType;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.jboss.resteasy.util.MediaTypeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.LoggingEventBuilder;
@@ -31,7 +34,9 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
   @Context Request request;
   @Context HttpHeaders headers;
 
-  // Note: MUST be non-final for mocking
+  // Note: below fields MUST be non-final for mocking
+  private MediaTypeNegotiator mediaTypeNegotiator = new ResteasyMediaTypeNegotiator();
+
   private Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
 
   @Override
@@ -66,27 +71,22 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
   private Response buildContentNegotiatedErrorResponse(String message, StatusType status) {
 
-    if (acceptsTextHtml()) {
+    var mediaType =
+        mediaTypeNegotiator.bestMatch(
+            headers.getAcceptableMediaTypes(),
+            List.of(MediaType.TEXT_HTML_TYPE, MediaType.APPLICATION_JSON_TYPE));
+
+    if (MediaType.TEXT_HTML_TYPE.equals(mediaType)) {
       var body = pages.error(message);
       return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
     }
-    if (acceptsJson()) {
+
+    if (MediaType.APPLICATION_JSON_TYPE.equals(mediaType)) {
       var body = new Problem("/server_error", message);
       return Response.status(status).entity(body).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
     return Response.status(status).build();
-  }
-
-  private boolean acceptsJson() {
-    var acceptable = headers.getAcceptableMediaTypes();
-    return acceptable.contains(MediaType.APPLICATION_JSON_TYPE);
-  }
-
-  private boolean acceptsTextHtml() {
-    var acceptable = headers.getAcceptableMediaTypes();
-    return acceptable.contains(MediaType.WILDCARD_TYPE)
-        || acceptable.contains(MediaType.TEXT_HTML_TYPE);
   }
 
   private StatusType determineStatus(Throwable exception) {
@@ -145,6 +145,22 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
     }
 
     return log.addKeyValue("traceId", parsed.traceId()).addKeyValue("spanId", parsed.spanId());
+  }
+
+  interface MediaTypeNegotiator {
+    MediaType bestMatch(List<MediaType> desiredMediaType, List<MediaType> supportedMediaTypes);
+  }
+
+  private static class ResteasyMediaTypeNegotiator implements MediaTypeNegotiator {
+
+    @Override
+    public MediaType bestMatch(
+        List<MediaType> desiredMediaType, List<MediaType> supportedMediaTypes) {
+
+      // note: resteasy needs mutable lists
+      return MediaTypeHelper.getBestMatch(
+          new ArrayList<>(desiredMediaType), new ArrayList<>(supportedMediaTypes));
+    }
   }
 
   private record Traceparent(String spanId, String traceId) {
