@@ -72,7 +72,7 @@ class MainTest {
   }
 
   @Test
-  void run_smokeTest() throws Exception {
+  void run_smokeTest() {
 
     var baseUri = application.baseUri();
 

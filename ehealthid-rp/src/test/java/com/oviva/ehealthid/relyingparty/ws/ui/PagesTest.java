@@ -85,8 +85,8 @@ class PagesTest {
 
   private static Stream<Arguments> provideLanguageAndMessageForSelectIdp() {
     return Stream.of(
-        Arguments.of("de-DE;q=0.4,en-US;q=0.8", "en"),
-        Arguments.of("de-DE,en-US;q=0.4", "de"),
+        Arguments.of("de-DE;q=0.4,en-US;q=0.8", "en-US"),
+        Arguments.of("de-DE,en-US;q=0.4", "de-DE"),
         Arguments.of("de-DE;q=0.4,en-US;q=0.8,it,ch-DE", "Login with GesundheitsID"),
         Arguments.of("de-DE;q=0.9,en-US;q=0.8,it,jp", "Anmeldung mit GesundheitsID"),
         Arguments.of("en-US", "Select your GesundheitsID Provider"),

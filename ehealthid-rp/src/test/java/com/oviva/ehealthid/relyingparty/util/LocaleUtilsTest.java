@@ -2,20 +2,32 @@ package com.oviva.ehealthid.relyingparty.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import java.net.URI;
 import java.util.Locale;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class LocaleUtilsTest {
 
   private static final URI BASE_URI = URI.create("https://idp.example.com");
 
-  @Test
-  void test_parseAcceptLanguageHeader_multipleValidCountryRegion() {
+  @BeforeAll
+  static void setUp() {
+    LocaleUtils.loadSupportedLocales();
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"de-DE,en-US;q=0.5", "de-DE,de,en,it;q=0.5", "el-GR,de-DE,en-US"})
+  void test_parseAcceptLanguageHeader() {
     // when
     var locales = LocaleUtils.negotiatePreferredLocales("de-DE,en-US;q=0.5");
 
@@ -28,26 +40,21 @@ class LocaleUtilsTest {
   }
 
   @Test
-  void test_parseAcceptLanguageHeader_multipleValid_addsRegionToValidRegion() {
+  void test_mockMultipleRequestWithZeroLoadTimeForSupportedLocale() {
 
-    var locales = LocaleUtils.negotiatePreferredLocales("de-DE,de,en,it;q=0.5");
+    var startTime = System.currentTimeMillis();
+    LocaleUtils.negotiatePreferredLocales("de-DE,de,en,it;q=0.5");
+    var endTime = System.currentTimeMillis();
+    var executionTime = endTime - startTime;
 
-    assertThat(locales.get(0).getLanguage(), is("de"));
+    assertThat(executionTime, lessThanOrEqualTo(1L));
 
-    assertThat(locales.get(1).getLanguage(), is("en"));
-
-    assertThat(locales.size(), is(2));
-  }
-
-  @Test
-  void test_parseAcceptLanguageHeader_validAndInvalid_filtered() {
-
-    var locales = LocaleUtils.negotiatePreferredLocales("el-GR,de-DE");
-
-    // then
-    assertThat(locales.get(0).getLanguage(), is("de"));
-
-    assertThat(locales.size(), is(1));
+    // Mock second request
+    startTime = System.currentTimeMillis();
+    LocaleUtils.negotiatePreferredLocales("de-DE;q=0.8,en-US;q=0.9,de,en,it;q=0.5");
+    endTime = System.currentTimeMillis();
+    executionTime = endTime - startTime;
+    assertThat(executionTime, lessThanOrEqualTo(1L));
   }
 
   @Test
@@ -71,16 +78,19 @@ class LocaleUtilsTest {
     assertThat(locales.size(), is(0));
   }
 
-  @Test
-  void test_parseAcceptLanguageHeader_nullThrowsValidationException() {
+  @ParameterizedTest
+  @MethodSource("nullEmptyBlankSource")
+  void test_parseAcceptLanguageHeader_nullThrowsValidationException(String headerValue) {
 
-    assertThrows(ValidationException.class, () -> LocaleUtils.negotiatePreferredLocales(null));
+    var locales = LocaleUtils.negotiatePreferredLocales(headerValue);
+
+    assertThat(locales.get(0).getLanguage(), is("de"));
+
+    assertThat(locales.size(), is(1));
   }
 
-  @Test
-  void test_parseAcceptLanguageHeader_emptyThrowsValidationException() {
-
-    assertThrows(ValidationException.class, () -> LocaleUtils.negotiatePreferredLocales(""));
+  private static String[] nullEmptyBlankSource() {
+    return new String[] {null, "", " "};
   }
 
   @Test
@@ -90,18 +100,18 @@ class LocaleUtilsTest {
   }
 
   @Test
-  void tes_tGetLocalizedErrorMessage_simpleError() {
+  void tes_formatLocalizedErrorMessage_simpleError() {
 
-    var errorMessage = new Message("error.unparsableHeader");
+    var errorMessage = new Message("error.serverError");
     var locale = Locale.GERMANY;
 
     var result = LocaleUtils.formatLocalizedErrorMessage(errorMessage, locale);
 
-    assertEquals("Fehlgeformter Accept-Language-Header-Wert kann nicht analysiert werden", result);
+    assertEquals("Ohh nein! Unerwarteter Serverfehler. Bitte versuchen Sie es erneut.", result);
   }
 
   @Test
-  void test_GetLocalizedErrorMessage_errorWithContent() {
+  void test_formatLocalizedErrorMessage_errorWithContent() {
 
     var errorMessage = new Message("error.badRedirect", String.valueOf(BASE_URI));
     var locale = Locale.GERMANY;

@@ -66,7 +66,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
     var status = determineStatus(exception);
 
-    var errorMessage = new Message(SERVER_ERROR_MESSAGE, null);
+    var errorMessage = new Message(SERVER_ERROR_MESSAGE, (String) null);
     return buildContentNegotiatedErrorResponse(errorMessage, status);
   }
 

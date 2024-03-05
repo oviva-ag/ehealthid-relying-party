@@ -60,6 +60,7 @@ docker run --rm \
     -e 'EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback' \
     -e 'EHEALTHID_RP_ES_TTL=PT5M' \
     -e 'EHEALTHID_RP_IDP_DISCOVERY_URI=https://sso-mydiga.example.com/.well-known/openid-configuration' \
+    -p 1234:1234 \
     ghcr.io/oviva-ag/ehealthid-relying-party:latest
 
 #---- 3. register with the federation master

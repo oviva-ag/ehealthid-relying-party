@@ -13,18 +13,19 @@ public class LocaleUtils {
 
   public static final String BUNDLE = "i18n";
   public static final Locale DEFAULT_LOCALE = Locale.GERMANY;
+  protected static Set<Locale> OVI_SUPPORTED_LOCALES = loadSupportedLocales();
 
   private LocaleUtils() {}
 
   public static List<Locale> negotiatePreferredLocales(String headerValue) {
 
     if (headerValue == null || headerValue.isBlank()) {
-      throw new ValidationException("error.blankLangHeader");
+      headerValue = DEFAULT_LOCALE.toLanguageTag();
     }
 
     try {
       var languageRanges = Locale.LanguageRange.parse(headerValue);
-      return Locale.filter(languageRanges, getSupportedLocales(BUNDLE));
+      return Locale.filter(languageRanges, OVI_SUPPORTED_LOCALES);
     } catch (IllegalArgumentException e) {
       throw new ValidationException("error.unparsableHeader");
     }
@@ -41,12 +42,12 @@ public class LocaleUtils {
     return localizedMessage;
   }
 
-  public static Set<Locale> getSupportedLocales(String baseName) {
+  public static Set<Locale> loadSupportedLocales() {
     var locales = new HashSet<Locale>();
     var control = ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES);
     for (Locale locale : Locale.getAvailableLocales()) {
       try {
-        var bundle = ResourceBundle.getBundle(baseName, locale, control);
+        var bundle = ResourceBundle.getBundle(BUNDLE, locale, control);
         if (bundle.getLocale().equals(locale)) {
           locales.add(locale);
         }

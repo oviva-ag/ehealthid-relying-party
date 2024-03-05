@@ -6,7 +6,7 @@ public class ValidationException extends RuntimeException implements LocalizedEx
 
   private final URI seeOther;
 
-  private final Message localizedMessage;
+  private final transient Message localizedMessage;
 
   public ValidationException(String message) {
     this(message, null, null, null);
