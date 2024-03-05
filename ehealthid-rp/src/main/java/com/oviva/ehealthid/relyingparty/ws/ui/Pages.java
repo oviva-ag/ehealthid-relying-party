@@ -1,9 +1,9 @@
 package com.oviva.ehealthid.relyingparty.ws.ui;
 
-import static com.oviva.ehealthid.relyingparty.svc.ValidationException.LocalizedErrorMessage;
 import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.*;
 
 import com.oviva.ehealthid.fedclient.IdpEntry;
+import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -27,9 +27,9 @@ public class Pages {
         getNegotiatedLocale(acceptLanguageHeaderValue));
   }
 
-  public String error(LocalizedErrorMessage errorMessage, String acceptLanguageHeaderValue) {
+  public String error(Message errorMessage, String acceptLanguageHeaderValue) {
     var localizedErrorMessage =
-        getLocalizedErrorMessage(errorMessage, getNegotiatedLocale(acceptLanguageHeaderValue));
+        formatLocalizedErrorMessage(errorMessage, getNegotiatedLocale(acceptLanguageHeaderValue));
 
     return renderer.render(
         "error.html.mustache",

@@ -4,6 +4,7 @@ import com.oviva.ehealthid.auth.AuthenticationFlow;
 import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.ehealthid.relyingparty.fed.FederationConfig;
+import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.svc.OpenIdErrors.ErrorCode;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.util.IdGenerator;
@@ -181,22 +182,17 @@ public class AuthService {
     }
 
     if (!"https".equals(redirect.getScheme())) {
-      var localizedMessage =
-          new ValidationException.LocalizedErrorMessage(
-              "error.insecureRedirect", redirect.toString());
+      var localizedMessage = new Message("error.insecureRedirect", redirect.toString());
       throw new ValidationException(localizedMessage);
     }
 
     if (!relyingPartyConfig.validRedirectUris().contains(redirect)) {
-      var localizedMessage =
-          new ValidationException.LocalizedErrorMessage(
-              "error.untrustedRedirect", redirect.toString());
+      var localizedMessage = new Message("error.untrustedRedirect", redirect.toString());
       throw new ValidationException(localizedMessage);
     }
 
     if (!"openid".equals(request.scope())) {
-      var localizedErrorMessage =
-          new ValidationException.LocalizedErrorMessage("error.unsupportedScope", request.scope());
+      var localizedErrorMessage = new Message("error.unsupportedScope", request.scope());
       var uri =
           OpenIdErrors.redirectWithError(
               redirect,
@@ -208,8 +204,7 @@ public class AuthService {
 
     if (!relyingPartyConfig.supportedResponseTypes().contains(request.responseType())) {
       var localizedErrorMessage =
-          new ValidationException.LocalizedErrorMessage(
-              "error.unsupportedResponseType", request.responseType());
+          new Message("error.unsupportedResponseType", request.responseType());
       var uri =
           OpenIdErrors.redirectWithError(
               redirect,

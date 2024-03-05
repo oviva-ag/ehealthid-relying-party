@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import java.net.URI;
 import java.util.Locale;
@@ -91,11 +92,10 @@ class LocaleUtilsTest {
   @Test
   void tes_tGetLocalizedErrorMessage_simpleError() {
 
-    var errorMessage =
-        new ValidationException.LocalizedErrorMessage("error.unparsableHeader", null);
+    var errorMessage = new Message("error.unparsableHeader");
     var locale = Locale.GERMANY;
 
-    var result = LocaleUtils.getLocalizedErrorMessage(errorMessage, locale);
+    var result = LocaleUtils.formatLocalizedErrorMessage(errorMessage, locale);
 
     assertEquals("Fehlgeformter Accept-Language-Header-Wert kann nicht analysiert werden", result);
   }
@@ -103,12 +103,10 @@ class LocaleUtilsTest {
   @Test
   void test_GetLocalizedErrorMessage_errorWithContent() {
 
-    var errorMessage =
-        new ValidationException.LocalizedErrorMessage(
-            "error.badRedirect", String.valueOf(BASE_URI));
+    var errorMessage = new Message("error.badRedirect", String.valueOf(BASE_URI));
     var locale = Locale.GERMANY;
 
-    var result = LocaleUtils.getLocalizedErrorMessage(errorMessage, locale);
+    var result = LocaleUtils.formatLocalizedErrorMessage(errorMessage, locale);
 
     var expected =
         "Ungültige redirect_uri='%s'. Übergebener Link ist nicht gültig.".formatted(BASE_URI);

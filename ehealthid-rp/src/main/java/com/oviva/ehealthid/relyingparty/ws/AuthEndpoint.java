@@ -102,7 +102,7 @@ public class AuthEndpoint {
     try {
       return new URI(uri);
     } catch (URISyntaxException e) {
-      var localizedMessage = new LocalizedErrorMessage("error.badUri", uri);
+      var localizedMessage = new Message("error.badUri", uri);
       throw new ValidationException(localizedMessage);
     }
   }

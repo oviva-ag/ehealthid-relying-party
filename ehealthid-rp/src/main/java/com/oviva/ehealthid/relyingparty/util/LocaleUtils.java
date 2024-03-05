@@ -1,5 +1,6 @@
 package com.oviva.ehealthid.relyingparty.util;
 
+import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import java.util.HashSet;
 import java.util.List;
@@ -29,14 +30,13 @@ public class LocaleUtils {
     }
   }
 
-  public static String getLocalizedErrorMessage(
-      ValidationException.LocalizedErrorMessage localizedErrorMessage, Locale locale) {
+  public static String formatLocalizedErrorMessage(Message localizedErrorMessage, Locale locale) {
     var bundle = ResourceBundle.getBundle(BUNDLE, locale);
     var localizedMessage = bundle.getString(localizedErrorMessage.messageKey());
 
-    if (localizedErrorMessage.additionalInfo() != null
-        && !localizedErrorMessage.messageKey().isBlank()) {
-      localizedMessage = localizedMessage.formatted(localizedErrorMessage.additionalInfo());
+    var key = localizedErrorMessage.messageKey();
+    if (!key.isBlank()) {
+      localizedMessage = localizedMessage.formatted((Object[]) localizedErrorMessage.args());
     }
     return localizedMessage;
   }

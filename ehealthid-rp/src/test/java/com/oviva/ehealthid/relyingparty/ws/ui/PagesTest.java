@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
 import com.oviva.ehealthid.fedclient.IdpEntry;
-import com.oviva.ehealthid.relyingparty.svc.ValidationException;
+import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.test.Fixtures;
 import java.net.URI;
 import java.util.List;
@@ -56,10 +56,7 @@ class PagesTest {
   void error_withFixture() {
     var sut = new Pages(renderer);
 
-    var rendered =
-        sut.error(
-            new ValidationException.LocalizedErrorMessage("error.genericError", ""),
-            "de-DE;q=0.1,en-US;q=0.5");
+    var rendered = sut.error(new Message("error.genericError", ""), "de-DE;q=0.1,en-US;q=0.5");
 
     assertEquals(Fixtures.getUtf8String("pages_golden_error.bin"), rendered);
   }
@@ -69,10 +66,7 @@ class PagesTest {
   void error_simpleError(String acceptLanguageHeaderValue, String messageKey, String message) {
     var sut = new Pages(renderer);
 
-    var rendered =
-        sut.error(
-            new ValidationException.LocalizedErrorMessage(messageKey, ""),
-            acceptLanguageHeaderValue);
+    var rendered = sut.error(new Message(messageKey, ""), acceptLanguageHeaderValue);
 
     assertTrue(rendered.contains(message));
   }
@@ -85,9 +79,7 @@ class PagesTest {
     var uri = URI.create("https://idp.example.com");
 
     var rendered =
-        sut.error(
-            new ValidationException.LocalizedErrorMessage(messageKey, String.valueOf(uri)),
-            acceptLanguageHeaderValue);
+        sut.error(new Message(messageKey, String.valueOf(uri)), acceptLanguageHeaderValue);
     assertTrue(StringEscapeUtils.unescapeHtml4(rendered).contains(message));
   }
 

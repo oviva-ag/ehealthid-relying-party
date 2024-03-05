@@ -59,19 +59,18 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
         return Response.seeOther(ve.seeOther()).build();
       }
 
-      return buildContentNegotiatedErrorResponse(ve.getLocalizedErrorMessage(), Status.BAD_REQUEST);
+      return buildContentNegotiatedErrorResponse(ve.localizedMessage(), Status.BAD_REQUEST);
     }
 
     log(exception);
 
     var status = determineStatus(exception);
 
-    var errorMessage = new LocalizedErrorMessage(SERVER_ERROR_MESSAGE, null);
+    var errorMessage = new Message(SERVER_ERROR_MESSAGE, null);
     return buildContentNegotiatedErrorResponse(errorMessage, status);
   }
 
-  private Response buildContentNegotiatedErrorResponse(
-      LocalizedErrorMessage message, StatusType status) {
+  private Response buildContentNegotiatedErrorResponse(Message message, StatusType status) {
 
     var headerString = headers.getHeaderString("Accept-Language");
 

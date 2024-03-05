@@ -41,6 +41,42 @@ class ThrowableExceptionMapperTest {
   @Spy Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
   @InjectMocks ThrowableExceptionMapper mapper = new ThrowableExceptionMapper();
 
+  private static Stream<Arguments> listValidLocale() {
+    return Stream.of(
+        Arguments.of("en-US,de-DE"),
+        Arguments.of("en-US"),
+        Arguments.of("de-DE"),
+        Arguments.of("de-DE,it-IT"));
+  }
+
+  private static Stream<Arguments> provideKeyWithDynamicContentMessageError() {
+    return Stream.of(
+        Arguments.of(
+            "en-US",
+            "error.insecureRedirect",
+            "Insecure redirect_uri='https://idp.example.com'. Misconfigured server, please use 'https'."),
+        Arguments.of(
+            "de-DE",
+            "error.insecureRedirect",
+            "Unsicherer redirect_uri='https://idp.example.com'. Falsch konfigurierter Server, bitte verwenden Sie 'https'."),
+        Arguments.of(
+            "en-US",
+            "error.badRedirect",
+            "Bad redirect_uri='https://idp.example.com'. Passed link is not valid."),
+        Arguments.of(
+            "de-DE",
+            "error.badRedirect",
+            "Ungültige redirect_uri='https://idp.example.com'. Übergebener Link ist nicht gültig."),
+        Arguments.of(
+            "en-US",
+            "error.untrustedRedirect",
+            "Untrusted redirect_uri=https://idp.example.com. Misconfigured server."),
+        Arguments.of(
+            "de-DE",
+            "error.untrustedRedirect",
+            "Nicht vertrauenswürdiger redirect_uri=https://idp.example.com. Falsch konfigurierter Server."));
+  }
+
   @ParameterizedTest
   @MethodSource("listValidLocale")
   void toResponse(String locales) {
@@ -158,8 +194,7 @@ class ThrowableExceptionMapperTest {
     var res =
         mapper.toResponse(
             new ValidationException(
-                new LocalizedErrorMessage(
-                    "error.unsupportedScope", "https://example.com/see/other"),
+                new Message("error.unsupportedScope", "https://example.com/see/other"),
                 URI.create("https://example.com/see/other")));
 
     // then
@@ -173,9 +208,7 @@ class ThrowableExceptionMapperTest {
     doReturn("de-DE").when(headers).getHeaderString("Accept-Language");
 
     // when
-    var res =
-        mapper.toResponse(
-            new ValidationException(new LocalizedErrorMessage("error.invalidSession", null)));
+    var res = mapper.toResponse(new ValidationException(new Message("error.invalidSession", null)));
 
     // then
     assertEquals(400, res.getStatus());
@@ -195,8 +228,7 @@ class ThrowableExceptionMapperTest {
     // when
     var res =
         mapper.toResponse(
-            new ValidationException(
-                new LocalizedErrorMessage(messageKey, "https://idp.example.com")));
+            new ValidationException(new Message(messageKey, "https://idp.example.com")));
 
     // then
     assertEquals(400, res.getStatus());
@@ -214,41 +246,5 @@ class ThrowableExceptionMapperTest {
             "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko)")
         .when(headers)
         .getHeaderString("user-agent");
-  }
-
-  private static Stream<Arguments> listValidLocale() {
-    return Stream.of(
-        Arguments.of("en-US,de-DE"),
-        Arguments.of("en-US"),
-        Arguments.of("de-DE"),
-        Arguments.of("de-DE,it-IT"));
-  }
-
-  private static Stream<Arguments> provideKeyWithDynamicContentMessageError() {
-    return Stream.of(
-        Arguments.of(
-            "en-US",
-            "error.insecureRedirect",
-            "Insecure redirect_uri='https://idp.example.com'. Misconfigured server, please use 'https'."),
-        Arguments.of(
-            "de-DE",
-            "error.insecureRedirect",
-            "Unsicherer redirect_uri='https://idp.example.com'. Falsch konfigurierter Server, bitte verwenden Sie 'https'."),
-        Arguments.of(
-            "en-US",
-            "error.badRedirect",
-            "Bad redirect_uri='https://idp.example.com'. Passed link is not valid."),
-        Arguments.of(
-            "de-DE",
-            "error.badRedirect",
-            "Ungültige redirect_uri='https://idp.example.com'. Übergebener Link ist nicht gültig."),
-        Arguments.of(
-            "en-US",
-            "error.untrustedRedirect",
-            "Untrusted redirect_uri=https://idp.example.com. Misconfigured server."),
-        Arguments.of(
-            "de-DE",
-            "error.untrustedRedirect",
-            "Nicht vertrauenswürdiger redirect_uri=https://idp.example.com. Falsch konfigurierter Server."));
   }
 }
