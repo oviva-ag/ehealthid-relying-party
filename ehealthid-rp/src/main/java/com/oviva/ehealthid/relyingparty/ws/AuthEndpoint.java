@@ -1,6 +1,6 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
-import static com.oviva.ehealthid.relyingparty.svc.ValidationException.*;
+import static com.oviva.ehealthid.relyingparty.svc.LocalizedException.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
@@ -8,6 +8,7 @@ import com.oviva.ehealthid.relyingparty.svc.AuthService.AuthorizationRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.CallbackRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.SelectedIdpRequest;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
+import com.oviva.ehealthid.relyingparty.ws.AuthEndpoint.AuthResponse.IdpEntry;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
 import edu.umd.cs.findbugs.annotations.NonNull;

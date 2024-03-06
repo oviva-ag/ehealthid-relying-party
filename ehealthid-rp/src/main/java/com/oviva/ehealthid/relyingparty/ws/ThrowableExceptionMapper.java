@@ -80,12 +80,12 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
             List.of(MediaType.TEXT_HTML_TYPE, MediaType.APPLICATION_JSON_TYPE));
 
     if (MediaType.TEXT_HTML_TYPE.equals(mediaType)) {
-		var body = pages.error(message, headerString);
+      var body = pages.error(message, headerString);
       return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
     }
 
     if (MediaType.APPLICATION_JSON_TYPE.equals(mediaType)) {
-      var body = new Problem("/server_error", message);
+      var body = new Problem("/server_error", message.messageKey());
       return Response.status(status).entity(body).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 

@@ -1,17 +1,22 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
 import static com.oviva.ehealthid.relyingparty.svc.ValidationException.*;
-import java.net.URI;
-import java.util.List;
-import java.util.stream.Stream;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
+import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
+import com.oviva.ehealthid.relyingparty.svc.ValidationException;
+import com.oviva.ehealthid.relyingparty.ws.ThrowableExceptionMapper.Problem;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,13 +28,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
-import com.oviva.ehealthid.relyingparty.svc.ValidationException;
-import com.oviva.ehealthid.relyingparty.ws.ThrowableExceptionMapper.Problem;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith({MockitoExtension.class})
 class ThrowableExceptionMapperTest {
@@ -171,7 +169,7 @@ class ThrowableExceptionMapperTest {
     var msg = "Ooops! An error :/";
 
     // when
-    var res = mapper.toResponse(new ValidationException(msg));
+    var res = mapper.toResponse(new ValidationException(new Message(msg)));
 
     // then
     assertEquals(400, res.getStatus());
