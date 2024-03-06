@@ -27,7 +27,13 @@ class LocaleUtilsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"de-DE,en-US;q=0.5", "de-DE,de,en,it;q=0.5", "el-GR,de-DE,en-US"})
+  @ValueSource(
+      strings = {
+        "de-DE,en-US;q=0.5",
+        "de-DE,en-US;q=0.5,en-GB;q=0.7",
+        "de-DE,de,en,it;q=0.5",
+        "el-GR,de-DE,en-US,en-GB"
+      })
   void test_negotiatePreferredLocales(String headerValue) {
     // when
     var locales = LocaleUtils.negotiatePreferredLocales(headerValue);
@@ -43,12 +49,24 @@ class LocaleUtilsTest {
   @ParameterizedTest
   @ValueSource(
       strings = {"de-DE,en-US;q=0.5", "de-DE,de,en,it;q=0.5", "el-GR,de-DE,en-US", "de-CH,it-IT"})
-  void test_getNegotiatedLocale(String headerValue) {
+  void test_getNegotiatedLocale_test_getNegotiatedLocale_DefaultToGermanyLocale(
+      String headerValue) {
     // when
     var locale = LocaleUtils.getNegotiatedLocale(headerValue);
 
     // then
     assertThat(locale, is(DEFAULT_LOCALE));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {"de-DE;q=0.5,en-GB", "el-GR,en-GB,de-DE", "de-CH,it-IT,en-GB", "en-GB,en-US"})
+  void test_getNegotiatedLocale_DefaultToUSLocale(String headerValue) {
+    // when
+    var locale = LocaleUtils.getNegotiatedLocale(headerValue);
+
+    // then
+    assertThat(locale, is(Locale.US));
   }
 
   @ParameterizedTest
