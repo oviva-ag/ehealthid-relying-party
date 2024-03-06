@@ -1,6 +1,7 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
 import static com.oviva.ehealthid.relyingparty.svc.ValidationException.*;
+import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.getNegotiatedLocale;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
@@ -73,6 +74,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
   private Response buildContentNegotiatedErrorResponse(Message message, StatusType status) {
 
     var headerString = headers.getHeaderString("Accept-Language");
+    var locale = getNegotiatedLocale(headerString);
 
     var mediaType =
         mediaTypeNegotiator.bestMatch(
@@ -80,7 +82,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
             List.of(MediaType.TEXT_HTML_TYPE, MediaType.APPLICATION_JSON_TYPE));
 
     if (MediaType.TEXT_HTML_TYPE.equals(mediaType)) {
-      var body = pages.error(message, headerString);
+      var body = pages.error(message, locale);
       return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
     }
 

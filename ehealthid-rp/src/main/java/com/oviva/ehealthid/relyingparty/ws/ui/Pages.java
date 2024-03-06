@@ -17,30 +17,18 @@ public class Pages {
     this.renderer = renderer;
   }
 
-  public String selectIdpForm(List<IdpEntry> identityProviders, String acceptLanguageHeaderValue) {
+  public String selectIdpForm(List<IdpEntry> identityProviders, Locale locale) {
     identityProviders =
         identityProviders.stream().sorted(Comparator.comparing(IdpEntry::name)).toList();
 
     return renderer.render(
-        "select-idp.html.mustache",
-        Map.of("identityProviders", identityProviders),
-        getNegotiatedLocale(acceptLanguageHeaderValue));
+        "select-idp.html.mustache", Map.of("identityProviders", identityProviders), locale);
   }
 
-  public String error(Message errorMessage, String acceptLanguageHeaderValue) {
-    var localizedErrorMessage =
-        formatLocalizedErrorMessage(errorMessage, getNegotiatedLocale(acceptLanguageHeaderValue));
+  public String error(Message errorMessage, Locale locale) {
+    var localizedErrorMessage = formatLocalizedErrorMessage(errorMessage, locale);
 
     return renderer.render(
-        "error.html.mustache",
-        Map.of("errorMessage", localizedErrorMessage),
-        getNegotiatedLocale(acceptLanguageHeaderValue));
-  }
-
-  private Locale getNegotiatedLocale(String acceptLanguageHeaderValue) {
-
-    var acceptableLanguages = negotiatePreferredLocales(acceptLanguageHeaderValue);
-
-    return acceptableLanguages.stream().findFirst().orElse(DEFAULT_LOCALE);
+        "error.html.mustache", Map.of("errorMessage", localizedErrorMessage), locale);
   }
 }

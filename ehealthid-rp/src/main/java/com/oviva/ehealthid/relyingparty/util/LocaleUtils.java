@@ -17,7 +17,14 @@ public class LocaleUtils {
 
   private LocaleUtils() {}
 
-  public static List<Locale> negotiatePreferredLocales(String headerValue) {
+  public static Locale getNegotiatedLocale(String acceptLanguageHeaderValue) {
+
+    var acceptableLanguages = negotiatePreferredLocales(acceptLanguageHeaderValue);
+
+    return acceptableLanguages.stream().findFirst().orElse(DEFAULT_LOCALE);
+  }
+
+  static List<Locale> negotiatePreferredLocales(String headerValue) {
 
     if (headerValue == null || headerValue.isBlank()) {
       headerValue = DEFAULT_LOCALE.toLanguageTag();

@@ -9,6 +9,7 @@ import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.test.Fixtures;
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,14 +31,14 @@ class PagesTest {
                 new IdpEntry("https://b.example.com", "Siemens", null),
                 new IdpEntry("https://c.example.com", "Zuse", null),
                 new IdpEntry("https://d.example.com", "Barmer", null)),
-            "de-DE;q=0.1,en-US;q=0.5");
+            Locale.US);
 
     assertEquals(Fixtures.getUtf8String("pages_golden_idp-select-form.bin"), rendered);
   }
 
   @ParameterizedTest
   @MethodSource("provideLanguageAndMessageForSelectIdp")
-  void selectIdpForm_withInternationalisation(String acceptLanguageHeaderValue, String message) {
+  void selectIdpForm_withInternationalisation(Locale locale, String message) {
     var sut = new Pages(renderer);
 
     var rendered =
@@ -47,7 +48,7 @@ class PagesTest {
                 new IdpEntry("https://b.example.com", "Siemens", null),
                 new IdpEntry("https://c.example.com", "Zuse", null),
                 new IdpEntry("https://d.example.com", "Barmer", null)),
-            acceptLanguageHeaderValue);
+            locale);
 
     assertTrue(rendered.contains(message));
   }
@@ -56,71 +57,65 @@ class PagesTest {
   void error_withFixture() {
     var sut = new Pages(renderer);
 
-    var rendered = sut.error(new Message("error.serverError", ""), "de-DE;q=0.1,en-US;q=0.5");
+    var rendered = sut.error(new Message("error.serverError", ""), Locale.US);
 
     assertEquals(Fixtures.getUtf8String("pages_golden_error.bin"), rendered);
   }
 
   @ParameterizedTest
   @MethodSource("provideKeyAndMessageError")
-  void error_simpleError(String acceptLanguageHeaderValue, String messageKey, String message) {
+  void error_simpleError(Locale locale, String messageKey, String message) {
     var sut = new Pages(renderer);
 
-    var rendered = sut.error(new Message(messageKey, ""), acceptLanguageHeaderValue);
+    var rendered = sut.error(new Message(messageKey, ""), locale);
 
     assertTrue(rendered.contains(message));
   }
 
   @ParameterizedTest
   @MethodSource("provideKeyWithDynamicContentMessageError")
-  void error_errorWithDynamicContent(
-      String acceptLanguageHeaderValue, String messageKey, String message) {
+  void error_errorWithDynamicContent(Locale locale, String messageKey, String message) {
     var sut = new Pages(renderer);
     var uri = URI.create("https://idp.example.com");
 
-    var rendered =
-        sut.error(new Message(messageKey, String.valueOf(uri)), acceptLanguageHeaderValue);
+    var rendered = sut.error(new Message(messageKey, String.valueOf(uri)), locale);
     assertTrue(StringEscapeUtils.unescapeHtml4(rendered).contains(message));
   }
 
   private static Stream<Arguments> provideLanguageAndMessageForSelectIdp() {
     return Stream.of(
-        Arguments.of("de-DE;q=0.4,en-US;q=0.8", "en-US"),
-        Arguments.of("de-DE,en-US;q=0.4", "de-DE"),
-        Arguments.of("de-DE;q=0.4,en-US;q=0.8,it,ch-DE", "Login with GesundheitsID"),
-        Arguments.of("de-DE;q=0.9,en-US;q=0.8,it,jp", "Anmeldung mit GesundheitsID"),
-        Arguments.of("en-US", "Select your GesundheitsID Provider"),
-        Arguments.of("de-DE", "Wählen Sie Ihren GesundheitsID Anbieter"),
-        Arguments.of("en-US,de-CH", "Login"),
-        Arguments.of("de-DE,en-US", "Einloggen"));
+        Arguments.of(Locale.US, "en-US"),
+        Arguments.of(Locale.GERMANY, "de-DE"),
+        Arguments.of(Locale.US, "Login with GesundheitsID"),
+        Arguments.of(Locale.GERMANY, "Anmeldung mit GesundheitsID"),
+        Arguments.of(Locale.US, "Select your GesundheitsID Provider"),
+        Arguments.of(Locale.GERMANY, "Wählen Sie Ihren GesundheitsID Anbieter"),
+        Arguments.of(Locale.US, "Login"),
+        Arguments.of(Locale.GERMANY, "Einloggen"));
   }
 
   private static Stream<Arguments> provideKeyAndMessageError() {
     return Stream.of(
-        Arguments.of("de-DE;q=0.4,en-US;q=0.8", "error.login", "Login with GesundheitsID"),
-        Arguments.of("de-DE;q=0.9,en-US;q=0.1", "error.login", "Anmeldung mit GesundheitsID"),
+        Arguments.of(Locale.US, "error.login", "Login with GesundheitsID"),
+        Arguments.of(Locale.GERMANY, "error.login", "Anmeldung mit GesundheitsID"),
         Arguments.of(
-            "de-DE;q=0.4,en-US;q=0.8",
-            "error.serverError",
-            "Ohh no! Unexpected server error. Please try again."),
+            Locale.US, "error.serverError", "Ohh no! Unexpected server error. Please try again."),
         Arguments.of(
-            "de-DE;q=0.9,en-US;q=0.1,it,ch",
+            Locale.GERMANY,
             "error.serverError",
             "Ohh nein! Unerwarteter Serverfehler. Bitte versuchen Sie es erneut."),
         Arguments.of(
-            "de-DE;q=0.4,en-US;q=0.8",
-            "error.noProvider",
-            "No identity provider selected. Please go back"),
+            Locale.US, "error.noProvider", "No identity provider selected. Please go back"),
         Arguments.of(
-            "de-DE;q=0.9,en-US;q=0.8,it,ch",
+            Locale.GERMANY,
             "error.noProvider",
             "Kein Identitätsanbieter ausgewählt. Bitte zurückgehen."),
         Arguments.of(
-            "de-DE;q=0.4,en-US;q=0.8",
+            Locale.US,
             "error.invalidSession",
             "Oops, session unknown or expired. Please start again."),
         Arguments.of(
-            "de-DE;q=0.9,en-US;q=0.8,it,ch",
+            Locale.GERMANY,
             "error.invalidSession",
             "Oops, Sitzung unbekannt oder abgelaufen. Bitte starten Sie erneut."));
   }
@@ -128,27 +123,27 @@ class PagesTest {
   private static Stream<Arguments> provideKeyWithDynamicContentMessageError() {
     return Stream.of(
         Arguments.of(
-            "en-US",
+            Locale.US,
             "error.insecureRedirect",
             "Insecure redirect_uri='https://idp.example.com'. Misconfigured server, please use 'https'."),
         Arguments.of(
-            "de-DE",
+            Locale.GERMANY,
             "error.insecureRedirect",
             "Unsicherer redirect_uri='https://idp.example.com'. Falsch konfigurierter Server, bitte verwenden Sie 'https'."),
         Arguments.of(
-            "en-US",
+            Locale.US,
             "error.badRedirect",
             "Bad redirect_uri='https://idp.example.com'. Passed link is not valid."),
         Arguments.of(
-            "de-DE",
+            Locale.GERMANY,
             "error.badRedirect",
             "Ungültige redirect_uri='https://idp.example.com'. Übergebener Link ist nicht gültig."),
         Arguments.of(
-            "en-US",
+            Locale.US,
             "error.untrustedRedirect",
             "Untrusted redirect_uri=https://idp.example.com. Misconfigured server."),
         Arguments.of(
-            "de-DE",
+            Locale.GERMANY,
             "error.untrustedRedirect",
             "Nicht vertrauenswürdiger redirect_uri=https://idp.example.com. Falsch konfigurierter Server."));
   }

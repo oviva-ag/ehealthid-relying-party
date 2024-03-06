@@ -1,5 +1,6 @@
 package com.oviva.ehealthid.relyingparty.util;
 
+import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.DEFAULT_LOCALE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -27,9 +28,9 @@ class LocaleUtilsTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"de-DE,en-US;q=0.5", "de-DE,de,en,it;q=0.5", "el-GR,de-DE,en-US"})
-  void test_parseAcceptLanguageHeader() {
+  void test_negotiatePreferredLocales(String headerValue) {
     // when
-    var locales = LocaleUtils.negotiatePreferredLocales("de-DE,en-US;q=0.5");
+    var locales = LocaleUtils.negotiatePreferredLocales(headerValue);
 
     // then
     assertThat(locales.get(0).getLanguage(), is("de"));
@@ -37,6 +38,32 @@ class LocaleUtilsTest {
     assertThat(locales.get(1).getLanguage(), is("en"));
 
     assertThat(locales.size(), is(2));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {"de-DE,en-US;q=0.5", "de-DE,de,en,it;q=0.5", "el-GR,de-DE,en-US", "de-CH,it-IT"})
+  void test_getNegotiatedLocale(String headerValue) {
+    // when
+    var locale = LocaleUtils.getNegotiatedLocale(headerValue);
+
+    // then
+    assertThat(locale, is(DEFAULT_LOCALE));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "de-DE;q=0.3,en-US;q=0.5",
+        "en-US,de-DE,de,en,it;q=0.5",
+        "el-GR,de-DE;q=0.7,en-US"
+      })
+  void test_getNegotiatedLocale_Us(String headerValue) {
+    // when
+    var locale = LocaleUtils.getNegotiatedLocale(headerValue);
+
+    // then
+    assertThat(locale, is(Locale.US));
   }
 
   @Test
@@ -58,7 +85,7 @@ class LocaleUtilsTest {
   }
 
   @Test
-  void test_parseAcceptLanguageHeader_validWithQualityOutOfOrder() {
+  void test_negotiatePreferredLocales_validWithQualityOutOfOrder() {
 
     var locales = LocaleUtils.negotiatePreferredLocales("en-US;q=0.5,de-DE;q=0.8");
 
@@ -71,7 +98,7 @@ class LocaleUtilsTest {
   }
 
   @Test
-  void test_parseAcceptLanguageHeader_noValidSizeZero() {
+  void test_negotiatePreferredLocales_noValidSizeZero() {
 
     var locales = LocaleUtils.negotiatePreferredLocales("el-GR;q=0.5,ja-JP;q=0.8");
 
@@ -80,7 +107,7 @@ class LocaleUtilsTest {
 
   @ParameterizedTest
   @MethodSource("nullEmptyBlankSource")
-  void test_parseAcceptLanguageHeader_nullThrowsValidationException(String headerValue) {
+  void test_negotiatePreferredLocales_nullThrowsValidationException(String headerValue) {
 
     var locales = LocaleUtils.negotiatePreferredLocales(headerValue);
 
@@ -94,13 +121,13 @@ class LocaleUtilsTest {
   }
 
   @Test
-  void test_parseAcceptLanguageHeader_brokenThrowsValidationException() {
+  void test_negotiatePreferredLocales_brokenThrowsValidationException() {
 
     assertThrows(ValidationException.class, () -> LocaleUtils.negotiatePreferredLocales("x21;"));
   }
 
   @Test
-  void tes_formatLocalizedErrorMessage_simpleError() {
+  void tes_negotiatePreferredLocales_simpleError() {
 
     var errorMessage = new Message("error.serverError");
     var locale = Locale.GERMANY;
@@ -111,7 +138,7 @@ class LocaleUtilsTest {
   }
 
   @Test
-  void test_formatLocalizedErrorMessage_errorWithContent() {
+  void test_negotiatePreferredLocales_errorWithContent() {
 
     var errorMessage = new Message("error.badRedirect", String.valueOf(BASE_URI));
     var locale = Locale.GERMANY;

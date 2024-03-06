@@ -1,6 +1,7 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
-import static com.oviva.ehealthid.relyingparty.svc.LocalizedException.*;
+import static com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
+import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.getNegotiatedLocale;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
@@ -60,7 +61,8 @@ public class AuthEndpoint {
         authService.auth(
             new AuthorizationRequest(scope, state, responseType, clientId, uri, nonce));
 
-    var form = pages.selectIdpForm(res.identityProviders(), acceptLanguage);
+    var locale = getNegotiatedLocale(acceptLanguage);
+    var form = pages.selectIdpForm(res.identityProviders(), locale);
 
     return Response.ok(form, MediaType.TEXT_HTML_TYPE)
         .cookie(createSessionCookie(res.sessionId()))
