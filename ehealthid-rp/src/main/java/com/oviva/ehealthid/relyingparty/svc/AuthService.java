@@ -110,7 +110,7 @@ public class AuthService {
 
     var selectedIdp = request.selectedIdentityProvider();
     if (selectedIdp == null || selectedIdp.isBlank()) {
-      throw new ValidationException("error.noProvider");
+      throw new ValidationException(new Message("error.noProvider"));
     }
 
     var session = mustFindSession(request.sessionId());
@@ -138,7 +138,7 @@ public class AuthService {
 
     session = removeSession(request.sessionId());
     if (session == null) {
-      throw new ValidationException("error.invalidSession");
+      throw new ValidationException(new Message("error.invalidSession"));
     }
 
     var issued = tokenIssuer.issueCode(session, idToken);
@@ -161,14 +161,14 @@ public class AuthService {
 
   @NonNull
   private Session mustFindSession(@Nullable String id) {
-    var msgNoSessionFound = "error.invalidSession";
+    var localizedMessage = new Message("error.invalidSession");
     if (id == null || id.isBlank()) {
-      throw new ValidationException(msgNoSessionFound);
+      throw new ValidationException(localizedMessage);
     }
 
     var session = sessionRepo.load(id);
     if (session == null) {
-      throw new ValidationException(msgNoSessionFound);
+      throw new ValidationException(localizedMessage);
     }
     return session;
   }
@@ -178,7 +178,7 @@ public class AuthService {
     var redirect = request.redirectUri();
 
     if (redirect == null) {
-      throw new ValidationException("error.noRedirect");
+      throw new ValidationException(new Message("error.noRedirect"));
     }
 
     if (!"https".equals(redirect.getScheme())) {

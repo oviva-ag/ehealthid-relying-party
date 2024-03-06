@@ -13,7 +13,7 @@ public class LocaleUtils {
 
   public static final String BUNDLE = "i18n";
   public static final Locale DEFAULT_LOCALE = Locale.GERMANY;
-  protected static Set<Locale> OVI_SUPPORTED_LOCALES = loadSupportedLocales();
+  protected static Set<Locale> supportedLocales = loadSupportedLocales();
 
   private LocaleUtils() {}
 
@@ -25,9 +25,9 @@ public class LocaleUtils {
 
     try {
       var languageRanges = Locale.LanguageRange.parse(headerValue);
-      return Locale.filter(languageRanges, OVI_SUPPORTED_LOCALES);
+      return Locale.filter(languageRanges, supportedLocales);
     } catch (IllegalArgumentException e) {
-      throw new ValidationException("error.unparsableHeader");
+      throw new ValidationException(new Message("error.unparsableHeader"));
     }
   }
 

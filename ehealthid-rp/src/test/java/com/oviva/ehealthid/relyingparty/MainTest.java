@@ -3,7 +3,9 @@ package com.oviva.ehealthid.relyingparty;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.oviva.ehealthid.relyingparty.cfg.ConfigProvider;
 import io.restassured.http.ContentType;
@@ -13,11 +15,16 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class MainTest {
 
@@ -26,6 +33,9 @@ class MainTest {
   private static final String JWKS_PATH = "/jwks.json";
   private static final String HEALTH_PATH = "/health";
   private static final String METRICS_PATH = "/metrics";
+  private static final String AUTH_PATH = "/auth";
+  private static final String IDP_PATH = "auth/select-idp";
+  private static final String CALLBACK_PATH = "auth/callback";
 
   @RegisterExtension
   static WireMockExtension wm =
@@ -38,6 +48,8 @@ class MainTest {
 
     var discoveryUri = URI.create(wm.baseUrl()).resolve(DISCOVERY_PATH);
 
+    var redirectUri = URI.create(("https://myapp.example.com"));
+
     var config =
         configFromProperties(
             """
@@ -45,10 +57,11 @@ class MainTest {
     federation_sig_jwks_path=src/test/resources/fixtures/example_sig_jwks.json
     base_uri=%s
     idp_discovery_uri=%s
+    redirect_uris=%s
     app_name=Awesome DiGA
     port=0
     """
-                .formatted(wm.baseUrl(), discoveryUri));
+                .formatted(wm.baseUrl(), discoveryUri, redirectUri));
 
     application = new Main(config);
 
@@ -99,8 +112,242 @@ class MainTest {
         .body(containsString("jvm_gc_memory_allocated_bytes_total "));
   }
 
+  @ParameterizedTest
+  @MethodSource("provideInsecureRedirect")
+  void run_auth_InsecureRedirect(String language, String redirectUri, String errorMessage) {
+    var baseUri = application.baseUri();
+
+    var scope = "openid";
+    var state = UUID.randomUUID().toString();
+    var nonce = UUID.randomUUID().toString();
+    var responseType = "code";
+    var clientId = "myapp";
+
+    var response =
+        given()
+            .log()
+            .all()
+            .header("Accept-Language", language)
+            .queryParam("scope", scope)
+            .queryParam("nonce", nonce)
+            .queryParam("response_type", responseType)
+            .queryParam("client_Id", clientId)
+            .queryParam("state", state)
+            .queryParam("redirect_uri", redirectUri)
+            .when()
+            .get(baseUri.resolve(AUTH_PATH))
+            .then()
+            .contentType(ContentType.HTML)
+            .statusCode(400)
+            .extract()
+            .response();
+
+    var responseBody = response.getBody().asString();
+    var escapedBody = unescapeHtmlEntities(responseBody);
+
+    assertTrue(escapedBody.contains(language));
+    assertTrue(escapedBody.contains(errorMessage));
+  }
+
+  private static Stream<Arguments> provideInsecureRedirect() {
+    return Stream.of(
+        Arguments.of(
+            "en-US",
+            "http://myapp.example.com",
+            "Insecure redirect_uri='http://myapp.example.com'. Misconfigured server, please use 'https'."),
+        Arguments.of(
+            "de-DE",
+            "http://myapp.example.com",
+            "Unsicherer redirect_uri='http://myapp.example.com'. Falsch konfigurierter Server, bitte verwenden Sie 'https'."));
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideWrongScopeAndResponseType")
+  void run_auth_withErrorRedirect(String scope, String responseType, String errorValue) {
+    var baseUri = application.baseUri();
+    var state = UUID.randomUUID().toString();
+    var nonce = UUID.randomUUID().toString();
+    var clientId = "myapp";
+
+    var response =
+        given()
+            .log()
+            .all()
+            .header("Accept-Language", "en-US")
+            .queryParam("scope", scope)
+            .queryParam("nonce", nonce)
+            .queryParam("response_type", responseType)
+            .queryParam("client_id", clientId)
+            .queryParam("state", state)
+            .queryParam("redirect_uri", "https://myapp.example.com")
+            .when()
+            .redirects()
+            .follow(false)
+            .get(baseUri.resolve(AUTH_PATH))
+            .then()
+            .statusCode(303)
+            .extract()
+            .response();
+
+    var locationHeader = response.getHeader("Location");
+    assertTrue(locationHeader.contains("error.unsupportedScope"));
+  }
+
+  private static Stream<Arguments> provideWrongScopeAndResponseType() {
+    return Stream.of(
+        Arguments.of("wrongScope", "code", "error.unsupportedScope"),
+        Arguments.of("openId", "wrongResponseType", "error.unsupportedResponseType"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideInvalidURIs")
+  void run_auth_UriIssue(String language, String redirectUri, String errorMessage) {
+    var baseUri = application.baseUri();
+
+    var scope = "openid";
+    var state = UUID.randomUUID().toString();
+    var nonce = UUID.randomUUID().toString();
+    var responseType = "code";
+    var clientId = "myapp";
+
+    var response =
+        given()
+            .log()
+            .all()
+            .header("Accept-Language", language)
+            .queryParam("scope", scope)
+            .queryParam("nonce", nonce)
+            .queryParam("response_type", responseType)
+            .queryParam("client_Id", clientId)
+            .queryParam("state", state)
+            .queryParam("redirect_uri", redirectUri)
+            .when()
+            .get(baseUri.resolve(AUTH_PATH))
+            .then()
+            .contentType(ContentType.HTML)
+            .statusCode(400)
+            .extract()
+            .response();
+
+    var responseBody = response.getBody().asString();
+    var escapedBody = unescapeHtmlEntities(responseBody);
+    assertTrue(escapedBody.contains(language));
+    assertTrue(escapedBody.contains(errorMessage));
+  }
+
+  private static Stream<Arguments> provideInvalidURIs() {
+    return Stream.of(
+        Arguments.of("en-US", "not a valid URL", "Bad uri='not a valid URL'"),
+        Arguments.of("de-DE", "not a valid URL", "Falsch uri='not a valid URL'"),
+        Arguments.of("en-US", "", "Blank uri"),
+        Arguments.of("de-DE", "", "Leere Uri"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("serverErrorLocalized")
+  void run_auth(String language, int errorCode, String error) {
+    var baseUri = application.baseUri();
+
+    var scope = "openid";
+    var state = UUID.randomUUID().toString();
+    var nonce = UUID.randomUUID().toString();
+    var responseType = "code";
+    var clientId = "myapp";
+
+    var response =
+        given()
+            .log()
+            .all()
+            .header("Accept-Language", language)
+            .queryParam("scope", scope)
+            .queryParam("nonce", nonce)
+            .queryParam("responseType", responseType)
+            .queryParam("client_Id", clientId)
+            .queryParam("state", state)
+            .queryParam("redirect_uri", "https://myapp.example.com")
+            .when()
+            .get(baseUri.resolve(AUTH_PATH))
+            .then()
+            .contentType(ContentType.HTML)
+            .statusCode(errorCode)
+            .extract()
+            .response();
+
+    var responseBody = response.getBody().asString();
+    var escapedBody = unescapeHtmlEntities(responseBody);
+    assertTrue(escapedBody.contains(language));
+    assertTrue(escapedBody.contains(error));
+  }
+
+  private static Stream<Arguments> serverErrorLocalized() {
+    return Stream.of(
+        Arguments.of("en-US", 500, "Ohh no! Unexpected server error. Please try again."),
+        Arguments.of(
+            "de-DE", 500, "Ohh nein! Unerwarteter Serverfehler. Bitte versuchen Sie es erneut."));
+  }
+
+  @Test
+  void run_callback() {
+    var baseUri = application.baseUri();
+
+    var sessionID = UUID.randomUUID().toString();
+
+    var response =
+        given()
+            .log()
+            .all()
+            .cookie("session_id", sessionID)
+            .formParam("code", "code")
+            .when()
+            .get(baseUri.resolve(CALLBACK_PATH))
+            .then()
+            .contentType(ContentType.HTML)
+            .statusCode(400)
+            .extract()
+            .response();
+
+    var responseBody = response.getBody().asString();
+    var escapedBody = unescapeHtmlEntities(responseBody);
+    assertTrue(escapedBody.contains("de-DE"));
+    assertTrue(
+        escapedBody.contains("Oops, Sitzung unbekannt oder abgelaufen. Bitte starten Sie erneut."));
+  }
+
+  @Test
+  void run_selectIdp() {
+    var baseUri = application.baseUri();
+
+    var sessionID = UUID.randomUUID().toString();
+
+    var response =
+        given()
+            .log()
+            .all()
+            .cookie("session_id", sessionID)
+            .formParam("identityProvider", "")
+            .when()
+            .post(baseUri.resolve(IDP_PATH))
+            .then()
+            .contentType(ContentType.HTML)
+            .statusCode(400)
+            .extract()
+            .response();
+
+    var responseBody = response.getBody().asString();
+    var escapedBody = unescapeHtmlEntities(responseBody);
+    assertTrue(escapedBody.contains("de-DE"));
+    assertTrue(escapedBody.contains("Kein Identitätsanbieter ausgewählt. Bitte zurückgehen."));
+  }
+
   private void assertGetOk(URI uri) {
     get(uri).then().statusCode(200);
+  }
+
+  private static String unescapeHtmlEntities(String input) {
+    input = StringEscapeUtils.unescapeHtml4(input);
+    input = input.replace("&#61;", "=");
+    input = input.replace("&#39;", "'");
+    return input;
   }
 
   record StaticConfig(Map<Object, Object> values) implements ConfigProvider {

@@ -97,7 +97,8 @@ public class AuthEndpoint {
   @NonNull
   private URI mustParse(@Nullable String uri) {
     if (uri == null || uri.isBlank()) {
-      throw new ValidationException("error.blankUri");
+      var localizedMessage = new Message("error.blankUri");
+      throw new ValidationException(localizedMessage);
     }
     try {
       return new URI(uri);

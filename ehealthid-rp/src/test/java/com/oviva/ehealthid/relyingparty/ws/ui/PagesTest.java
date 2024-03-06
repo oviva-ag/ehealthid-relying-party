@@ -56,7 +56,7 @@ class PagesTest {
   void error_withFixture() {
     var sut = new Pages(renderer);
 
-    var rendered = sut.error(new Message("error.genericError", ""), "de-DE;q=0.1,en-US;q=0.5");
+    var rendered = sut.error(new Message("error.serverError", ""), "de-DE;q=0.1,en-US;q=0.5");
 
     assertEquals(Fixtures.getUtf8String("pages_golden_error.bin"), rendered);
   }
