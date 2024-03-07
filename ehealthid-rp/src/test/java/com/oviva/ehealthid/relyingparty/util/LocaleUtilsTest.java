@@ -60,17 +60,6 @@ class LocaleUtilsTest {
 
   @ParameterizedTest
   @ValueSource(
-      strings = {"de-DE;q=0.5,en-GB", "el-GR,en-GB,de-DE", "de-CH,it-IT,en-GB", "en-GB,en-US"})
-  void test_getNegotiatedLocale_DefaultToUSLocale(String headerValue) {
-    // when
-    var locale = LocaleUtils.getNegotiatedLocale(headerValue);
-
-    // then
-    assertThat(locale, is(Locale.US));
-  }
-
-  @ParameterizedTest
-  @ValueSource(
       strings = {
         "de-DE;q=0.3,en-US;q=0.5",
         "en-US,de-DE,de,en,it;q=0.5",

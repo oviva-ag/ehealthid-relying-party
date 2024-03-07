@@ -47,7 +47,7 @@ class MainTest {
 
     var discoveryUri = URI.create(wm.baseUrl()).resolve(DISCOVERY_PATH);
 
-    var redirectUri = URI.create(("https://myapp.example.com"));
+    var redirectUri = URI.create("https://myapp.example.com");
 
     var config =
         configFromProperties(

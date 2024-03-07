@@ -30,14 +30,9 @@ public class LocaleUtils {
       headerValue = DEFAULT_LOCALE.toLanguageTag();
     }
 
-    if (headerValue.contains(Locale.UK.toLanguageTag())) {
-      headerValue = headerValue.replace(Locale.UK.toLanguageTag(), Locale.US.toLanguageTag());
-    }
-
     try {
       var languageRanges = Locale.LanguageRange.parse(headerValue);
-      return Locale.filter(
-          languageRanges, supportedLocales, Locale.FilteringMode.EXTENDED_FILTERING);
+      return Locale.filter(languageRanges, supportedLocales);
     } catch (IllegalArgumentException e) {
       throw new ValidationException(new Message("error.unparsableHeader"));
     }
