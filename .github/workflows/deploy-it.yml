@@ -1,0 +1,75 @@
+# This workflow registers the notifications image for deployment to IT, and can be manually triggered,
+# or automatically triggered by a push to the main branch
+
+name: Build and deploy to IT
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    env:
+      DOCKER_REPO: 'ghcr.io/oviva-ag/'
+      IMAGE_NAME_BACKEND: 'ehealthid-relying-party'
+      RELEASE_VERSION: 'it-deploy'
+      MAVEN_USERNAME: continuousintegration-oviva
+      MAVEN_PASSWORD: ${{ secrets.MAVEN_REPO_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+          server-id: github
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          cache: 'maven'
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Image
+        run: |
+          make dist RELEASE_TAG=$RELEASE_VERSION
+      - name: Get image digest of AMD64 Architecture
+        run: |
+          IMAGE_DIGEST_BACKEND=$(docker buildx imagetools inspect --raw "${DOCKER_REPO}${IMAGE_NAME_BACKEND}:${RELEASE_VERSION}" | jq --raw-output '.config // ( .manifests | .[] | select( .platform.architecture == "amd64") ) | .digest')
+          echo "IMAGE_DIGEST_BACKEND=$IMAGE_DIGEST_BACKEND" >> $GITHUB_ENV
+      - name: Checkout IT configuration repo
+        uses: actions/checkout@v4
+        with:
+          repository: oviva-ag/ocs_configuration_dev
+          ref: main
+          token: ${{ secrets.GH_CI_PAT }}
+          path: ocs_configuration_dev
+      - name: Register RepoDigests
+        working-directory: ./ocs_configuration_dev
+        run: |
+          sed -i -E -e "s/image: +$IMAGE_NAME_BACKEND@sha256:[0-9a-z]*/image: $IMAGE_NAME_BACKEND@$IMAGE_DIGEST_BACKEND/g" it/k8s/ehealthid-relying-party/values.yaml
+      - uses: oviva-ag/add-and-commit@v7
+        with:
+          add: '.'
+          cwd: './ocs_configuration_dev'
+          author_name: Github Actions
+          author_email: github-actions@oviva.internal
+          branch: main
+          message: 'CI: ehealthid-relying-party: Update IT docker image'
+          pull_strategy: '--no-rebase'
+          push: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_CI_PAT }}
+    permissions:
+      contents: read
+      packages: write
