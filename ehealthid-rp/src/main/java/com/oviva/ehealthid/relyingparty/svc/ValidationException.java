@@ -2,24 +2,33 @@ package com.oviva.ehealthid.relyingparty.svc;
 
 import java.net.URI;
 
-public class ValidationException extends RuntimeException {
+public class ValidationException extends RuntimeException implements LocalizedException {
 
   private final URI seeOther;
 
-  public ValidationException(String message) {
-    this(message, null, null);
+  private final transient Message localizedMessage;
+
+  public ValidationException(Message localizedMessage, URI seeOther) {
+    this(localizedMessage.messageKey(), null, seeOther, null);
   }
 
-  public ValidationException(String message, URI seeOther) {
-    this(message, null, seeOther);
+  public ValidationException(Message localizedMessage) {
+    this(localizedMessage.messageKey(), null, null, localizedMessage);
   }
 
-  public ValidationException(String message, Throwable cause, URI seeOther) {
+  public ValidationException(
+      String message, Throwable cause, URI seeOther, Message localizedMessage) {
     super(message, cause);
     this.seeOther = seeOther;
+    this.localizedMessage = localizedMessage;
   }
 
   public URI seeOther() {
     return seeOther;
+  }
+
+  @Override
+  public LocalizedException.Message localizedMessage() {
+    return localizedMessage;
   }
 }

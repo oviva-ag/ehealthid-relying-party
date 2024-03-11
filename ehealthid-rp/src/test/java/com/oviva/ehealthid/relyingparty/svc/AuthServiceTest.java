@@ -49,7 +49,7 @@ class AuthServiceTest {
     var e = assertThrows(ValidationException.class, () -> sut.auth(req));
     // then
     assertEquals(
-        "https://myapp.example.com?error=invalid_scope&error_description=scope+%%27openid+email%%27+not+supported&state=%s"
+        "https://myapp.example.com?error=invalid_scope&error_description=error.unsupportedScope&state=%s"
             .formatted(state),
         e.seeOther().toString());
   }
@@ -90,7 +90,7 @@ class AuthServiceTest {
 
     // when
     assertEquals(
-        "https://myapp.example.com?error=unsupported_response_type&error_description=unsupported+response+type%3A+%27badtype%27&state="
+        "https://myapp.example.com?error=unsupported_response_type&error_description=error.unsupportedResponseType&state="
             + state,
         e.seeOther().toString());
   }
