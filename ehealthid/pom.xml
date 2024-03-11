@@ -84,6 +84,12 @@
       <groupId>com.github.jknack</groupId>
       <artifactId>handlebars-helpers</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.mozilla</groupId>
+          <artifactId>rhino</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>

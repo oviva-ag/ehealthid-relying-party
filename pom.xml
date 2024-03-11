@@ -25,6 +25,7 @@
     <version.nimbus-jose-jwt>9.37.3</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.3</version.logback.classic>
     <version.logback.encoder>7.4</version.logback.encoder>
+    <version.handlebars>4.3.1</version.handlebars>
 
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless-maven-plugin.google-java-format.version>1.18.1
@@ -188,12 +189,12 @@
       <dependency>
         <groupId>com.github.jknack</groupId>
         <artifactId>handlebars</artifactId>
-        <version>4.4.0</version>
+        <version>${version.handlebars}</version>
       </dependency>
       <dependency>
         <groupId>com.github.jknack</groupId>
         <artifactId>handlebars-helpers</artifactId>
-        <version>4.4.0</version>
+        <version>${version.handlebars}</version>
       </dependency>
       <dependency>
         <groupId>com.jayway.jsonpath</groupId>
