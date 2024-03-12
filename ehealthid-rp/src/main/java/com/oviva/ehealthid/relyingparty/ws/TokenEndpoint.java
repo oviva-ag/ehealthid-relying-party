@@ -42,9 +42,10 @@ public class TokenEndpoint {
       return Response.status(Status.BAD_REQUEST).entity("bad 'grant_type': " + grantType).build();
     }
 
-    authenticator.authenticate(new Request(clientId, clientAssertionType, clientAssertion));
+    var authenticatedClient =
+        authenticator.authenticate(new Request(clientId, clientAssertionType, clientAssertion));
 
-    var redeemed = tokenIssuer.redeem(code, redirectUri, clientId);
+    var redeemed = tokenIssuer.redeem(code, redirectUri, authenticatedClient.clientId());
     if (redeemed == null) {
       return Response.status(Status.BAD_REQUEST).entity("invalid code").build();
     }

@@ -1,10 +1,12 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
+import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator.Client;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Token;
 import com.oviva.ehealthid.relyingparty.ws.TokenEndpoint.TokenResponse;
@@ -57,6 +59,7 @@ class TokenEndpointTest {
     var code = "6238e4504332468aa0c12e300787fded";
 
     when(tokenIssuer.redeem(code, REDIRECT_URI.toString(), clientId)).thenReturn(null);
+    when(authenticator.authenticate(any())).thenReturn(new Client(clientId));
 
     // when
     try (var res = sut.token(code, grantType, REDIRECT_URI.toString(), clientId, null, null)) {
@@ -85,6 +88,7 @@ class TokenEndpointTest {
     var code = "6238e4504332468aa0c12e300787fded";
     var token = new Token(accessToken, idToken, expiresIn);
     when(tokenIssuer.redeem(code, REDIRECT_URI.toString(), clientId)).thenReturn(token);
+    when(authenticator.authenticate(any())).thenReturn(new Client(clientId));
 
     // when
     try (var res = sut.token(code, grantType, REDIRECT_URI.toString(), clientId, null, null)) {

@@ -43,6 +43,9 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable exception) {
+
+    debugLog(exception);
+
     if (exception instanceof WebApplicationException w) {
       var res = w.getResponse();
       if (res.getStatus() >= 500) {
@@ -102,6 +105,12 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
       }
     }
     return Status.INTERNAL_SERVER_ERROR;
+  }
+
+  private void debugLog(Throwable exception) {
+    if (logger.isDebugEnabled()) {
+      logger.atDebug().setCause(exception).log("request failed: {}", exception.getMessage());
+    }
   }
 
   private void log(Throwable exception) {

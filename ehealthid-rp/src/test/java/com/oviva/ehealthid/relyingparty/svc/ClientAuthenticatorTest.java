@@ -51,11 +51,11 @@ class ClientAuthenticatorTest {
     var authenticator = new ClientAuthenticator(jwkSource, RP_ISSUER);
 
     // when & then
-    assertDoesNotThrow(
-        () ->
-            authenticator.authenticate(
-                new Request(
-                    CLIENT_ID, ClientAuthenticator.CLIENT_ASSERTION_TYPE_PRIVATE_KEY_JWT, signed)));
+    var client =
+        authenticator.authenticate(
+            new Request(
+                CLIENT_ID, ClientAuthenticator.CLIENT_ASSERTION_TYPE_PRIVATE_KEY_JWT, signed));
+    assertEquals(CLIENT_ID, client.clientId());
   }
 
   @Test
