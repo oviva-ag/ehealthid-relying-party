@@ -225,9 +225,11 @@ In order of priority:
 
 # Wishlist
 
+- [A_23183 - Veröffentlichen der TLS Authentisierungsschlüssel](https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_FD/gemSpec_IDP_FD_V1.7.0/#A_23183) - unclear what this exactly entails :/
 - Accept base URI's with paths.
 - MySQL or Postgres backed session and code repos
 - PKCE flow on OIDC side
+- Integration with other IDPs such as [FusionAuth](https://fusionauth.io/)
 
 # Helpful Links
 
