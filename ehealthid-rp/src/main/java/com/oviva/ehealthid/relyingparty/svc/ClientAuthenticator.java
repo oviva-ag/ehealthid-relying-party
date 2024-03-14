@@ -15,8 +15,6 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implements the client `private_key_jwt` authentication for clients. The signing keys are fetched
@@ -36,8 +34,6 @@ public class ClientAuthenticator {
 
   public static final String CLIENT_ASSERTION_TYPE_PRIVATE_KEY_JWT =
       "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
-
-  private static final Logger logger = LoggerFactory.getLogger(ClientAuthenticator.class);
 
   private final JWKSource<SecurityContext> jwkSource;
 

@@ -68,7 +68,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
     log(exception);
 
-    var status = determineStatus(exception);
+    var status = Status.INTERNAL_SERVER_ERROR;
 
     var errorMessage = new Message(SERVER_ERROR_MESSAGE, (String) null);
     return buildContentNegotiatedErrorResponse(errorMessage, status);
@@ -95,16 +95,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
     }
 
     return Response.status(status).build();
-  }
-
-  private StatusType determineStatus(Throwable exception) {
-    if (exception instanceof WebApplicationException w) {
-      var res = w.getResponse();
-      if (res != null) {
-        return res.getStatusInfo();
-      }
-    }
-    return Status.INTERNAL_SERVER_ERROR;
   }
 
   private void debugLog(Throwable exception) {
