@@ -51,11 +51,11 @@ class ClientAuthenticatorTest {
     var authenticator = new ClientAuthenticator(jwkSource, RP_ISSUER);
 
     // when & then
-    assertDoesNotThrow(
-        () ->
-            authenticator.authenticate(
-                new Request(
-                    CLIENT_ID, ClientAuthenticator.CLIENT_ASSERTION_TYPE_PRIVATE_KEY_JWT, signed)));
+    var client =
+        authenticator.authenticate(
+            new Request(
+                CLIENT_ID, ClientAuthenticator.CLIENT_ASSERTION_TYPE_PRIVATE_KEY_JWT, signed));
+    assertEquals(CLIENT_ID, client.clientId());
   }
 
   @Test
@@ -112,6 +112,36 @@ class ClientAuthenticatorTest {
             authenticator.authenticate(
                 new Request(
                     CLIENT_ID, ClientAuthenticator.CLIENT_ASSERTION_TYPE_PRIVATE_KEY_JWT, signed)));
+  }
+
+  @Test
+  void authenticate_badSubject_noMatch() throws JOSEException {
+
+    var key = generateKey();
+    var jwkSource = new StaticJwkSource<>(key);
+
+    var claims =
+        new JWTClaimsSet.Builder()
+            .audience(RP_ISSUER.toString())
+            .subject(CLIENT_ID)
+            .issuer(CLIENT_ID)
+            .expirationTime(Date.from(Instant.now().plusSeconds(60)))
+            .jwtID(UUID.randomUUID().toString())
+            .build();
+
+    var signed = signJwt(claims, key);
+
+    var authenticator = new ClientAuthenticator(jwkSource, RP_ISSUER);
+
+    // when & then
+    assertThrows(
+        AuthenticationException.class,
+        () ->
+            authenticator.authenticate(
+                new Request(
+                    "the wrong client",
+                    ClientAuthenticator.CLIENT_ASSERTION_TYPE_PRIVATE_KEY_JWT,
+                    signed)));
   }
 
   @Test
