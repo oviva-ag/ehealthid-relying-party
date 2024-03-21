@@ -62,6 +62,12 @@ public class FedRegistrationCommand implements Callable<Integer> {
       description = "the file to write to")
   private Path file;
 
+  @Option(
+      names = {"-c", "--contact-email"},
+      description = "the technical contact email for the IdP",
+      required = true)
+  private String email;
+
   public static void main(String[] args) {
 
     int exitCode = 1;
@@ -96,6 +102,7 @@ public class FedRegistrationCommand implements Callable<Integer> {
         new Model(
             memberId,
             entityConfiguration.orgName(),
+            email,
             issuerUri,
             environment,
             entityConfiguration.scopes(),
@@ -158,10 +165,12 @@ public class FedRegistrationCommand implements Callable<Integer> {
         .flatMap(
             s ->
                 switch (s) {
+                    // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/index.html#A_22989-01
                   case "urn:telematik:geburtsdatum" -> Stream.of(Scope.DATE_OF_BIRTH);
                   case "urn:telematik:alter" -> Stream.of(Scope.AGE);
                   case "urn:telematik:display_name" -> Stream.of(Scope.DISPLAY_NAME);
                   case "urn:telematik:given_name" -> Stream.of(Scope.FIRST_NAME);
+                  case "urn:telematik:family_name" -> Stream.of(Scope.LAST_NAME);
                   case "urn:telematik:geschlecht" -> Stream.of(Scope.GENDER);
                   case "urn:telematik:email" -> Stream.of(Scope.EMAIL);
                   case "urn:telematik:versicherter" -> Stream.of(Scope.INSURED_PERSON);

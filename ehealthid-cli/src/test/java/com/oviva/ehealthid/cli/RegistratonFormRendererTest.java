@@ -27,6 +27,7 @@ class RegistratonFormRendererTest {
             new Model(
                 "FDmyDiGAMemb",
                 "My DiGA",
+                "bobby.tables@example.com",
                 URI.create("https://mydiga.example.com"),
                 TU,
                 List.of(Scope.INSURED_PERSON, Scope.EMAIL, Scope.DISPLAY_NAME),
@@ -37,6 +38,7 @@ class RegistratonFormRendererTest {
         <?xml version="1.0" encoding="UTF-8"?>
         <registrierungtifoederation>
            <datendesantragstellers>
+             <kontaktemail>bobby.tables@example.com</kontaktemail>
              <teilnehmertyp>Fachdienst</teilnehmertyp>
              <betriebsumgebung>TU</betriebsumgebung>
              <organisationsname>My DiGA</organisationsname>
@@ -50,6 +52,7 @@ class RegistratonFormRendererTest {
                <scopegeschlecht>0</scopegeschlecht>
                <scopegeburtsdatum>0</scopegeburtsdatum>
                <scopevorname>0</scopevorname>
+               <scopenachname>0</scopenachname>
                <scopeversicherter>1</scopeversicherter>
              </scopes>
              <publickeys>
