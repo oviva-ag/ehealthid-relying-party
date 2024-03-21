@@ -16,33 +16,35 @@ public class RegistratonFormRenderer {
 
   private static final String XML_TEMPLATE =
       """
-      <?xml version="1.0" encoding="UTF-8"?>
-      <registrierungtifoederation>
-         <datendesantragstellers>
-           <teilnehmertyp>Fachdienst</teilnehmertyp>
-           <betriebsumgebung>{{environment}}</betriebsumgebung>
-           <organisationsname>{{organisationName}}</organisationsname>
-           <memberid>{{memberId}}</memberid>
-           <zwg>ORG-0001:BT-0144</zwg>
-           <issueruri>{{issuerUri}}</issueruri>
-           <scopes>
-             <scopealter>{{scopeAge}}</scopealter>
-             <scopeanzeigename>{{scopeDisplayName}}</scopeanzeigename>
-             <scopeemail>{{scopeEmail}}</scopeemail>
-             <scopegeschlecht>{{scopeGender}}</scopegeschlecht>
-             <scopegeburtsdatum>{{scopeDateOfBirth}}</scopegeburtsdatum>
-             <scopevorname>{{scopeFirstName}}</scopevorname>
-             <scopeversicherter>{{scopeInsuredPerson}}</scopeversicherter>
-           </scopes>
-           {{#publicKeys}}
-           <publickeys>
-             <kidjwt>{{kid}}</kidjwt>
-             <pubkeyjwt>{{pem}}</pubkeyjwt>
-           </publickeys>
-           {{/publicKeys}}
-         </datendesantragstellers>
-      </registrierungtifoederation>
-      """;
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <registrierungtifoederation>
+                       <datendesantragstellers>
+                         <kontaktemail>{{contactEmail}}</kontaktemail>
+                         <teilnehmertyp>Fachdienst</teilnehmertyp>
+                         <betriebsumgebung>{{environment}}</betriebsumgebung>
+                         <organisationsname>{{organisationName}}</organisationsname>
+                         <memberid>{{memberId}}</memberid>
+                         <zwg>ORG-0001:BT-0144</zwg>
+                         <issueruri>{{issuerUri}}</issueruri>
+                         <scopes>
+                           <scopealter>{{scopeAge}}</scopealter>
+                           <scopeanzeigename>{{scopeDisplayName}}</scopeanzeigename>
+                           <scopeemail>{{scopeEmail}}</scopeemail>
+                           <scopegeschlecht>{{scopeGender}}</scopegeschlecht>
+                           <scopegeburtsdatum>{{scopeDateOfBirth}}</scopegeburtsdatum>
+                           <scopevorname>{{scopeFirstName}}</scopevorname>
+                           <scopenachname>{{scopeLastName}}</scopenachname>
+                           <scopeversicherter>{{scopeInsuredPerson}}</scopeversicherter>
+                         </scopes>
+                         {{#publicKeys}}
+                         <publickeys>
+                           <kidjwt>{{kid}}</kidjwt>
+                           <pubkeyjwt>{{pem}}</pubkeyjwt>
+                         </publickeys>
+                         {{/publicKeys}}
+                       </datendesantragstellers>
+                    </registrierungtifoederation>
+                    """;
 
   public static String render(Model m) {
 
@@ -59,6 +61,7 @@ public class RegistratonFormRenderer {
   public record Model(
       String memberId,
       String organisationName,
+      String contactEmail,
       URI issuerUri,
       Environment environment,
       List<Scope> scopes,
@@ -70,6 +73,7 @@ public class RegistratonFormRenderer {
       PU
     }
 
+    // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/index.html#A_22989-01
     enum Scope {
       AGE,
       DISPLAY_NAME,
@@ -77,6 +81,7 @@ public class RegistratonFormRenderer {
       GENDER,
       DATE_OF_BIRTH,
       FIRST_NAME,
+      LAST_NAME,
       INSURED_PERSON
     }
   }
@@ -86,12 +91,14 @@ public class RegistratonFormRenderer {
       String organisationName,
       String issuerUri,
       String environment,
+      String contactEmail,
       int scopeAge,
       int scopeDisplayName,
       int scopeEmail,
       int scopeGender,
       int scopeDateOfBirth,
       int scopeFirstName,
+      int scopeLastName,
       int scopeInsuredPerson,
       List<PublicKey> publicKeys) {
 
@@ -102,12 +109,14 @@ public class RegistratonFormRenderer {
           m.organisationName(),
           m.issuerUri().toString(),
           m.environment().name(),
+          m.contactEmail(),
           m.scopes().contains(Scope.AGE) ? 1 : 0,
           m.scopes().contains(Scope.DISPLAY_NAME) ? 1 : 0,
           m.scopes().contains(Scope.EMAIL) ? 1 : 0,
           m.scopes().contains(Scope.GENDER) ? 1 : 0,
           m.scopes().contains(Scope.DATE_OF_BIRTH) ? 1 : 0,
           m.scopes().contains(Scope.FIRST_NAME) ? 1 : 0,
+          m.scopes().contains(Scope.LAST_NAME) ? 1 : 0,
           m.scopes().contains(Scope.INSURED_PERSON) ? 1 : 0,
           m.jwks().getKeys().stream().map(RenderModel::toPublicKey).toList());
     }

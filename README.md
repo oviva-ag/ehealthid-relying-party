@@ -72,6 +72,7 @@ export MEMBER_ID=FDmyDiGa0112TU
 # generate the registration XML from an existing entity statement
 ./cli.sh fedreg \
     --environment=TU \
+    --contact-email=bobby.tables@example.com \
     --issuer-uri=$ISSUER_URI \
     --member-id="$MEMBER_ID"
     
