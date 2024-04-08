@@ -30,7 +30,7 @@
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless-maven-plugin.google-java-format.version>1.18.1
     </spotless-maven-plugin.google-java-format.version>
-    <jacoco.version>0.8.11</jacoco.version>
+    <jacoco.version>0.8.12</jacoco.version>
 
 
     <maven-shade.version>3.5.2</maven-shade.version>
@@ -73,7 +73,7 @@
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
-        <version>4.8.3</version>
+        <version>4.8.4</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -210,7 +210,7 @@
       <dependency>
         <groupId>org.wiremock</groupId>
         <artifactId>wiremock</artifactId>
-        <version>3.4.2</version>
+        <version>3.5.2</version>
         <exclusions>
           <exclusion>
             <groupId>com.github.jknack</groupId>
@@ -313,7 +313,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.3.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
