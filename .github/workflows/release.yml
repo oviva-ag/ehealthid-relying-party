@@ -51,7 +51,7 @@ jobs:
         run: |
           make dist RELEASE_TAG=v$VERSION
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: ${{ steps.version.outputs.version }}
