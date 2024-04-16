@@ -26,7 +26,7 @@ jobs:
         run: ./mvnw -B verify
       - name: Cache SonarCloud packages
         if: ${{ github.event.pull_request == null || github.event.pull_request.head.repo.full_name == 'oviva-ag/ehealthid-relying-party' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
