@@ -4,7 +4,7 @@ updates:
     registries: "*"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "NA:"
     groups:
@@ -16,6 +16,13 @@ updates:
     registries: "*"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "NA:"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    registries: '*'
+    commit-message:
+      prefix: 'NA:'
