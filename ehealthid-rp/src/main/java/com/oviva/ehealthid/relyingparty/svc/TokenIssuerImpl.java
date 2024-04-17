@@ -96,7 +96,10 @@ public class TokenIssuerImpl implements TokenIssuer {
           new JWTClaimsSet.Builder()
               .issuer(issuer.toString())
               .audience(audience)
-              .subject(federatedIdToken.body().sub()) // propagate original `sub`
+              .subject(
+                  federatedIdToken.body().sub()
+                      + "-"
+                      + federatedIdToken.body().iss()) // in accordance with requirement A_23035
               .issueTime(Date.from(now))
               .expirationTime(Date.from(now.plus(Duration.ofHours(8))));
 
