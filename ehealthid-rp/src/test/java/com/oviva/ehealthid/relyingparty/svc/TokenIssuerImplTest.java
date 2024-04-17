@@ -144,7 +144,8 @@ class TokenIssuerImplTest {
         new IdTokenJWS(
             null,
             new IdToken(
-                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null));
+                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null, null,
+                null, null, null, null));
 
     var id = UUID.randomUUID().toString();
     var code =
@@ -183,7 +184,8 @@ class TokenIssuerImplTest {
         new IdTokenJWS(
             null,
             new IdToken(
-                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null));
+                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null, null,
+                null, null, null, null));
 
     var code =
         new Code(

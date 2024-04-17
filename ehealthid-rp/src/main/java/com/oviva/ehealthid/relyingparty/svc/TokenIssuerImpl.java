@@ -107,7 +107,21 @@ public class TokenIssuerImpl implements TokenIssuer {
       // complete list of scopes and corresponding claims:
       // https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf
       // Specification 4.2.4  - A_22989 -
+
+      claimsBuilder.claim("birthdate", federatedIdToken.body().telematikBirthdate());
+      claimsBuilder.claim("urn:telematik:claims:alter", federatedIdToken.body().telematikAlter());
+      claimsBuilder.claim(
+          "urn:telematik:claims:display_name", federatedIdToken.body().telematikDisplayName());
+      claimsBuilder.claim(
+          "urn:telematik:claims:given_name", federatedIdToken.body().telematikGivenName());
+      claimsBuilder.claim(
+          "urn:telematik:claims:geschlecht", federatedIdToken.body().telematikGeschlecht());
+      claimsBuilder.claim("urn:telematik:claims:email", federatedIdToken.body().telematikEmail());
+      claimsBuilder.claim(
+          "urn:telematik:claims:profession", federatedIdToken.body().telematikProfession());
       claimsBuilder.claim("urn:telematik:claims:id", federatedIdToken.body().telematikKvnr());
+      claimsBuilder.claim(
+          "urn:telematik:claims:organization", federatedIdToken.body().telematikOrganization());
 
       var claims = claimsBuilder.build();
 

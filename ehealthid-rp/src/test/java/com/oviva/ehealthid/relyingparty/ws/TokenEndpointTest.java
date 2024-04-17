@@ -16,8 +16,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class TokenEndpointTest {
-
-  private static final URI BASE_URI = URI.create("https://idp.example.com");
   private static final URI REDIRECT_URI = URI.create("https://myapp.example.com");
 
   @Test
