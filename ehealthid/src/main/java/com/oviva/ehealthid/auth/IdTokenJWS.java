@@ -19,14 +19,13 @@ public record IdTokenJWS(JWSObject jws, IdToken body) {
       @JsonProperty("amr") String amr,
       @JsonProperty("email") String email,
 
-      // The gemspec says that the claim is "birthdate", but
-      // all other claims are prefixed with "urn:telematik:claims:".
-      // I decided to implement to spec but we will likely need to adapt this.
+      // telematik claims according to
+      // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/latest/#A_22989
       @JsonProperty("birthdate") String telematikBirthdate,
-      @JsonProperty("urn:telematik:claims:alter") String telematikAlter,
+      @JsonProperty("urn:telematik:claims:alter") String telematikAge,
       @JsonProperty("urn:telematik:claims:display_name") String telematikDisplayName,
       @JsonProperty("urn:telematik:claims:given_name") String telematikGivenName,
-      @JsonProperty("urn:telematik:claims:geschlecht") String telematikGeschlecht,
+      @JsonProperty("urn:telematik:claims:geschlecht") String telematikGender,
       @JsonProperty("urn:telematik:claims:email") String telematikEmail,
       @JsonProperty("urn:telematik:claims:profession") String telematikProfession,
 

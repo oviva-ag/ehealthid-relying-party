@@ -96,10 +96,7 @@ public class TokenIssuerImpl implements TokenIssuer {
           new JWTClaimsSet.Builder()
               .issuer(issuer.toString())
               .audience(audience)
-              .subject(
-                  federatedIdToken.body().sub()
-                      + "-"
-                      + federatedIdToken.body().iss()) // in accordance with requirement A_23035
+              .subject(deriveFederatedSubject(federatedIdToken.body()))
               .issueTime(Date.from(now))
               .expirationTime(Date.from(now.plus(Duration.ofHours(8))));
 
@@ -112,13 +109,13 @@ public class TokenIssuerImpl implements TokenIssuer {
       // Specification 4.2.4  - A_22989 -
 
       claimsBuilder.claim("birthdate", federatedIdToken.body().telematikBirthdate());
-      claimsBuilder.claim("urn:telematik:claims:alter", federatedIdToken.body().telematikAlter());
+      claimsBuilder.claim("urn:telematik:claims:alter", federatedIdToken.body().telematikAge());
       claimsBuilder.claim(
           "urn:telematik:claims:display_name", federatedIdToken.body().telematikDisplayName());
       claimsBuilder.claim(
           "urn:telematik:claims:given_name", federatedIdToken.body().telematikGivenName());
       claimsBuilder.claim(
-          "urn:telematik:claims:geschlecht", federatedIdToken.body().telematikGeschlecht());
+          "urn:telematik:claims:geschlecht", federatedIdToken.body().telematikGender());
       claimsBuilder.claim("urn:telematik:claims:email", federatedIdToken.body().telematikEmail());
       claimsBuilder.claim(
           "urn:telematik:claims:profession", federatedIdToken.body().telematikProfession());
@@ -138,6 +135,15 @@ public class TokenIssuerImpl implements TokenIssuer {
     } catch (JOSEException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private String deriveFederatedSubject(IdTokenJWS.IdToken federatedIdToken) {
+
+    // according to
+    // https://openid.net/specs/openid-connect-core-1_0.html#ClaimStability
+    // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_FD/latest/#A_23035
+
+    return federatedIdToken.sub() + "-" + federatedIdToken.iss();
   }
 
   private String issueAccessToken(Duration ttl, String audience) {
