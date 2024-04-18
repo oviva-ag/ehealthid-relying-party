@@ -6,14 +6,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import com.oviva.ehealthid.relyingparty.cfg.ConfigProvider;
+import com.oviva.ehealthid.relyingparty.test.EmbeddedRelyingParty;
 import io.restassured.http.ContentType;
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -36,51 +31,21 @@ class MainTest {
   private static final String IDP_PATH = "auth/select-idp";
   private static final String CALLBACK_PATH = "auth/callback";
 
+  private static EmbeddedRelyingParty application;
+
   @RegisterExtension
   static WireMockExtension wm =
       WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build();
 
-  private static Main application;
-
   @BeforeAll
   static void beforeAll() throws ExecutionException, InterruptedException {
-
-    var discoveryUri = URI.create(wm.baseUrl()).resolve(DISCOVERY_PATH);
-
-    var redirectUri = URI.create("https://myapp.example.com");
-
-    var config =
-        configFromProperties(
-            """
-    federation_enc_jwks_path=src/test/resources/fixtures/example_enc_jwks.json
-    federation_sig_jwks_path=src/test/resources/fixtures/example_sig_jwks.json
-    base_uri=%s
-    idp_discovery_uri=%s
-    redirect_uris=%s
-    app_name=Awesome DiGA
-    port=0
-    """
-                .formatted(wm.baseUrl(), discoveryUri, redirectUri));
-
-    application = new Main(config);
-
-    // when
+    application = new EmbeddedRelyingParty();
     application.start();
   }
 
   @AfterAll
   static void afterAll() throws Exception {
     application.close();
-  }
-
-  private static ConfigProvider configFromProperties(String s) {
-    var props = new Properties();
-    try {
-      props.load(new StringReader(s));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return new StaticConfig(props);
   }
 
   @Test
@@ -332,13 +297,5 @@ class MainTest {
 
   private void assertGetOk(URI uri) {
     get(uri).then().statusCode(200);
-  }
-
-  record StaticConfig(Map<Object, Object> values) implements ConfigProvider {
-
-    @Override
-    public Optional<String> get(String name) {
-      return Optional.ofNullable(values.get(name)).map(Object::toString);
-    }
   }
 }
