@@ -18,10 +18,18 @@ public record IdTokenJWS(JWSObject jws, IdToken body) {
       @JsonProperty("acr") String acr,
       @JsonProperty("amr") String amr,
       @JsonProperty("email") String email,
-      @JsonProperty("urn:telematik:claims:profession") String telematikProfession,
+
+      // telematik claims according to
+      // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/latest/#A_22989
+      @JsonProperty("birthdate") String telematikBirthdate,
+      @JsonProperty("urn:telematik:claims:alter") String telematikAge,
+      @JsonProperty("urn:telematik:claims:display_name") String telematikDisplayName,
       @JsonProperty("urn:telematik:claims:given_name") String telematikGivenName,
+      @JsonProperty("urn:telematik:claims:geschlecht") String telematikGender,
+      @JsonProperty("urn:telematik:claims:email") String telematikEmail,
+      @JsonProperty("urn:telematik:claims:profession") String telematikProfession,
 
       // for insured person (IP) the immutable part of the Krankenversichertennummer (KVNR)
       @JsonProperty("urn:telematik:claims:id") String telematikKvnr,
-      @JsonProperty("urn:telematik:claims:email") String telematikEmail) {}
+      @JsonProperty("urn:telematik:claims:organization") String telematikOrganization) {}
 }

@@ -144,7 +144,8 @@ class TokenIssuerImplTest {
         new IdTokenJWS(
             null,
             new IdToken(
-                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null));
+                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null, null,
+                null, null, null, null));
 
     var id = UUID.randomUUID().toString();
     var code =
@@ -183,7 +184,8 @@ class TokenIssuerImplTest {
         new IdTokenJWS(
             null,
             new IdToken(
-                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null));
+                null, "tobias", null, 0, 0, 0, null, null, null, null, null, null, null, null, null,
+                null, null, null, null));
 
     var code =
         new Code(
@@ -208,6 +210,153 @@ class TokenIssuerImplTest {
     jws.verify(verifier);
 
     assertIdTokenClaims(jws, nonce, issuer, clientId);
+  }
+
+  @Test
+  void issueIdToken_gemSpecA23035() throws JOSEException, ParseException {
+    var issuer = URI.create("https://idp.example.com");
+
+    var k = genKey();
+    var keyStore = mock(KeyStore.class);
+    when(keyStore.signingKey()).thenReturn(k);
+    var codeRepo = mock(CodeRepo.class);
+
+    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+
+    var id = UUID.randomUUID().toString();
+
+    var nonce = UUID.randomUUID().toString();
+    var redirectUri = URI.create("https://myapp.example.com/callback");
+    var clientId = "myapp";
+    var federatedSub = "S12349345";
+    var federatedIss = "https://test-issuer.example.com";
+
+    var federatedIdToken =
+        new IdTokenJWS(
+            null,
+            new IdToken(
+                federatedIss,
+                federatedSub,
+                null,
+                0,
+                0,
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null));
+
+    var code =
+        new Code(
+            id,
+            null,
+            Instant.now().plusSeconds(10),
+            redirectUri,
+            nonce,
+            clientId,
+            federatedIdToken);
+
+    when(codeRepo.remove(id)).thenReturn(Optional.of(code));
+
+    var idToken = sut.issueIdToken(clientId, nonce, federatedIdToken);
+
+    var jws = JWSObject.parse(idToken);
+    var verifier = new ECDSAVerifier(k);
+    jws.verify(verifier);
+
+    var body = jws.getPayload().toJSONObject();
+    assertEquals(federatedSub + "-" + federatedIss, body.get("sub"));
+  }
+
+  @Test
+  void issueIdToken_mapsAllDefinedClaims() throws JOSEException, ParseException {
+    var issuer = URI.create("https://idp.example.com");
+
+    var k = genKey();
+    var keyStore = mock(KeyStore.class);
+    when(keyStore.signingKey()).thenReturn(k);
+    var codeRepo = mock(CodeRepo.class);
+
+    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+
+    var id = UUID.randomUUID().toString();
+
+    var nonce = UUID.randomUUID().toString();
+    var redirectUri = URI.create("https://myapp.example.com/callback");
+    var clientId = "myapp";
+    var federatedSub = "S12349345";
+    var telematikBirthdate = "2020-01-01";
+    var telematikAlter = "12";
+    var telematikDisplayName = "Thilo";
+    var telematikGivenName = "Tester";
+    var telematikGeschlecht = "d";
+    var telematikEmail = "t.tester@example.com";
+    var telematikProfession = "1.12.234.234.1234.234";
+    var telematikKvnr = "X1234";
+    var telematikOrganization = "telematikOrg";
+
+    var federatedIdToken =
+        new IdTokenJWS(
+            null,
+            new IdToken(
+                null,
+                federatedSub,
+                null,
+                0,
+                0,
+                0,
+                null,
+                null,
+                null,
+                "toplevel+email@example.com",
+                telematikBirthdate,
+                telematikAlter,
+                telematikDisplayName,
+                telematikGivenName,
+                telematikGeschlecht,
+                telematikEmail,
+                telematikProfession,
+                telematikKvnr,
+                telematikOrganization));
+
+    var code =
+        new Code(
+            id,
+            null,
+            Instant.now().plusSeconds(10),
+            redirectUri,
+            nonce,
+            clientId,
+            federatedIdToken);
+
+    when(codeRepo.remove(id)).thenReturn(Optional.of(code));
+
+    var idToken = sut.issueIdToken(clientId, nonce, federatedIdToken);
+
+    var jws = JWSObject.parse(idToken);
+    var verifier = new ECDSAVerifier(k);
+    jws.verify(verifier);
+
+    var body = jws.getPayload().toJSONObject();
+
+    assertEquals(telematikBirthdate, body.get("birthdate"));
+    assertEquals(telematikAlter, body.get("urn:telematik:claims:alter"));
+    assertEquals(telematikDisplayName, body.get("urn:telematik:claims:display_name"));
+    assertEquals(telematikGivenName, body.get("urn:telematik:claims:given_name"));
+    assertEquals(telematikGeschlecht, body.get("urn:telematik:claims:geschlecht"));
+    assertEquals(telematikEmail, body.get("urn:telematik:claims:email"));
+    assertEquals(telematikProfession, body.get("urn:telematik:claims:profession"));
+    assertEquals(telematikKvnr, body.get("urn:telematik:claims:id"));
+    assertEquals(telematikOrganization, body.get("urn:telematik:claims:organization"));
   }
 
   private void assertIdTokenClaims(JWSObject idToken, String nonce, URI issuer, String clientId) {

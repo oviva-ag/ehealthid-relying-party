@@ -85,7 +85,7 @@ public class TokenIssuerImpl implements TokenIssuer {
     return code.clientId().equals(clientId);
   }
 
-  private String issueIdToken(String audience, String nonce, IdTokenJWS federatedIdToken) {
+  String issueIdToken(String audience, String nonce, IdTokenJWS federatedIdToken) {
     try {
       var jwk = keyStore.signingKey();
       var signer = new ECDSASigner(jwk);
@@ -96,7 +96,7 @@ public class TokenIssuerImpl implements TokenIssuer {
           new JWTClaimsSet.Builder()
               .issuer(issuer.toString())
               .audience(audience)
-              .subject(federatedIdToken.body().sub()) // propagate original `sub`
+              .subject(deriveFederatedSubject(federatedIdToken.body()))
               .issueTime(Date.from(now))
               .expirationTime(Date.from(now.plus(Duration.ofHours(8))));
 
@@ -107,7 +107,21 @@ public class TokenIssuerImpl implements TokenIssuer {
       // complete list of scopes and corresponding claims:
       // https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf
       // Specification 4.2.4  - A_22989 -
+
+      claimsBuilder.claim("birthdate", federatedIdToken.body().telematikBirthdate());
+      claimsBuilder.claim("urn:telematik:claims:alter", federatedIdToken.body().telematikAge());
+      claimsBuilder.claim(
+          "urn:telematik:claims:display_name", federatedIdToken.body().telematikDisplayName());
+      claimsBuilder.claim(
+          "urn:telematik:claims:given_name", federatedIdToken.body().telematikGivenName());
+      claimsBuilder.claim(
+          "urn:telematik:claims:geschlecht", federatedIdToken.body().telematikGender());
+      claimsBuilder.claim("urn:telematik:claims:email", federatedIdToken.body().telematikEmail());
+      claimsBuilder.claim(
+          "urn:telematik:claims:profession", federatedIdToken.body().telematikProfession());
       claimsBuilder.claim("urn:telematik:claims:id", federatedIdToken.body().telematikKvnr());
+      claimsBuilder.claim(
+          "urn:telematik:claims:organization", federatedIdToken.body().telematikOrganization());
 
       var claims = claimsBuilder.build();
 
@@ -121,6 +135,15 @@ public class TokenIssuerImpl implements TokenIssuer {
     } catch (JOSEException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private String deriveFederatedSubject(IdTokenJWS.IdToken federatedIdToken) {
+
+    // according to
+    // https://openid.net/specs/openid-connect-core-1_0.html#ClaimStability
+    // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_FD/latest/#A_23035
+
+    return federatedIdToken.sub() + "-" + federatedIdToken.iss();
   }
 
   private String issueAccessToken(Duration ttl, String audience) {
