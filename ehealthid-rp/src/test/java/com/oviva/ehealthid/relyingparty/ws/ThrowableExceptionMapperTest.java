@@ -1,20 +1,21 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
 import static com.oviva.ehealthid.relyingparty.svc.ValidationException.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
+import com.github.mustachejava.util.HtmlEscaper;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.ws.ThrowableExceptionMapper.Problem;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.*;
+import java.io.StringWriter;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -230,9 +231,29 @@ class ThrowableExceptionMapperTest {
 
     // then
     assertEquals(400, res.getStatus());
-    assertTrue(StringEscapeUtils.unescapeHtml4(res.getEntity().toString()).contains(message));
+    assertBodyContains(res, message);
     assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
     assertNotNull(res.getEntity());
+  }
+
+  private static void assertBodyContains(Response res, String message) {
+    if (!(res.getEntity() instanceof byte[] bytes)) {
+      fail("unsupported entity type for tests: %s".formatted(res.getEntity().getClass()));
+      return;
+    }
+
+    var htmlBody = new String(bytes, StandardCharsets.UTF_8);
+
+    // the rendered response is already HTML escaped, let's do the same to the raw message
+    var escapedMessage = htmlEscape(message);
+
+    assertThat(htmlBody, containsString(escapedMessage));
+  }
+
+  private static String htmlEscape(String s) {
+    var w = new StringWriter();
+    HtmlEscaper.escape(s, w);
+    return w.toString();
   }
 
   private void mockHeaders(String locales) {

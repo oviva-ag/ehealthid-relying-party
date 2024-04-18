@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.Response.StatusType;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +87,18 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
     if (MediaType.TEXT_HTML_TYPE.equals(mediaType)) {
       var body = pages.error(message, locale);
-      return Response.status(status).entity(body).type(MediaType.TEXT_HTML_TYPE).build();
+
+      // FIXES oviva-ag/ehealthid-relying-party #58 / EPA-102
+      // resteasy has a built-in `MessageSanitizerContainerResponseFilter` escaping all non status
+      // 200
+      // 'text/html' responses
+      // if the entity is a string.
+      // The corresponding "resteasy.disable.html.sanitizer" config does not work with SeBootstrap
+      // currently (resteasy 6.2).
+      return Response.status(status)
+          .entity(body.getBytes(StandardCharsets.UTF_8))
+          .type(MediaType.TEXT_HTML_TYPE)
+          .build();
     }
 
     if (MediaType.APPLICATION_JSON_TYPE.equals(mediaType)) {
