@@ -85,7 +85,7 @@ public class TokenIssuerImpl implements TokenIssuer {
     return code.clientId().equals(clientId);
   }
 
-  private String issueIdToken(String audience, String nonce, IdTokenJWS federatedIdToken) {
+  String issueIdToken(String audience, String nonce, IdTokenJWS federatedIdToken) {
     try {
       var jwk = keyStore.signingKey();
       var signer = new ECDSASigner(jwk);
