@@ -24,7 +24,7 @@ jobs:
         run: ./mvnw -B spotless:check
       - name: check spotless
         if: always()
-        uses: oviva-ag/checks-action@v1.2.0
+        uses: oviva-ag/checks-action@v2.0.0
         with:
           name: Check spotless output
           token: ${{ secrets.GITHUB_TOKEN }}
