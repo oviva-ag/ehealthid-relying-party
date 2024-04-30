@@ -39,6 +39,7 @@ public class EmbeddedRelyingParty implements AutoCloseable {
                 redirect_uris=%s
                 app_name=Awesome DiGA
                 port=0
+                management_port=0
                 """
                 .formatted(wireMockServer.baseUrl(), discoveryUri, redirectUri));
 
@@ -51,6 +52,10 @@ public class EmbeddedRelyingParty implements AutoCloseable {
 
   public URI baseUri() {
     return application.baseUri();
+  }
+
+  public URI managementBaseUri() {
+    return application.managementBaseUri();
   }
 
   public Stubbing wireMockStubbing() {

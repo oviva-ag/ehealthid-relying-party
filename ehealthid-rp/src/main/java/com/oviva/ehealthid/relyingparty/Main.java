@@ -29,12 +29,12 @@ import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
 import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSetSource;
 import com.oviva.ehealthid.relyingparty.ws.App;
+import com.oviva.ehealthid.relyingparty.ws.ManagementApp;
 import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import jakarta.ws.rs.SeBootstrap;
 import jakarta.ws.rs.SeBootstrap.Configuration;
-import jakarta.ws.rs.SeBootstrap.Instance;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Clock;
@@ -59,7 +59,8 @@ public class Main implements AutoCloseable {
   private static final String CONFIG_PREFIX = "EHEALTHID_RP";
   private final ConfigProvider configProvider;
 
-  private Instance server;
+  private SeBootstrap.Instance server;
+  private SeBootstrap.Instance managementServer;
 
   private CountDownLatch shutdown = new CountDownLatch(1);
 
@@ -88,6 +89,10 @@ public class Main implements AutoCloseable {
 
   public URI baseUri() {
     return server.configuration().baseUri();
+  }
+
+  public URI managementBaseUri() {
+    return managementServer.configuration().baseUri();
   }
 
   public void start() throws ExecutionException, InterruptedException {
@@ -136,20 +141,29 @@ public class Main implements AutoCloseable {
 
     server =
         SeBootstrap.start(
-                new App(
-                    config, keyStore, tokenIssuer, clientAuthenticator, meterRegistry, authService),
+                new App(config, keyStore, tokenIssuer, clientAuthenticator, authService),
                 Configuration.builder().host(config.host()).port(config.port()).build())
             .toCompletableFuture()
             .get();
 
     var localUri = server.configuration().baseUri();
     logger.atInfo().log("Magic at {} ({})", config.baseUri(), localUri);
+
+    managementServer =
+        SeBootstrap.start(
+                new ManagementApp(meterRegistry),
+                Configuration.builder().host(config.host()).port(config.managementPort()).build())
+            .toCompletableFuture()
+            .get();
+
+    var metricsLocalUri = managementServer.configuration().baseUri();
+    logger.atInfo().log("Management Server at {} ({})", config.baseUri(), metricsLocalUri);
   }
 
   private AuthenticationFlow buildAuthFlow(
       URI selfIssuer, URI fedmaster, JWKSet encJwks, HttpClient httpClient) {
 
-    // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
+    // set up the file `.env.properties` to provide the X-Authorization header for the Gematik
     // test environment
     // see: https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen
     var fedHttpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient(httpClient));
