@@ -55,6 +55,16 @@ public class FederationEndpoint {
                             .idTokenEncryptedResponseEnc("A256GCM")
                             .scope(String.join(" ", federationConfig.scopes()))
                             .redirectUris(federationConfig.redirectUris())
+                            .clientRegistrationTypes(List.of("automatic"))
+                            .tokenEndpointAuthMethodsSupported(
+                                List.of("self_signed_tls_client_auth"))
+
+                            // according to the federation spec this is not required here, some
+                            // sectoral IdPs require it though
+                            .defaultAcrValues(List.of("gematik-ehealth-loa-high"))
+
+                            // warn: this is a non-standard field, but needed by some sectoral IdPs
+                            .tokenEndpointAuthMethod("self_signed_tls_client_auth")
                             .build())
                     .federationEntity(
                         FederationEntity.create().name(federationConfig.appName()).build())

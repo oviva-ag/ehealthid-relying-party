@@ -28,6 +28,8 @@ import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
 import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSetSource;
+import com.oviva.ehealthid.relyingparty.util.LoggingHttpClient;
+import com.oviva.ehealthid.relyingparty.util.TlsContext;
 import com.oviva.ehealthid.relyingparty.ws.App;
 import com.oviva.ehealthid.relyingparty.ws.HealthEndpoint;
 import com.oviva.ehealthid.relyingparty.ws.MetricsEndpoint;
@@ -122,7 +124,13 @@ public class Main implements AutoCloseable {
     var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, codeRepo);
     var sessionRepo = buildSessionRepo(config.sessionStore(), meterRegistry);
 
-    var httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    var sslContext = TlsContext.fromClientCertificate(config.federation().entitySigningKey());
+
+    var httpClient =
+        HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .sslContext(sslContext)
+            .build();
 
     var authFlow =
         buildAuthFlow(
@@ -131,8 +139,12 @@ public class Main implements AutoCloseable {
             config.federation().relyingPartyEncKeys(),
             httpClient);
 
+    var discoveryHttpClient =
+        HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
     var jwkSource =
-        JWKSourceBuilder.create(new DiscoveryJwkSetSource<>(httpClient, config.idpDiscoveryUri()))
+        JWKSourceBuilder.create(
+                new DiscoveryJwkSetSource<>(discoveryHttpClient, config.idpDiscoveryUri()))
             .refreshAheadCache(true)
             .build();
 
@@ -170,13 +182,23 @@ public class Main implements AutoCloseable {
     logger.atInfo().log("Management Server can be found at port {}", config.managementPort());
   }
 
+  private com.oviva.ehealthid.fedclient.api.HttpClient instrumentHttpClient(
+      com.oviva.ehealthid.fedclient.api.HttpClient client) {
+    if (logger.isDebugEnabled()) {
+      return new LoggingHttpClient(client);
+    }
+    return client;
+  }
+
   private AuthenticationFlow buildAuthFlow(
       URI selfIssuer, URI fedmaster, JWKSet encJwks, HttpClient httpClient) {
 
-    // set up the file `.env.properties` to provide the X-Authorization header for the Gematik
+    var client = instrumentHttpClient(new JavaHttpClient(httpClient));
+
+    // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
     // test environment
     // see: https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen
-    var fedHttpClient = new GematikHeaderDecoratorHttpClient(new JavaHttpClient(httpClient));
+    var fedHttpClient = new GematikHeaderDecoratorHttpClient(client);
 
     // setup as needed
     var clock = Clock.systemUTC();
