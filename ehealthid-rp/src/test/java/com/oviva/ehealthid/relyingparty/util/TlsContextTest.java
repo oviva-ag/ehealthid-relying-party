@@ -13,9 +13,7 @@ import com.nimbusds.oauth2.sdk.util.X509CertificateUtils;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -23,36 +21,72 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedTrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.security.auth.x500.X500Principal;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("TODO")
 class TlsContextTest {
 
+  private static final String ISSUER = "https://example.com";
+
   @Test
-  void t() throws Exception {
+  void fromClientCertificate_smoke() throws Exception {
+    var key = generateSigningKey(URI.create(ISSUER));
 
-    var key = generateSigningKey(URI.create("https://localhost:4443"));
+    var ctx = TlsContext.fromClientCertificate(key);
+    assertNotNull(ctx);
+  }
 
-    var sslContext = TlsContext.fromClientCertificate(key);
+  @Test
+  void fromClientCertificate_noX509() throws Exception {
+    var key =
+        new ECKeyGenerator(Curve.P_256)
+            .keyUse(KeyUse.SIGNATURE)
+            .keyIDFromThumbprint(true)
+            .generate();
 
-    var httpClient =
-        HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .sslContext(sslContext)
-            .build();
+    assertThrows(IllegalArgumentException.class, () -> TlsContext.fromClientCertificate(key));
+  }
 
-    var req =
-        HttpRequest.newBuilder(URI.create("https://localhost:4443"))
-            .GET()
-            .timeout(Duration.ofSeconds(3))
-            .build();
+  @Test
+  void fromClientCertificate_noPrivate() throws Exception {
+    var key = generateSigningKey(URI.create(ISSUER));
+    var pub = key.toPublicJWK();
 
-    var res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-    System.out.println(res.body());
+    assertThrows(IllegalArgumentException.class, () -> TlsContext.fromClientCertificate(pub));
+  }
+
+  @Test
+  void keyManager() throws Exception {
+
+    var key = generateSigningKey(URI.create(ISSUER));
+
+    // when
+    var kms = TlsContext.keyManagerOf(key.getParsedX509CertChain().get(0), key.toPrivateKey());
+
+    // then
+    assertContainsCert(kms, key);
+  }
+
+  void assertContainsCert(KeyManager[] kms, ECKey key) throws JOSEException {
+
+    assertEquals(1, kms.length);
+    var km = kms[0];
+
+    assertInstanceOf(X509KeyManager.class, km);
+    var x5km = (X509KeyManager) km;
+
+    var aliases = x5km.getClientAliases("EC", new Principal[] {new X500Principal("CN=" + ISSUER)});
+    assertEquals(1, aliases.length);
+
+    var chain = x5km.getCertificateChain(aliases[0]);
+
+    var cert = chain[0];
+    assertEquals(key.toPublicKey(), cert.getPublicKey());
   }
 
   private ECKey generateSigningKey(URI issuer)

@@ -2,12 +2,12 @@
   "keys": [
     {
       "kty": "EC",
-      "d": "6RrmHekWp_RwY6FNlM46zwt1wFytfVQSYrS2-DDLj7g",
+      "d": "WlqzsmBkqfL3HmSHy8MHB-9-pnL9A8pzSofEKOVNmWQ",
       "use": "enc",
       "crv": "P-256",
       "kid": "test-enc",
-      "x": "M4yMVgv6nV9AHvNCdrFUZ2zLnSD8yXFZBgbLgXU0vAc",
-      "y": "AvE4diGs4teOYHECACyi41UMxPGv8myq-Y7MBZGfwzY"
+      "x": "00G2e-vi6vG_HiOeSGe2Z8D8ihkOsM-X2MgqNMvo1qg",
+      "y": "bTV0l6efZEpU1Tw40Ke_MdMXwuKaoKp8sBvpoKULUX4"
     }
   ]
 }
