@@ -50,7 +50,6 @@ class MainTest {
 
   @Test
   void run_smokeTest() {
-
     var baseUri = application.baseUri();
     var managementBaseUri = application.managementBaseUri();
 

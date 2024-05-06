@@ -29,12 +29,17 @@ import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
 import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSetSource;
 import com.oviva.ehealthid.relyingparty.ws.App;
-import com.oviva.ehealthid.relyingparty.ws.ManagementApp;
+import com.oviva.ehealthid.relyingparty.ws.HealthEndpoint;
+import com.oviva.ehealthid.relyingparty.ws.MetricsEndpoint;
 import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.undertow.Handlers;
+import io.undertow.Undertow;
 import jakarta.ws.rs.SeBootstrap;
 import jakarta.ws.rs.SeBootstrap.Configuration;
+import jakarta.ws.rs.core.UriBuilder;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Clock;
@@ -60,7 +65,7 @@ public class Main implements AutoCloseable {
   private final ConfigProvider configProvider;
 
   private SeBootstrap.Instance server;
-  private SeBootstrap.Instance managementServer;
+  private Undertow managementServer;
 
   private CountDownLatch shutdown = new CountDownLatch(1);
 
@@ -92,7 +97,10 @@ public class Main implements AutoCloseable {
   }
 
   public URI managementBaseUri() {
-    return managementServer.configuration().baseUri();
+    var baseUri = server.configuration().baseUri();
+    var address = (InetSocketAddress) managementServer.getListenerInfo().get(0).getAddress();
+
+    return UriBuilder.fromUri(baseUri).port(address.getPort()).build();
   }
 
   public void start() throws ExecutionException, InterruptedException {
@@ -150,14 +158,16 @@ public class Main implements AutoCloseable {
     logger.atInfo().log("Magic at {} ({})", config.baseUri(), localUri);
 
     managementServer =
-        SeBootstrap.start(
-                new ManagementApp(meterRegistry),
-                Configuration.builder().host(config.host()).port(config.managementPort()).build())
-            .toCompletableFuture()
-            .get();
+        Undertow.builder()
+            .addHttpListener(config.managementPort(), config.host())
+            .setHandler(
+                Handlers.path()
+                    .addExactPath(HealthEndpoint.PATH, new HealthEndpoint())
+                    .addExactPath(MetricsEndpoint.PATH, new MetricsEndpoint(meterRegistry)))
+            .build();
+    managementServer.start();
 
-    var metricsLocalUri = managementServer.configuration().baseUri();
-    logger.atInfo().log("Management Server at {} ({})", config.baseUri(), metricsLocalUri);
+    logger.atInfo().log("Management Server can be found at port {}", config.managementPort());
   }
 
   private AuthenticationFlow buildAuthFlow(
