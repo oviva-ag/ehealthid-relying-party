@@ -38,10 +38,8 @@ class HealthEndpointTest {
 
     // when
     var httpServerExchange = mock(HttpServerExchange.class);
-    var headers = mock(HeaderMap.class);
     var sender = mock(Sender.class);
 
-    when(httpServerExchange.getResponseHeaders()).thenReturn(headers);
     when(httpServerExchange.getResponseSender()).thenReturn(sender);
     when(httpServerExchange.getRequestMethod()).thenReturn(HttpString.tryFromString("POST"));
 
