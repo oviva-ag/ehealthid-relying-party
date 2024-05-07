@@ -50,24 +50,28 @@ class MainTest {
 
   @Test
   void run_smokeTest() {
-
     var baseUri = application.baseUri();
+    var managementBaseUri = application.managementBaseUri();
 
     // then
     assertGetOk(baseUri.resolve(DISCOVERY_PATH));
     assertGetOk(baseUri.resolve(JWKS_PATH));
     assertGetOk(baseUri.resolve(FEDERATION_CONFIG_PATH));
-    assertGetOk(baseUri.resolve(HEALTH_PATH));
-    assertGetOk(baseUri.resolve(METRICS_PATH));
+
+    assertGetOk(managementBaseUri.resolve(HEALTH_PATH));
+    assertGetOk(managementBaseUri.resolve(METRICS_PATH));
   }
 
   @Test
   void run_metrics() {
 
     var baseUri = application.baseUri();
+    var managementBaseUri = application.managementBaseUri();
 
     // when & then
-    get(baseUri.resolve(METRICS_PATH))
+    get(baseUri.resolve(METRICS_PATH)).then().statusCode(404);
+
+    get(managementBaseUri.resolve(METRICS_PATH))
         .then()
         .contentType(ContentType.TEXT)
         .body(containsString("cache_gets_total{cache=\"sessionCache\""))

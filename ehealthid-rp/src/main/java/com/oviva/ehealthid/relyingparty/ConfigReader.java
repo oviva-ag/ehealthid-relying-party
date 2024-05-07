@@ -19,6 +19,7 @@ public class ConfigReader {
   public static final String CONFIG_BASE_URI = "base_uri";
   public static final String CONFIG_HOST = "host";
   public static final String CONFIG_PORT = "port";
+  public static final String CONFIG_MANAGEMENT_PORT = "management_port";
   public static final String CONFIG_REDIRECT_URIS = "redirect_uris";
 
   public static final String CONFIG_IDP_DISCOVERY_URI = "idp_discovery_uri";
@@ -60,7 +61,8 @@ public class ConfigReader {
                         "no '%s' configured".formatted(CONFIG_IDP_DISCOVERY_URI)));
 
     var host = configProvider.get(CONFIG_HOST).orElse("0.0.0.0");
-    var port = getPortConfig();
+    var port = getPortConfig(CONFIG_PORT, 1234);
+    var managementPort = getPortConfig(CONFIG_MANAGEMENT_PORT, 1235);
 
     var fedmaster =
         configProvider
@@ -104,6 +106,7 @@ public class ConfigReader {
         federationConfig,
         host,
         port,
+        managementPort,
         baseUri,
         idpDiscoveryUri,
         sessionStoreConfig(),
@@ -150,11 +153,11 @@ public class ConfigReader {
         .toList();
   }
 
-  private int getPortConfig() {
-    return configProvider.get(CONFIG_PORT).stream()
+  private int getPortConfig(String configPort, int defaultValue) {
+    return configProvider.get(configPort).stream()
         .mapToInt(Integer::parseInt)
         .findFirst()
-        .orElse(1234);
+        .orElse(defaultValue);
   }
 
   private JWKSet loadJwks(String configName) {
@@ -176,6 +179,7 @@ public class ConfigReader {
       FederationConfig federation,
       String host,
       int port,
+      int managementPort,
       URI baseUri,
       URI idpDiscoveryUri,
       SessionStoreConfig sessionStore,
