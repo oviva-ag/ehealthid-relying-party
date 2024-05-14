@@ -298,7 +298,14 @@ public record EntityStatement(
       @JsonProperty("id_token_signed_response_alg") String idTokenSignedResponseAlg,
       @JsonProperty("id_token_encrypted_response_alg") String idTokenEncryptedResponseAlg,
       @JsonProperty("id_token_encrypted_response_enc") String idTokenEncryptedResponseEnc,
-      @JsonProperty("jwks") JWKSet jwks) {
+      @JsonProperty("jwks") JWKSet jwks,
+      @JsonProperty("default_acr_values") List<String> defaultAcrValues,
+      @JsonProperty("token_endpoint_auth_methods_supported")
+          List<String> tokenEndpointAuthMethodsSupported,
+
+      // non-standard OpenID fields but according to Gematik Specs
+      // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/#7.1.4
+      @JsonProperty("token_endpoint_auth_method") String tokenEndpointAuthMethod) {
 
     public static Builder create() {
       return new Builder();
@@ -319,6 +326,9 @@ public record EntityStatement(
       private String idTokenEncryptedResponseEnc;
 
       private JWKSet jwks;
+      private List<String> defaultAcrValues;
+      private List<String> tokenEndpointAuthMethodsSupported;
+      private String tokenEndpointAuthMethod;
 
       private Builder() {}
 
@@ -383,6 +393,22 @@ public record EntityStatement(
         return this;
       }
 
+      public Builder defaultAcrValues(List<String> defaultAcrValues) {
+        this.defaultAcrValues = defaultAcrValues;
+        return this;
+      }
+
+      public Builder tokenEndpointAuthMethodsSupported(
+          List<String> tokenEndpointAuthMethodsSupported) {
+        this.tokenEndpointAuthMethodsSupported = tokenEndpointAuthMethodsSupported;
+        return this;
+      }
+
+      public Builder tokenEndpointAuthMethod(String tokenEndpointAuthMethod) {
+        this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
+        return this;
+      }
+
       public OpenIdRelyingParty build() {
         return new OpenIdRelyingParty(
             organizationName,
@@ -396,7 +422,10 @@ public record EntityStatement(
             idTokenSignedResponseAlg,
             idTokenEncryptedResponseAlg,
             idTokenEncryptedResponseEnc,
-            jwks);
+            jwks,
+            defaultAcrValues,
+            tokenEndpointAuthMethodsSupported,
+            tokenEndpointAuthMethod);
       }
     }
   }

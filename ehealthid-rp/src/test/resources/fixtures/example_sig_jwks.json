@@ -2,12 +2,15 @@
   "keys": [
     {
       "kty": "EC",
-      "d": "6RrmHekWp_RwY6FNlM46zwt1wFytfVQSYrS2-DDLj7g",
+      "d": "B4ewuC_24S1vZJVSXVt1Fh7FBUVX3Y9WpQKKkX_3zlg",
       "use": "sig",
       "crv": "P-256",
       "kid": "test-sig",
-      "x": "M4yMVgv6nV9AHvNCdrFUZ2zLnSD8yXFZBgbLgXU0vAc",
-      "y": "AvE4diGs4teOYHECACyi41UMxPGv8myq-Y7MBZGfwzY"
+      "x5c": [
+        "MIIBLjCB1qADAgECAghsoROJsUA1QDAKBggqhkjOPQQDAjAeMRwwGgYDVQQDExNodHRwczovL2V4YW1wbGUuY29tMB4XDTI0MDQyOTE4Mzk1OFoXDTI0MTAyNzE4Mzk1OFowHjEcMBoGA1UEAxMTaHR0cHM6Ly9leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABA2Fa+Jcf5nnMVcZOrVmYyaiTTsCjFxMPisQpErauUJl6sSkZFpQLQp9egrSEOM7XQ92Uws8phf93rqUPzphjrYwCgYIKoZIzj0EAwIDRwAwRAIgV7ubSrkZNHinHKczXMhf9foI+XeieftvRjSJ9boGoAwCIDV+IXntNGswSJuLYkpPNR7laG1SPOwMhNxerQ8FlWAv"
+      ],
+      "x": "DYVr4lx_mecxVxk6tWZjJqJNOwKMXEw-KxCkStq5QmU",
+      "y": "6sSkZFpQLQp9egrSEOM7XQ92Uws8phf93rqUPzphjrY"
     }
   ]
 }
