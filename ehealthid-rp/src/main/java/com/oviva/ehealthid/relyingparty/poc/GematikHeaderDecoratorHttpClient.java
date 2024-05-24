@@ -2,10 +2,19 @@ package com.oviva.ehealthid.relyingparty.poc;
 
 import com.oviva.ehealthid.fedclient.api.HttpClient;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GematikHeaderDecoratorHttpClient implements HttpClient {
 
-  private static final String HOST_GEMATIK_IDP = "gsi.dev.gematik.solutions";
+  private static final Logger logger =
+      LoggerFactory.getLogger(GematikHeaderDecoratorHttpClient.class);
+
+  // RU: https://gsi-ref.dev.gematik.solutions/.well-known/openid-federation
+  // TU: https://gsi.dev.gematik.solutions/.well-known/openid-federation
+  private static final Pattern HOST_GEMATIK_IDP =
+      Pattern.compile("gsi(-[-a-z0-9]+)?.dev.gematik.solutions");
   private final HttpClient delegate;
 
   public GematikHeaderDecoratorHttpClient(HttpClient delegate) {
@@ -15,11 +24,11 @@ public class GematikHeaderDecoratorHttpClient implements HttpClient {
   @Override
   public Response call(Request req) {
 
-    if (req.uri().getHost().equals(HOST_GEMATIK_IDP)) {
+    if (HOST_GEMATIK_IDP.matcher(req.uri().getHost()).matches()) {
       if (Environment.gematikAuthHeader() == null || Environment.gematikAuthHeader().isBlank()) {
-        throw new RuntimeException(
-            "missing 'GEMATIK_AUTH_HEADER' environment value against '%s'"
-                .formatted(HOST_GEMATIK_IDP));
+        logger.warn(
+            "missing 'GEMATIK_AUTH_HEADER' environment value against '{}'", req.uri().getHost());
+        return delegate.call(req);
       }
 
       var headers = new ArrayList<>(req.headers());

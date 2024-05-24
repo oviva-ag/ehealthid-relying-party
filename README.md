@@ -46,12 +46,12 @@ sequenceDiagram
 export ISSUER_URI=https://mydiga.example.com
 
 # generate keys for the application, keep those safe and secure
-./cli.sh keygen
+./cli.sh keygen --issuer-uri=$ISSUER_URI
 
 #---- 2. deploy the relying party
 docker run --rm \
-    -v "$(pwd)"/enc_jwks.json:/secrets/enc_jwks.json:ro \
-    -v "$(pwd)"/sig_jwks.json:/secrets/sig_jwks.json:ro \
+    -v "$(pwd)"/enc_mydiga_example_com_jwks.json:/secrets/enc_jwks.json:ro \
+    -v "$(pwd)"/sig_mydiga_example_com_jwks.json:/secrets/sig_jwks.json:ro \
     -e "EHEALTHID_RP_APP_NAME=Awesome DiGA" \
     -e "EHEALTHID_RP_BASE_URI=$ISSUER_URI" \
     -e 'EHEALTHID_RP_FEDERATION_ENC_JWKS_PATH=/secrets/enc_jwks.json' \
@@ -168,7 +168,7 @@ Gematik documentation.
 sequenceDiagram
     participant app as Mobile App
     participant idp as Your IDP
-    participant rp as Relyin Party
+    participant rp as Relying Party
     participant secIdp as Sectoral IDP
     participant fedmaster as Federation Master
     app ->> idp: login
