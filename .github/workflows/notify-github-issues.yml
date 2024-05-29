@@ -1,0 +1,19 @@
+name: Send Google Chat notification when an issue is opened
+
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  notify-google-chat:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - id: 'notify_google_chat'
+        uses: 'google-github-actions/send-google-chat-webhook@v0.0.2'
+        with:
+          webhook_url: '${{ secrets.GOOGLE_CHAT_GAIA_SUPPORT_CHANNEL }}'
+          mention: "<users/all>"
+
