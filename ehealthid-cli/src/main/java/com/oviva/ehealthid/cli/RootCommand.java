@@ -9,7 +9,11 @@ import picocli.CommandLine.Command;
     name = "ehealthid-cli",
     mixinStandardHelpOptions = true,
     version = "0.1",
-    subcommands = {FedRegistrationCommand.class, KeyGeneratorCommand.class})
+    subcommands = {
+      FedRegistrationCommand.class,
+      KeyGeneratorCommand.class,
+      MTlsRefreshCommand.class
+    })
 public class RootCommand {
 
   private static final Logger logger = LoggerFactory.getLogger(RootCommand.class);

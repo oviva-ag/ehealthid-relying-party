@@ -1,6 +1,7 @@
 .idea/
 .vscode/
 target/
+local/
 gesundheitsid/env.properties
 *.iml
 .flattened-pom.xml
