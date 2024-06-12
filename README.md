@@ -194,12 +194,12 @@ sequenceDiagram
     app ->> idp: success, callback to IDP
     idp ->> rp: redeem code
     alt client authentication
-      note right of rp: client authenticated via 'private_key_jwt'
-      rp ->> idp: fetch OpenID discovery document
-      idp -->> rp: discovery document
-      rp ->> idp: fetch JWKS
-      idp -->> rp: JWKS
-      note right of rp: verifies client JWT with discovered JWKS
+        note right of rp: client authenticated via 'private_key_jwt'
+        rp ->> idp: fetch OpenID discovery document
+        idp -->> rp: discovery document
+        rp ->> idp: fetch JWKS
+        idp -->> rp: JWKS
+        note right of rp: verifies client JWT with discovered JWKS
     end
     rp -->> idp: id_token
     idp -->> app: success! redirect
@@ -219,14 +219,12 @@ sequenceDiagram
 
 # Open Points
 
-In order of priority:
-
-- [ ] Internationalization (ResourceBundles) for templates (en & de),
-  see [Mustache Library](https://github.com/spullara/mustache.java/blob/main/compiler/src/main/java/com/github/mustachejava/functions/BundleFunctions.java)
+- end-to-end tests with Verimi, Gematik, RISE and IBM IDPs, most lack options to test currently
+- [A_23183 - Veröffentlichen der TLS Authentisierungsschlüssel](https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_FD/gemSpec_IDP_FD_V1.7.0/#A_23183) -
+  no option to test currently, though implemented
 
 # Wishlist
 
-- [A_23183 - Veröffentlichen der TLS Authentisierungsschlüssel](https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_FD/gemSpec_IDP_FD_V1.7.0/#A_23183) - unclear what this exactly entails :/
 - Accept base URI's with paths.
 - MySQL or Postgres backed session and code repos
 - PKCE flow on OIDC side
