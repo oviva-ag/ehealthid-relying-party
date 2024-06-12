@@ -232,8 +232,9 @@ sequenceDiagram
 
 # Helpful Links
 
-- [Gematik Fachdienst Specifications v1.7.0](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_FD_V1.7.0.pdf)
-- [Gematik Sectoral IDP Specifications v2.0.1](https://fachportal.gematik.de/fachportal-import/files/gemSpec_IDP_Sek_V2.0.1.pdf)
+- [OpenID Federation Spec](https://openid.net/specs/openid-federation-1_0.html)
+- [Gematik Fachdienst Specifications](https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_FD/latest/)
+- [Gematik Fedmaster Specification](https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_FedMaster/latest/)
+- [Gematik Sectoral IDP Specifications](https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/latest/)
 - [AppFlow - Authentication flow to implement](https://wiki.gematik.de/display/IDPKB/App-App+Flow#AppAppFlow-0-FederationMaster)
 - [Sektoraler IDP - Examples & Reference Implementation](https://wiki.gematik.de/display/IDPKB/Sektoraler+IDP+-+Referenzimplementierung+und+Beispiele)
-- [OpenID Federation Spec](https://openid.net/specs/openid-federation-1_0.html)
