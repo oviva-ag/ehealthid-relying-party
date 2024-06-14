@@ -1,4 +1,4 @@
-package com.oviva.ehealthid.relyingparty.util;
+package com.oviva.ehealthid.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,19 +11,14 @@ import com.nimbusds.jose.util.Base64;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.util.X509CertificateUtils;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URI;
 import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.X509ExtendedTrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.security.auth.x500.X500Principal;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -111,34 +106,5 @@ class TlsContextTest {
             key.toPrivateKey());
 
     return new ECKey.Builder(key).x509CertChain(List.of(Base64.encode(cert.getEncoded()))).build();
-  }
-
-  private static class NaiveTrustManager extends X509ExtendedTrustManager {
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-      return new X509Certificate[0];
-    }
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
-        throws CertificateException {}
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
-        throws CertificateException {}
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
-        throws CertificateException {}
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
-        throws CertificateException {}
   }
 }
