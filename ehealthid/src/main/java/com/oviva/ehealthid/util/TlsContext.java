@@ -1,4 +1,4 @@
-package com.oviva.ehealthid.relyingparty.util;
+package com.oviva.ehealthid.util;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.ECKey;
