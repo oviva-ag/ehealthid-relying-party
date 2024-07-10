@@ -3,7 +3,7 @@ package com.oviva.ehealthid.relyingparty.cfg;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,7 +21,7 @@ class EnvFederationConfigProviderTest {
   @MethodSource("mangleTestCases")
   void getMangleName(TC t) {
 
-    var getenv = (Function<String, String>) mock(Function.class);
+    var getenv = (UnaryOperator<String>) mock(UnaryOperator.class);
 
     var sut = new EnvConfigProvider(PREFIX, getenv);
 

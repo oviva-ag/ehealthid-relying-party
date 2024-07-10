@@ -28,6 +28,7 @@ import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
 import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSetSource;
+import com.oviva.ehealthid.relyingparty.util.KeyGenerator;
 import com.oviva.ehealthid.relyingparty.util.LoggingHttpClient;
 import com.oviva.ehealthid.relyingparty.ws.App;
 import com.oviva.ehealthid.relyingparty.ws.HealthEndpoint;
@@ -46,6 +47,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -118,13 +120,17 @@ public class Main implements AutoCloseable {
 
     var config = configReader.read();
 
+    // generate fresh keys for the relying-party
+    config = replaceRelyingPartyKeys(config);
+
     var keyStore = new KeyStore();
     var meterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     var codeRepo = buildCodeRepo(config.codeStoreConfig(), meterRegistry);
     var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, codeRepo);
     var sessionRepo = buildSessionRepo(config.sessionStore(), meterRegistry);
 
-    var sslContext = TlsContext.fromClientCertificate(config.federation().entitySigningKey());
+    // the relying party signing key is for mTLS
+    var sslContext = TlsContext.fromClientCertificate(config.federation().relyingPartySigningKey());
 
     var httpClient =
         HttpClient.newBuilder()
@@ -136,7 +142,7 @@ public class Main implements AutoCloseable {
         buildAuthFlow(
             config.baseUri(),
             config.federation().federationMaster(),
-            config.federation().relyingPartyEncKeys(),
+            config.federation().relyingPartyKeys(),
             httpClient);
 
     var discoveryHttpClient =
@@ -180,6 +186,39 @@ public class Main implements AutoCloseable {
     managementServer.start();
 
     logger.atInfo().log("Management Server can be found at port {}", config.managementPort());
+  }
+
+  private ConfigReader.Config replaceRelyingPartyKeys(ConfigReader.Config config) {
+
+    logger.atInfo().log(
+        "Generating fresh 'openid_relying_party' keys for mTLS and id_token encryption.");
+
+    var signingKey = KeyGenerator.generateSigningKeyWithCertificate(config.federation().sub());
+    var encKey = KeyGenerator.generateEncryptionKey();
+
+    var keys = new JWKSet(List.of(signingKey, encKey));
+
+    logger.atDebug().log("openid_relying_party signing key, kid={}", signingKey.getKeyID());
+    logger.atDebug().log("openid_relying_party encryption key, kid={}", encKey.getKeyID());
+
+    var fedConfig =
+        config
+            .federation()
+            .builder()
+            .relyingPartySigningKey(signingKey.toECKey())
+            .relyingPartyKeys(keys)
+            .build();
+
+    return new ConfigReader.Config(
+        config.relyingParty(),
+        fedConfig,
+        config.host(),
+        config.port(),
+        config.managementPort(),
+        config.baseUri(),
+        config.idpDiscoveryUri(),
+        config.sessionStore(),
+        config.codeStoreConfig());
   }
 
   private com.oviva.ehealthid.fedclient.api.HttpClient instrumentHttpClient(

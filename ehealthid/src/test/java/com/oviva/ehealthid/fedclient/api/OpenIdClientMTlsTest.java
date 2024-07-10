@@ -90,7 +90,7 @@ class OpenIdClientMTlsTest {
 
     var req = serveEvents.get(0);
     assertEquals("https", req.getRequest().getScheme());
-    assertEquals(res.requestUri(), PAR_REDIRECT);
+    assertEquals(PAR_REDIRECT, res.requestUri());
   }
 
   private com.oviva.ehealthid.fedclient.api.HttpClient newHttpClient()
@@ -163,7 +163,6 @@ class OpenIdClientMTlsTest {
 
         for (X509Certificate cert : key.getParsedX509CertChain()) {
           ks.setCertificateEntry(ISSUER.toString(), cert);
-          //          ks.setCertificateEntry("localhost", cert);
         }
 
         ks.store(fout, password);

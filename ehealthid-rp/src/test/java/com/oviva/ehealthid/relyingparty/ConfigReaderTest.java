@@ -21,9 +21,7 @@ class ConfigReaderTest {
     var idpDiscoveryUri = "https://sso.example.com/.well-known/openid-configuration";
     var appName = "Awesome DiGA";
 
-    when(provider.get(ConfigReader.CONFIG_FEDERATION_ENC_JWKS_PATH))
-        .thenReturn(Optional.of("./src/test/resources/fixtures/example_enc_jwks.json"));
-    when(provider.get(ConfigReader.CONFIG_FEDERATION_SIG_JWKS_PATH))
+    when(provider.get(ConfigReader.CONFIG_FEDERATION_ENTITY_STATEMENT_JWKS_PATH))
         .thenReturn(Optional.of("./src/test/resources/fixtures/example_sig_jwks.json"));
     when(provider.get(ConfigReader.CONFIG_BASE_URI)).thenReturn(Optional.of(baseUri));
     when(provider.get(ConfigReader.CONFIG_APP_NAME)).thenReturn(Optional.of(appName));
@@ -55,7 +53,9 @@ class ConfigReaderTest {
 
     assertNotNull(config.federation().entitySigningKey());
     assertNotNull(config.federation().entitySigningKeys().getKeyByKeyId("test-sig"));
-    assertNotNull(config.federation().relyingPartyEncKeys().getKeyByKeyId("test-enc"));
+
+    // these will be generated
+    assertNull(config.federation().relyingPartyKeys());
   }
 
   @Test

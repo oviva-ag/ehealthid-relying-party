@@ -12,6 +12,8 @@ import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.util.JoseModule;
 import jakarta.ws.rs.core.Application;
 import java.util.Set;
+import org.jboss.resteasy.plugins.providers.ByteArrayProvider;
+import org.jboss.resteasy.plugins.providers.StringTextStar;
 
 public class App extends Application {
 
@@ -48,7 +50,9 @@ public class App extends Application {
 
   @Override
   public Set<Class<?>> getClasses() {
-    return Set.of(ThrowableExceptionMapper.class);
+
+    // https://github.com/resteasy/resteasy/blob/f5fedb83d75ac88cad8fe79c0711b46a9db6a5ed/resteasy-core/src/main/resources/META-INF/services/jakarta.ws.rs.ext.Providers
+    return Set.of(ThrowableExceptionMapper.class, StringTextStar.class, ByteArrayProvider.class);
   }
 
   private ObjectMapper configureObjectMapper() {

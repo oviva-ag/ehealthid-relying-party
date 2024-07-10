@@ -11,9 +11,11 @@ public class Environment {
 
   private static Logger logger = LoggerFactory.getLogger(Environment.class);
 
+  private Environment() {}
+
   public static String gematikAuthHeader() {
 
-    // for testing in TU
+    // for testing in TU & RU
     var name = "GEMATIK_AUTH_HEADER";
     var header = System.getenv(name);
     if (header != null && !header.isBlank()) {

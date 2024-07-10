@@ -4,6 +4,7 @@ import static com.oviva.ehealthid.relyingparty.svc.ValidationException.*;
 import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.getNegotiatedLocale;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.oviva.ehealthid.fedclient.FederationException;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
@@ -32,6 +33,8 @@ import org.slf4j.spi.LoggingEventBuilder;
 public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
   private static final String SERVER_ERROR_MESSAGE = "error.serverError";
+  private static final String FEDERATION_ERROR_MESSAGE = "error.federationError";
+
   private final Pages pages = new Pages(new TemplateRenderer());
   @Context UriInfo uriInfo;
   @Context Request request;
@@ -67,7 +70,13 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
       return buildContentNegotiatedErrorResponse(ve.localizedMessage(), Status.BAD_REQUEST);
     }
 
+    // the remaining exceptions are unexpected, let's log them
     log(exception);
+
+    if (exception instanceof FederationException fe) {
+      var errorMessage = new Message(FEDERATION_ERROR_MESSAGE, fe.reason().name());
+      return buildContentNegotiatedErrorResponse(errorMessage, Status.INTERNAL_SERVER_ERROR);
+    }
 
     var status = Status.INTERNAL_SERVER_ERROR;
 
