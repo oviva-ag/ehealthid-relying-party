@@ -28,7 +28,7 @@ public class FederationEndpoint {
   public Response get() {
 
     var federationEntityJwks = federationConfig.entitySigningKeys().toPublicJWKSet();
-    var relyingPartyJwks = federationConfig.relyingPartyEncKeys().toPublicJWKSet();
+    var relyingPartyJwks = federationConfig.relyingPartyKeys().toPublicJWKSet();
 
     var now = Instant.now();
     var exp = now.plus(federationConfig.ttl());

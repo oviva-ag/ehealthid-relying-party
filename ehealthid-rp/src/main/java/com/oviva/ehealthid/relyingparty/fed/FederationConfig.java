@@ -10,11 +10,16 @@ public record FederationConfig(
     URI iss,
     URI sub,
     URI federationMaster,
+
+    // trusted signing keys in the federation
     JWKSet entitySigningKeys,
 
     // the actual private key used for signing, _MUST_ be part of `entitySigningKeys`
     ECKey entitySigningKey,
-    JWKSet relyingPartyEncKeys,
+
+    // keys uses for the relying-party, i.e. mTLS and idToken encryption
+    JWKSet relyingPartyKeys,
+    ECKey relyingPartySigningKey,
     Duration ttl,
     List<String> redirectUris,
     List<String> scopes,
@@ -22,6 +27,21 @@ public record FederationConfig(
 
   public static Builder create() {
     return new Builder();
+  }
+
+  public Builder builder() {
+    return new Builder(
+        iss,
+        sub,
+        federationMaster,
+        entitySigningKeys,
+        entitySigningKey,
+        relyingPartyKeys,
+        relyingPartySigningKey,
+        ttl,
+        redirectUris,
+        scopes,
+        appName);
   }
 
   public static final class Builder {
@@ -33,13 +53,39 @@ public record FederationConfig(
     private ECKey entitySigningKey;
     private JWKSet entitySigningKeys;
 
-    private JWKSet relyingPartyEncKeys;
+    private JWKSet relyingPartyKeys;
     private Duration ttl;
     private List<String> redirectUris;
     private List<String> scopes;
     private String appName;
+    private ECKey relyingPartySigningKey;
 
-    public Builder() {}
+    private Builder() {}
+
+    private Builder(
+        URI iss,
+        URI sub,
+        URI federationMaster,
+        JWKSet entitySigningKeys,
+        ECKey entitySigningKey,
+        JWKSet relyingPartyKeys,
+        ECKey relyingPartySigningKey,
+        Duration ttl,
+        List<String> redirectUris,
+        List<String> scopes,
+        String appName) {
+      this.iss = iss;
+      this.sub = sub;
+      this.federationMaster = federationMaster;
+      this.entitySigningKey = entitySigningKey;
+      this.entitySigningKeys = entitySigningKeys;
+      this.relyingPartyKeys = relyingPartyKeys;
+      this.ttl = ttl;
+      this.redirectUris = redirectUris;
+      this.scopes = scopes;
+      this.appName = appName;
+      this.relyingPartySigningKey = relyingPartySigningKey;
+    }
 
     public Builder iss(URI iss) {
       this.iss = iss;
@@ -66,8 +112,13 @@ public record FederationConfig(
       return this;
     }
 
-    public Builder relyingPartyEncKeys(JWKSet jwks) {
-      this.relyingPartyEncKeys = jwks;
+    public Builder relyingPartyKeys(JWKSet jwks) {
+      this.relyingPartyKeys = jwks;
+      return this;
+    }
+
+    public Builder relyingPartySigningKey(ECKey signingKey) {
+      this.relyingPartySigningKey = signingKey;
       return this;
     }
 
@@ -98,7 +149,8 @@ public record FederationConfig(
           federationMaster,
           entitySigningKeys,
           entitySigningKey,
-          relyingPartyEncKeys,
+          relyingPartyKeys,
+          relyingPartySigningKey,
           ttl,
           redirectUris,
           scopes,
