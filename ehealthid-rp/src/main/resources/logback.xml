@@ -1,33 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-  <appender name="json" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-      <providers>
-        <timestamp>
-          <fieldName>timestamp</fieldName>
-          <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSX</pattern>
-          <timeZone>UTC</timeZone>
-        </timestamp>
-        <pattern>
-          <pattern>
-            {
-            "logger": "%logger",
-            "severity": "%level",
-            "thread": "%thread",
-            "message": "%message"
-            }
-          </pattern>
-        </pattern>
-        <arguments/>
-        <stackTrace/>
-        <context/>
-        <mdc/>
-        <tags/>
-        <provider class="net.logstash.logback.composite.loggingevent.KeyValuePairsJsonProvider"/>
-      </providers>
-    </encoder>
-  </appender>
-  <root level="${EHEALTHID_RP_LOG_LEVEL:-INFO}">
-    <appender-ref ref="json"/>
-  </root>
+    <appender name="json" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.oviva.ehealthid.relyingparty.logging.JsonEncoder"/>
+    </appender>
+    <root level="${EHEALTHID_RP_LOG_LEVEL:-INFO}">
+        <appender-ref ref="json"/>
+    </root>
 </configuration>

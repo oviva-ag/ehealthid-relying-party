@@ -258,9 +258,6 @@ class ThrowableExceptionMapperTest {
 
   private void mockHeaders(String locales) {
     doReturn(locales).when(headers).getHeaderString("Accept-Language");
-    doReturn("00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01")
-        .when(headers)
-        .getHeaderString("traceparent");
     doReturn(
             "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko)")
         .when(headers)
