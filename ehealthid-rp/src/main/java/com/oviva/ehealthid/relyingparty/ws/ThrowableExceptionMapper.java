@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import org.jboss.resteasy.util.MediaTypeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,23 +127,12 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
     var builder = logger.atError().setCause(exception);
     builder = addRequestContext(builder);
-    builder = addTraceInfo(builder);
-    builder = addServiceContext(builder);
     builder.log("unexpected exception: {}", exception.getMessage());
-  }
-
-  private LoggingEventBuilder addServiceContext(LoggingEventBuilder builder) {
-    var title = ThrowableExceptionMapper.class.getPackage().getImplementationTitle();
-    var version = ThrowableExceptionMapper.class.getPackage().getImplementationVersion();
-    if (title == null || version == null) {
-      return builder;
-    }
-
-    return builder.addKeyValue("serviceContext", Map.of("service", title, "version", version));
   }
 
   private LoggingEventBuilder addRequestContext(LoggingEventBuilder builder) {
 
+    // https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#httprequest
     Map<String, String> map = new HashMap<>();
 
     map.put("requestUrl", uriInfo.getRequestUri().toString());
@@ -156,20 +144,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
     }
 
     return builder.addKeyValue("httpRequest", map);
-  }
-
-  private LoggingEventBuilder addTraceInfo(LoggingEventBuilder log) {
-    var traceparent = headers.getHeaderString("traceparent");
-    if (traceparent == null) {
-      return log;
-    }
-
-    var parsed = Traceparent.parse(traceparent);
-    if (parsed == null) {
-      return log;
-    }
-
-    return log.addKeyValue("traceId", parsed.traceId()).addKeyValue("spanId", parsed.spanId());
   }
 
   interface MediaTypeNegotiator {
@@ -185,30 +159,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
       // note: resteasy needs mutable lists
       return MediaTypeHelper.getBestMatch(
           new ArrayList<>(desiredMediaType), new ArrayList<>(supportedMediaTypes));
-    }
-  }
-
-  private record Traceparent(String spanId, String traceId) {
-
-    // https://www.w3.org/TR/trace-context/#traceparent-header-field-values
-    public static final Pattern TRACEPARENT_PATTERN =
-        Pattern.compile("^00-([a-f0-9]{32})-([a-f0-9]{16})-[a-f0-9]{2}$");
-
-    static Traceparent parse(String s) {
-      if (s == null || s.isBlank()) {
-        return null;
-      }
-      s = s.trim();
-
-      var m = TRACEPARENT_PATTERN.matcher(s);
-      if (!m.matches()) {
-        return null;
-      }
-
-      var traceId = m.group(1);
-      var spanId = m.group(2);
-
-      return new Traceparent(spanId, traceId);
     }
   }
 

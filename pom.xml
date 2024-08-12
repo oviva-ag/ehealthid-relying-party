@@ -43,7 +43,6 @@
     <version.micrometer>1.13.2</version.micrometer>
     <version.nimbus-jose-jwt>9.40</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.6</version.logback.classic>
-    <version.logback.encoder>7.4</version.logback.encoder>
     <version.handlebars>4.3.1</version.handlebars>
 
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
@@ -95,6 +94,13 @@
         <version>${version.micrometer}</version>
       </dependency>
       <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>1.40.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-registry-prometheus</artifactId>
         <version>${version.micrometer}</version>
@@ -140,11 +146,6 @@
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
         <version>${version.logback.classic}</version>
-      </dependency>
-      <dependency>
-        <groupId>net.logstash.logback</groupId>
-        <artifactId>logstash-logback-encoder</artifactId>
-        <version>${version.logback.encoder}</version>
       </dependency>
       <dependency>
         <groupId>com.google.auto.service</groupId>
