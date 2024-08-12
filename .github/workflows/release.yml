@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'ehealthid-relying-party/v[0-9]+.[0-9]+.[0-9]+-[a-z]+.[0-9]+'
+      - 'ehealthid-relying-party/v[0-9]+.[0-9]+.[0-9]+'
 
 env:
   REGISTRY: ghcr.io
