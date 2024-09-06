@@ -12,6 +12,7 @@ public class GematikHeaderDecoratorHttpClient implements HttpClient {
       LoggerFactory.getLogger(GematikHeaderDecoratorHttpClient.class);
 
   // RU: https://gsi-ref.dev.gematik.solutions/.well-known/openid-federation
+  // RU PAR mTLS: https://gsi-ref-mtls.dev.gematik.solutions/PAR_Auth
   // TU: https://gsi.dev.gematik.solutions/.well-known/openid-federation
   private static final Pattern HOST_GEMATIK_IDP =
       Pattern.compile("gsi(-[-a-z0-9]+)?.dev.gematik.solutions");

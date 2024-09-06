@@ -14,7 +14,39 @@ import java.util.List;
 
 public class RegistratonFormRenderer {
 
-  private static final String XML_TEMPLATE =
+  private static final String XML_TEMPLATE_PROD =
+      """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <registrierungtifoederation>
+                      <datendesantragstellers>
+                        <vfsbestaetigung>{{vfsConfirmation}}</vfsbestaetigung>
+                        <teilnehmertyp>Fachdienst</teilnehmertyp>
+                        <organisationsname>{{organisationName}}</organisationsname>
+                        <memberid>{{memberId}}</memberid>
+                        <zwg>ORG-0001:BT-0144</zwg>
+                        <issueruri>{{issuerUri}}</issueruri>
+                        <scopes>
+                          <scopealter>{{scopeAge}}</scopealter>
+                          <scopeanzeigename>{{scopeDisplayName}}</scopeanzeigename>
+                          <scopeemail>{{scopeEmail}}</scopeemail>
+                          <scopegeschlecht>{{scopeGender}}</scopegeschlecht>
+                          <scopegeburtsdatum>{{scopeDateOfBirth}}</scopegeburtsdatum>
+                          <scopevorname>{{scopeFirstName}}</scopevorname>
+                          <scopenachname>{{scopeLastName}}</scopenachname>
+                          <scopeversicherter>{{scopeInsuredPerson}}</scopeversicherter>
+                        </scopes>
+                        {{#publicKeys}}
+                        <publickeys>
+                          <kidjwt>{{kid}}</kidjwt>
+                          <pubkeyjwt>{{pem}}</pubkeyjwt>
+                           <betriebsumgebung>{{environment}}</betriebsumgebung>
+                        </publickeys>
+                        {{/publicKeys}}
+                      </datendesantragstellers>
+                    </registrierungtifoederation>
+                    """;
+
+  private static final String XML_TEMPLATE_TEST =
       """
                     <?xml version="1.0" encoding="UTF-8"?>
                     <registrierungtifoederation>
@@ -48,17 +80,34 @@ public class RegistratonFormRenderer {
 
   public static String render(Model m) {
 
+    return switch (m.environment()) {
+      case PU -> renderProductive(m);
+      default -> renderTestEnvironment(m);
+    };
+  }
+
+  private static String renderProductive(Model m) {
+    return renderTemplate(XML_TEMPLATE_PROD, m);
+  }
+
+  private static String renderTestEnvironment(Model m) {
+    return renderTemplate(XML_TEMPLATE_TEST, m);
+  }
+
+  private static String renderTemplate(String template, Model m) {
+
     var mf = new DefaultMustacheFactory();
-    var template = mf.compile(new StringReader(XML_TEMPLATE), "entity-statement-registration");
+    var compiledTemplate = mf.compile(new StringReader(template), "entity-statement-registration");
 
     var w = new StringWriter();
 
     var rm = RenderModel.fromModel(m);
-    template.execute(w, rm);
+    compiledTemplate.execute(w, rm);
     return w.toString();
   }
 
   public record Model(
+      String vfsConfirmation,
       String memberId,
       String organisationName,
       String contactEmail,
@@ -87,6 +136,7 @@ public class RegistratonFormRenderer {
   }
 
   record RenderModel(
+      String vfsConfirmation,
       String memberId,
       String organisationName,
       String issuerUri,
@@ -105,6 +155,7 @@ public class RegistratonFormRenderer {
     public static RenderModel fromModel(Model m) {
 
       return new RenderModel(
+          m.vfsConfirmation(),
           m.memberId(),
           m.organisationName(),
           m.issuerUri().toString(),

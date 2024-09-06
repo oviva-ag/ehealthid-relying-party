@@ -64,9 +64,13 @@ public class FedRegistrationCommand implements Callable<Integer> {
 
   @Option(
       names = {"-c", "--contact-email"},
-      description = "the technical contact email for the IdP",
-      required = true)
-  private String email;
+      description = "the technical contact email for the IdP")
+  private String contactEmail;
+
+  @Option(
+      names = {"--vfs-confirmation"},
+      description = "gematik-Verfahrensschlüssel (starts with VFS_DiGA_...)")
+  private String vfsConfirmation;
 
   public static void main(String[] args) {
 
@@ -83,6 +87,8 @@ public class FedRegistrationCommand implements Callable<Integer> {
 
   public Integer call() throws Exception {
 
+    parameterValidation();
+
     var entityConfiguration = fetchEntityConfiguration();
     for (var key : entityConfiguration.jwks().getKeys()) {
       validateKey(key, KeyUse.SIGNATURE);
@@ -97,18 +103,6 @@ public class FedRegistrationCommand implements Callable<Integer> {
     return 0;
   }
 
-  private String renderRegistrationForm(EntityConfiguration entityConfiguration) {
-    return RegistratonFormRenderer.render(
-        new Model(
-            memberId,
-            entityConfiguration.orgName(),
-            email,
-            issuerUri,
-            environment,
-            entityConfiguration.scopes(),
-            entityConfiguration.jwks()));
-  }
-
   private void printRegistrationForm(EntityConfiguration entityConfiguration) {
     var registrationForm = renderRegistrationForm(entityConfiguration);
     System.out.println(registrationForm);
@@ -119,6 +113,33 @@ public class FedRegistrationCommand implements Callable<Integer> {
 
     logger.atInfo().log("writing registration form to '{}'", file);
     Files.writeString(file, registrationForm);
+  }
+
+  private String renderRegistrationForm(EntityConfiguration entityConfiguration) {
+    return RegistratonFormRenderer.render(
+        new Model(
+            vfsConfirmation,
+            memberId,
+            entityConfiguration.orgName(),
+            contactEmail,
+            issuerUri,
+            environment,
+            entityConfiguration.scopes(),
+            entityConfiguration.jwks()));
+  }
+
+  private void parameterValidation() {
+    if (environment == Environment.PU) {
+      if (vfsConfirmation == null || vfsConfirmation.isBlank()) {
+        logger.atError().log("Verfahrensschlüssel is required for production (PU) environment");
+        throw new RuntimeException();
+      }
+    } else {
+      if (contactEmail == null || contactEmail.isBlank()) {
+        logger.atError().log("contact email is required for test environments");
+        throw new RuntimeException();
+      }
+    }
   }
 
   private EntityConfiguration fetchEntityConfiguration() {
