@@ -140,10 +140,7 @@ public class ConfigReader {
 
     return configProvider
         .get(CONFIG_SCOPES)
-        .or(
-            () ->
-                Optional.of(
-                    "openid,urn:telematik:email,urn:telematik:versicherter,urn:telematik:display_name"))
+        .or(() -> Optional.of("openid,urn:telematik:versicherter"))
         .stream()
         .flatMap(Strings::mustParseCommaList)
         .toList();

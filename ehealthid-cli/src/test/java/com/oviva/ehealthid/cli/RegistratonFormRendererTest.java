@@ -25,6 +25,7 @@ class RegistratonFormRendererTest {
     var xml =
         RegistratonFormRenderer.render(
             new Model(
+                "VFS_DiGA_Test",
                 "FDmyDiGAMemb",
                 "My DiGA",
                 "bobby.tables@example.com",
