@@ -14,6 +14,7 @@ import java.util.List;
 
 public class RegistratonFormRenderer {
 
+  // the PU registration XML differs from others
   private static final String XML_TEMPLATE_PROD =
       """
                     <?xml version="1.0" encoding="UTF-8"?>
@@ -81,12 +82,12 @@ public class RegistratonFormRenderer {
   public static String render(Model m) {
 
     return switch (m.environment()) {
-      case PU -> renderProductive(m);
+      case PU -> renderProductiveEnvironment(m);
       default -> renderTestEnvironment(m);
     };
   }
 
-  private static String renderProductive(Model m) {
+  private static String renderProductiveEnvironment(Model m) {
     return renderTemplate(XML_TEMPLATE_PROD, m);
   }
 
