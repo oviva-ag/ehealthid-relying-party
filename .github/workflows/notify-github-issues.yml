@@ -14,6 +14,5 @@ jobs:
       - id: 'notify_google_chat'
         uses: 'google-github-actions/send-google-chat-webhook@v0.0.2'
         with:
-          webhook_url: '${{ secrets.GOOGLE_CHAT_GAIA_SUPPORT_CHANNEL }}'
+          webhook_url: '${{ secrets.GOOGLE_CHAT_ARGON_NOTIFICATIONS_CHANNEL }}'
           mention: "<users/all>"
-
