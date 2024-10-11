@@ -20,29 +20,28 @@ public class RegistratonFormRenderer {
                     <?xml version="1.0" encoding="UTF-8"?>
                     <registrierungtifoederation>
                       <datendesantragstellers>
-                        <vfsbestaetigung>{{vfsConfirmation}}</vfsbestaetigung>
-                        <teilnehmertyp>Fachdienst</teilnehmertyp>
-                        <organisationsname>{{organisationName}}</organisationsname>
-                        <memberid>{{memberId}}</memberid>
-                        <zwg>ORG-0001:BT-0144</zwg>
-                        <issueruri>{{issuerUri}}</issueruri>
-                        <scopes>
-                          <scopealter>{{scopeAge}}</scopealter>
-                          <scopeanzeigename>{{scopeDisplayName}}</scopeanzeigename>
-                          <scopeemail>{{scopeEmail}}</scopeemail>
-                          <scopegeschlecht>{{scopeGender}}</scopegeschlecht>
-                          <scopegeburtsdatum>{{scopeDateOfBirth}}</scopegeburtsdatum>
-                          <scopevorname>{{scopeFirstName}}</scopevorname>
-                          <scopenachname>{{scopeLastName}}</scopenachname>
-                          <scopeversicherter>{{scopeInsuredPerson}}</scopeversicherter>
-                        </scopes>
-                        {{#publicKeys}}
-                        <publickeys>
-                          <kidjwt>{{kid}}</kidjwt>
-                          <pubkeyjwt>{{pem}}</pubkeyjwt>
-                           <betriebsumgebung>{{environment}}</betriebsumgebung>
-                        </publickeys>
-                        {{/publicKeys}}
+                      <vfsbestaetigung>{{vfsConfirmation}}</vfsbestaetigung>
+                      <teilnehmertyp>Fachdienst</teilnehmertyp>
+                      <organisationsname>{{organisationName}}</organisationsname>
+                      <memberid>{{memberId}}</memberid>
+                      <zwg>ORG-0229:BT-0170</zwg>
+                      <issueruri>{{issuerUri}}</issueruri>
+                      <scopes>
+                        <scopealter>{{scopeAge}}</scopealter>
+                        <scopeanzeigename>{{scopeDisplayName}}</scopeanzeigename>
+                        <scopeemail>{{scopeEmail}}</scopeemail>
+                        <scopegeschlecht>{{scopeGender}}</scopegeschlecht>
+                        <scopegeburtsdatum>{{scopeDateOfBirth}}</scopegeburtsdatum>
+                        <scopevorname>{{scopeFirstName}}</scopevorname>
+                        <scopenachname>{{scopeLastName}}</scopenachname>
+                        <scopeversicherter>{{scopeInsuredPerson}}</scopeversicherter>
+                      </scopes>
+                      {{#publicKeys}}
+                      <publickeys>
+                        <kidjwt>{{kid}}</kidjwt>
+                        <pubkeyjwt>{{pem}}</pubkeyjwt>
+                      </publickeys>
+                      {{/publicKeys}}
                       </datendesantragstellers>
                     </registrierungtifoederation>
                     """;
