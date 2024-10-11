@@ -20,20 +20,20 @@ import org.junit.jupiter.api.Test;
 
 class RegistratonFormRendererTest {
 
-    @Test
-    void render_PU() throws JOSEException {
-        var key = getKey();
-        var xml =
-                RegistratonFormRenderer.render(
-                        new Model(
-                                "VFS_DiGA_Test",
-                                "FDmyDiGAMemb",
-                                "My DiGA",
-                                "bobby.tables@example.com",
-                                URI.create("https://mydiga.example.com"),
-                                PU,
-                                List.of(Scope.INSURED_PERSON, Scope.EMAIL, Scope.DISPLAY_NAME),
-                                new JWKSet(key)));
+  @Test
+  void render_PU() throws JOSEException {
+    var key = getKey();
+    var xml =
+        RegistratonFormRenderer.render(
+            new Model(
+                "VFS_DiGA_Test",
+                "FDmyDiGAMemb",
+                "My DiGA",
+                "bobby.tables@example.com",
+                URI.create("https://mydiga.example.com"),
+                PU,
+                List.of(Scope.INSURED_PERSON, Scope.EMAIL, Scope.DISPLAY_NAME),
+                new JWKSet(key)));
 
     assertEquals(
         """
@@ -64,7 +64,7 @@ class RegistratonFormRendererTest {
                 </registrierungtifoederation>
                 """,
         xml);
-    }
+  }
 
   @Test
   void render_TU() throws JOSEException {
