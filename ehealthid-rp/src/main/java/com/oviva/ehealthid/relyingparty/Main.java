@@ -2,6 +2,7 @@ package com.oviva.ehealthid.relyingparty;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.oviva.ehealthid.auth.AuthenticationFlow;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +67,8 @@ public class Main implements AutoCloseable {
         \\____/|___/_/|___/\\_,_/
              GesundheitsID OpenID Connect Relying-Party
         """;
+  private static final Pattern FEDMASTER_TEST_PATTERN =
+      Pattern.compile("app-(test|ref)\\.federationmaster\\.de");
   private static final String CONFIG_PREFIX = "EHEALTHID_RP";
   private final ConfigProvider configProvider;
 
@@ -130,20 +134,14 @@ public class Main implements AutoCloseable {
     var sessionRepo = buildSessionRepo(config.sessionStore(), meterRegistry);
 
     // the relying party signing key is for mTLS
-    var sslContext = TlsContext.fromClientCertificate(config.federation().relyingPartySigningKey());
-
-    var httpClient =
-        HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .sslContext(sslContext)
-            .build();
+    var mTlsClientCertificate = config.federation().relyingPartySigningKey();
 
     var authFlow =
         buildAuthFlow(
             config.baseUri(),
             config.federation().federationMaster(),
             config.federation().relyingPartyKeys(),
-            httpClient);
+            mTlsClientCertificate);
 
     var discoveryHttpClient =
         HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
@@ -229,15 +227,27 @@ public class Main implements AutoCloseable {
     return client;
   }
 
+  private com.oviva.ehealthid.fedclient.api.HttpClient decorateWithGematikAuthorization(
+      URI fedmaster, com.oviva.ehealthid.fedclient.api.HttpClient client) {
+    if (FEDMASTER_TEST_PATTERN.matcher(fedmaster.getHost()).matches()) {
+      // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
+      // test environment
+      // see: https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen
+      return new GematikHeaderDecoratorHttpClient(client);
+    }
+    return client;
+  }
+
   private AuthenticationFlow buildAuthFlow(
-      URI selfIssuer, URI fedmaster, JWKSet encJwks, HttpClient httpClient) {
+      URI selfIssuer, URI fedmaster, JWKSet encJwks, ECKey mTlsClientCert) {
+
+    var timeout = Duration.ofSeconds(10);
+
+    var httpClient = HttpClient.newBuilder().connectTimeout(timeout).build();
 
     var client = instrumentHttpClient(new JavaHttpClient(httpClient));
 
-    // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
-    // test environment
-    // see: https://wiki.gematik.de/display/IDPKB/Fachdienste+Test-Umgebungen
-    var fedHttpClient = new GematikHeaderDecoratorHttpClient(client);
+    var fedHttpClient = decorateWithGematikAuthorization(fedmaster, client);
 
     // setup as needed
     var clock = Clock.systemUTC();
@@ -251,10 +261,25 @@ public class Main implements AutoCloseable {
             new InMemoryCacheImpl<>(clock, ttl));
 
     var fedmasterClient = new FederationMasterClientImpl(fedmaster, federationApiClient, clock);
-    var openIdClient = new OpenIdClient(fedHttpClient);
+
+    var openIdClient = buildOpenIdClient(mTlsClientCert, timeout, fedmaster);
 
     return new AuthenticationFlow(
         selfIssuer, fedmasterClient, openIdClient, encJwks::getKeyByKeyId);
+  }
+
+  private OpenIdClient buildOpenIdClient(ECKey mTlsClientKey, Duration timeout, URI fedmaster) {
+
+    // the OpenID client needs a self-signed client certificate for mTLS
+    var context = TlsContext.fromClientCertificate(mTlsClientKey);
+
+    var authenticatedHttpClient =
+        HttpClient.newBuilder().sslContext(context).connectTimeout(timeout).build();
+
+    var authenticatedClient =
+        decorateWithGematikAuthorization(
+            fedmaster, instrumentHttpClient(new JavaHttpClient(authenticatedHttpClient)));
+    return new OpenIdClient(authenticatedClient);
   }
 
   private SessionRepo buildSessionRepo(
