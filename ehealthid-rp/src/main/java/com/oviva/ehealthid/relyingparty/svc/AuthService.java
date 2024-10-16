@@ -59,9 +59,10 @@ public class AuthService {
   private static String generatePkceCodeVerifier() {
     var rng = new SecureRandom();
 
+    // https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
     var bytes = new byte[32];
     rng.nextBytes(bytes);
-    return Base64.getUrlEncoder().encodeToString(bytes);
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 
   // Authorization Request
