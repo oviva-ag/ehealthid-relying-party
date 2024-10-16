@@ -175,6 +175,6 @@ class AuthenticationFlowExampleTest {
 
     var bytes = new byte[32];
     rng.nextBytes(bytes);
-    return Base64.getUrlEncoder().encodeToString(bytes);
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 }
