@@ -196,8 +196,23 @@ public class Main implements AutoCloseable {
 
     var keys = new JWKSet(List.of(signingKey, encKey));
 
-    logger.atDebug().log("openid_relying_party signing key, kid={}", signingKey.getKeyID());
-    logger.atDebug().log("openid_relying_party encryption key, kid={}", encKey.getKeyID());
+    logger
+        .atDebug()
+        .addKeyValue("kid", signingKey.getKeyID())
+        .addKeyValue("jwk", signingKey.toJSONString())
+        .log(
+            "openid_relying_party signing key, kid={} jwk={}",
+            signingKey.getKeyID(),
+            signingKey.toJSONString());
+
+    logger
+        .atDebug()
+        .addKeyValue("kid", encKey.getKeyID())
+        .addKeyValue("jwk", encKey.toJSONString())
+        .log(
+            "openid_relying_party encryption key, kid={} jwk={}",
+            encKey.getKeyID(),
+            encKey.toJSONString());
 
     var fedConfig =
         config
