@@ -12,16 +12,19 @@ public class CachedFederationApiClient implements FederationApiClient {
 
   private final Cache<EntityStatementJWS> federationStatementCache;
 
+  private final Cache<ExtendedJWKSetJWS> signedJwksCache;
   private final Cache<IdpListJWS> idpListCache;
 
   public CachedFederationApiClient(
       FederationApiClient delegate,
       Cache<EntityStatementJWS> entityStatementCache,
       Cache<EntityStatementJWS> federationStatementCache,
+      Cache<ExtendedJWKSetJWS> signedJwksCache,
       Cache<IdpListJWS> idpListCache) {
     this.delegate = delegate;
     this.entityStatementCache = entityStatementCache;
     this.federationStatementCache = federationStatementCache;
+    this.signedJwksCache = signedJwksCache;
     this.idpListCache = idpListCache;
   }
 
@@ -45,5 +48,12 @@ public class CachedFederationApiClient implements FederationApiClient {
   public @NonNull EntityStatementJWS fetchEntityConfiguration(URI entityUrl) {
     return entityStatementCache.computeIfAbsent(
         entityUrl.toString(), k -> delegate.fetchEntityConfiguration(entityUrl));
+  }
+
+  @NonNull
+  @Override
+  public ExtendedJWKSetJWS fetchSignedJwks(URI signedJwksUrl) {
+    return signedJwksCache.computeIfAbsent(
+        signedJwksUrl.toString(), k -> delegate.fetchSignedJwks(signedJwksUrl));
   }
 }

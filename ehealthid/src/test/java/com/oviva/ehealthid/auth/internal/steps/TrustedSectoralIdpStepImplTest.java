@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.nimbusds.jose.jwk.JWKSet;
+import com.oviva.ehealthid.fedclient.FederationMasterClient;
 import com.oviva.ehealthid.fedclient.api.EntityStatement;
 import com.oviva.ehealthid.fedclient.api.EntityStatement.Metadata;
 import com.oviva.ehealthid.fedclient.api.EntityStatement.OpenidProvider;
@@ -23,7 +24,7 @@ class TrustedSectoralIdpStepImplTest {
 
     var redirectUri = URI.create("https://tk.example.com/auth?redirect_uri=urn:redirect:mystuff");
 
-    var sut = new TrustedSectoralIdpStepImpl(null, null, redirectUri, null, null, null);
+    var sut = new TrustedSectoralIdpStepImpl(null, null, redirectUri, null, null, null, null);
 
     // when & then
     assertEquals(redirectUri, sut.idpRedirectUri());
@@ -35,6 +36,7 @@ class TrustedSectoralIdpStepImplTest {
     var selfIssuer = URI.create("https://fachdienst.example.com");
     var callbackUri = selfIssuer.resolve("/callback");
 
+    var fedmasterClient = mock(FederationMasterClient.class);
     var openIdClient = mock(OpenIdClient.class);
     var sectoralIdp = URI.create("https://gsi.dev.gematik.solutions");
 
@@ -71,7 +73,15 @@ class TrustedSectoralIdpStepImplTest {
     var jwks = loadEncryptionKeys();
     var sut =
         new TrustedSectoralIdpStepImpl(
-            openIdClient, selfIssuer, redirectUri, callbackUri, idpJws, jwks::getKeyByKeyId);
+            openIdClient,
+            selfIssuer,
+            redirectUri,
+            callbackUri,
+            idpJws,
+            jwks::getKeyByKeyId,
+            fedmasterClient);
+
+    when(fedmasterClient.resolveOpenIdProviderJwks(idpJws)).thenReturn(sectoralIdpJwks);
 
     // when
     var idToken = sut.exchangeSectoralIdpCode(code, verifier);

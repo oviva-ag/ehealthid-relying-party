@@ -90,7 +90,8 @@ public class SelectSectoralIdpStepImpl implements SelectSectoralIdpStep {
         redirectUri,
         callbackUri,
         trustedIdpEntityStatement,
-        relyingPartyEncKeySupplier);
+        relyingPartyEncKeySupplier,
+        fedMasterClient);
   }
 
   private URI buildAuthorizationUrl(String parRequestUri, EntityStatement trustedEntityStatement) {
