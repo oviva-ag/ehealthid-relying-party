@@ -77,7 +77,12 @@ public record EntityStatement(
       @JsonProperty("authorization_endpoint") String authorizationEndpoint,
       @JsonProperty("scopes_supported") List<String> scopesSupported,
       @JsonProperty("grant_types_supported") List<String> grantTypesSupported,
-      @JsonProperty("user_type_supported") List<String> userTypeSupported) {
+      @JsonProperty("user_type_supported") List<String> userTypeSupported,
+
+      // keys
+      @JsonProperty("jwks") JWKSet jwks,
+      // additional location for relying party keys, e.g. for signing tokens
+      @JsonProperty("signed_jwks_uri") String signedJwksUri) {
 
     public static Builder create() {
       return new Builder();
@@ -93,6 +98,9 @@ public record EntityStatement(
       private List<String> scopesSupported;
       private List<String> grantTypesSupported;
       private List<String> userTypeSupported;
+
+      private JWKSet jwks;
+      private String signedJwksUri;
 
       private Builder() {}
 
@@ -137,6 +145,16 @@ public record EntityStatement(
         return this;
       }
 
+      public Builder jwks(JWKSet jwks) {
+        this.jwks = jwks;
+        return this;
+      }
+
+      public Builder signedJwksUri(String signedJwksUri) {
+        this.signedJwksUri = signedJwksUri;
+        return this;
+      }
+
       public OpenidProvider build() {
         return new OpenidProvider(
             pushedAuthorizationRequestEndpoint,
@@ -146,7 +164,9 @@ public record EntityStatement(
             authorizationEndpoint,
             scopesSupported,
             grantTypesSupported,
-            userTypeSupported);
+            userTypeSupported,
+            jwks,
+            signedJwksUri);
       }
     }
   }
@@ -298,7 +318,11 @@ public record EntityStatement(
       @JsonProperty("id_token_signed_response_alg") String idTokenSignedResponseAlg,
       @JsonProperty("id_token_encrypted_response_alg") String idTokenEncryptedResponseAlg,
       @JsonProperty("id_token_encrypted_response_enc") String idTokenEncryptedResponseEnc,
+
+      // keys
       @JsonProperty("jwks") JWKSet jwks,
+      // additional location for relying party keys, e.g. for signing tokens
+      @JsonProperty("signed_jwks_uri") String signedJwksUri,
       @JsonProperty("default_acr_values") List<String> defaultAcrValues,
       @JsonProperty("token_endpoint_auth_methods_supported")
           List<String> tokenEndpointAuthMethodsSupported,
@@ -326,6 +350,7 @@ public record EntityStatement(
       private String idTokenEncryptedResponseEnc;
 
       private JWKSet jwks;
+      private String signedJwksUri;
       private List<String> defaultAcrValues;
       private List<String> tokenEndpointAuthMethodsSupported;
       private String tokenEndpointAuthMethod;
@@ -393,6 +418,11 @@ public record EntityStatement(
         return this;
       }
 
+      public Builder signedJwksUri(String signedJwksUri) {
+        this.signedJwksUri = signedJwksUri;
+        return this;
+      }
+
       public Builder defaultAcrValues(List<String> defaultAcrValues) {
         this.defaultAcrValues = defaultAcrValues;
         return this;
@@ -423,6 +453,7 @@ public record EntityStatement(
             idTokenEncryptedResponseAlg,
             idTokenEncryptedResponseEnc,
             jwks,
+            signedJwksUri,
             defaultAcrValues,
             tokenEndpointAuthMethodsSupported,
             tokenEndpointAuthMethod);

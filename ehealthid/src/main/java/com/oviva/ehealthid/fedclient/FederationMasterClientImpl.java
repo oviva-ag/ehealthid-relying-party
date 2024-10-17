@@ -1,5 +1,6 @@
 package com.oviva.ehealthid.fedclient;
 
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.fedclient.api.EntityStatement;
 import com.oviva.ehealthid.fedclient.api.EntityStatementJWS;
@@ -8,7 +9,9 @@ import com.oviva.ehealthid.fedclient.api.IdpList.IdpEntity;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.net.URI;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class FederationMasterClientImpl implements FederationMasterClient {
 
@@ -31,6 +34,75 @@ public class FederationMasterClientImpl implements FederationMasterClient {
     return entities.stream()
         .map(e -> new IdpEntry(e.iss(), e.organizationName(), e.logoUri()))
         .toList();
+  }
+
+  @Override
+  public JWKSet resolveOpenIdProviderJwks(@NonNull EntityStatementJWS es) {
+
+    // https://openid.net/specs/openid-federation-1_0.html#section-5.2.1.1
+    // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/latest/#A_22655-02
+
+    var op =
+        Optional.of(es)
+            .map(EntityStatementJWS::body)
+            .map(EntityStatement::metadata)
+            .map(EntityStatement.Metadata::openidProvider);
+
+    if (op.isEmpty()) {
+      throw FederationExceptions.missingOpenIdProvider(es.body().sub());
+    }
+
+    List<JWK> allKeys = new ArrayList<>();
+
+    // embedded keys
+    op.map(EntityStatement.OpenidProvider::jwks).map(JWKSet::getKeys).ifPresent(allKeys::addAll);
+
+    // from signed_jwks_uri
+    op.map(EntityStatement.OpenidProvider::signedJwksUri)
+        .flatMap(
+            u -> fetchOpenIdProviderJwksFromSignedJwksUri(es.body().sub(), u, es.body().jwks()))
+        .ifPresent(allKeys::addAll);
+
+    // Note: OpenID federation also supports a `jwks_uri`, the GesundheitsID does not though
+    if (allKeys.isEmpty()) {
+      throw FederationExceptions.noOpenIdProviderKeys(es.body().sub());
+    }
+
+    return new JWKSet(allKeys);
+  }
+
+  @NonNull
+  private Optional<List<JWK>> fetchOpenIdProviderJwksFromSignedJwksUri(
+      @NonNull String issuer, @NonNull String signedJwksUri, @NonNull JWKSet idpTrustStore) {
+
+    return Optional.of(signedJwksUri)
+        .map(URI::create)
+        .map(apiClient::fetchSignedJwks)
+        .map(
+            jws -> {
+              if (!jws.isValidAt(clock.instant())) {
+                throw FederationExceptions.expiredSignedJwks(issuer, signedJwksUri);
+              }
+
+              if (!jws.verifySignature(idpTrustStore)) {
+                throw FederationExceptions.invalidSignedJwks(issuer, signedJwksUri);
+              }
+
+              if (!matchesIfPresent(issuer, jws.body().iss())) {
+                throw FederationExceptions.invalidSignedJwks(issuer, signedJwksUri);
+              }
+              return jws;
+            })
+        .map(s -> s.body().toJWKSet())
+        .map(JWKSet::getKeys);
+  }
+
+  private boolean matchesIfPresent(String expected, String actual) {
+    if (actual == null || actual.isEmpty()) {
+      return true;
+    }
+
+    return expected.equals(actual);
   }
 
   @Override

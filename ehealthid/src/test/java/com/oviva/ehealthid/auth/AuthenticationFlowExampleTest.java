@@ -74,6 +74,7 @@ class AuthenticationFlowExampleTest {
             new FederationApiClientImpl(httpClient),
             new InMemoryCacheImpl<>(clock, ttl),
             new InMemoryCacheImpl<>(clock, ttl),
+            new InMemoryCacheImpl<>(clock, ttl),
             new InMemoryCacheImpl<>(clock, ttl));
 
     var fedmasterClient = new FederationMasterClientImpl(fedmaster, federationApiClient, clock);

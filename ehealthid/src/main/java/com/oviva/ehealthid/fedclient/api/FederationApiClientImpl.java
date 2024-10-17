@@ -14,6 +14,7 @@ import java.util.List;
 public class FederationApiClientImpl implements FederationApiClient {
 
   public static final String ENTITY_STATEMENT_MEDIA_TYPE = "application/entity-statement+jwt";
+  public static final String SIGNED_JWKS_MEDIA_TYPE = "application/jwk-set+jwt";
   public static final String WELLKNOWN_FEDERATION_DOCUMENT = "openid-federation";
   public static final String WELLKNOWN_PATH = ".well-known";
 
@@ -53,6 +54,13 @@ public class FederationApiClientImpl implements FederationApiClient {
 
     var body = doGetRequest(uri, ENTITY_STATEMENT_MEDIA_TYPE, null);
     return EntityStatementJWS.parse(body);
+  }
+
+  @NonNull
+  @Override
+  public ExtendedJWKSetJWS fetchSignedJwks(URI signedJwksUrl) {
+    var body = doGetRequest(signedJwksUrl, SIGNED_JWKS_MEDIA_TYPE, null);
+    return ExtendedJWKSetJWS.parse(body);
   }
 
   private String doGetRequest(URI uri, String accept, List<Param> params) {

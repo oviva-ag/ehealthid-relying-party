@@ -9,6 +9,7 @@ import com.oviva.ehealthid.auth.IdTokenJWS.IdToken;
 import com.oviva.ehealthid.auth.steps.TrustedSectoralIdpStep;
 import com.oviva.ehealthid.crypto.JwsVerifier;
 import com.oviva.ehealthid.crypto.KeySupplier;
+import com.oviva.ehealthid.fedclient.FederationMasterClient;
 import com.oviva.ehealthid.fedclient.api.EntityStatementJWS;
 import com.oviva.ehealthid.fedclient.api.OpenIdClient;
 import com.oviva.ehealthid.util.JsonCodec;
@@ -26,6 +27,7 @@ public class TrustedSectoralIdpStepImpl implements TrustedSectoralIdpStep {
   private final URI callbackUri;
   private final EntityStatementJWS trustedIdpEntityStatement;
   private final KeySupplier relyingPartyEncKeySupplier;
+  private final FederationMasterClient federationMasterClient;
 
   public TrustedSectoralIdpStepImpl(
       @NonNull OpenIdClient openIdClient,
@@ -33,13 +35,15 @@ public class TrustedSectoralIdpStepImpl implements TrustedSectoralIdpStep {
       @NonNull URI idpRedirectUri,
       @NonNull URI callbackUri,
       @NonNull EntityStatementJWS trustedIdpEntityStatement,
-      @NonNull KeySupplier relyingPartyEncKeySupplier) {
+      @NonNull KeySupplier relyingPartyEncKeySupplier,
+      @NonNull FederationMasterClient federationMasterClient) {
     this.openIdClient = openIdClient;
     this.selfIssuer = selfIssuer;
     this.idpRedirectUri = idpRedirectUri;
     this.callbackUri = callbackUri;
     this.trustedIdpEntityStatement = trustedIdpEntityStatement;
     this.relyingPartyEncKeySupplier = relyingPartyEncKeySupplier;
+    this.federationMasterClient = federationMasterClient;
   }
 
   @Override
@@ -69,7 +73,9 @@ public class TrustedSectoralIdpStepImpl implements TrustedSectoralIdpStep {
 
       var signedJws = jweObject.getPayload().toJWSObject();
 
-      if (!JwsVerifier.verify(trustedIdpEntityStatement.body().jwks(), signedJws)) {
+      var idpSigningKeys =
+          federationMasterClient.resolveOpenIdProviderJwks(trustedIdpEntityStatement);
+      if (!JwsVerifier.verify(idpSigningKeys, signedJws)) {
         throw AuthExceptions.badIdTokenSignature(trustedIdpEntityStatement.body().sub());
       }
 

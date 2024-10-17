@@ -14,4 +14,7 @@ public interface FederationApiClient {
 
   @NonNull
   EntityStatementJWS fetchEntityConfiguration(URI entityUrl);
+
+  @NonNull
+  ExtendedJWKSetJWS fetchSignedJwks(URI signedJwksUrl);
 }

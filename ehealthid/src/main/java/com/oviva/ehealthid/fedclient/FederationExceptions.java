@@ -76,4 +76,39 @@ public class FederationExceptions {
         "federation statement untrusted: sub=%s".formatted(sub),
         FederationException.Reason.UNTRUSTED_IDP);
   }
+
+  public static FederationException noOpenIdProviderKeys(String sub) {
+    return new FederationException(
+        "no keys in .metadata.openid_provider jwks or signed_jwks_uri found: sub=%s".formatted(sub),
+        FederationException.Reason.INVALID_ENTITY_STATEMENT);
+  }
+
+  public static FederationException missingOpenIdProvider(String sub) {
+    return new FederationException(
+        "missing .metadata.openid_provider in entitystatement: sub=%s".formatted(sub),
+        FederationException.Reason.INVALID_ENTITY_STATEMENT);
+  }
+
+  public static FederationException notASignedJwks(String actualType) {
+    return new FederationException(
+        "JWS is not of type jwks-set statement but rather '%s'".formatted(actualType),
+        FederationException.Reason.INVALID_ENTITY_STATEMENT);
+  }
+
+  public static FederationException expiredSignedJwks(String sub, String signedJwksUri) {
+    return new FederationException(
+        "expired signed jwks: sub=%s signed_jwks_uri=%s".formatted(sub, signedJwksUri),
+        FederationException.Reason.UNTRUSTED_IDP);
+  }
+
+  public static FederationException invalidSignedJwks(String sub, String signedJwksUri) {
+    return new FederationException(
+        "invalid signed jwks: sub=%s signed_jwks_uri=%s".formatted(sub, signedJwksUri),
+        FederationException.Reason.UNTRUSTED_IDP);
+  }
+
+  public static FederationException badSignedJwks(Exception cause) {
+    return new FederationException(
+        "failed to parse signed jwks", cause, FederationException.Reason.INVALID_ENTITY_STATEMENT);
+  }
 }
