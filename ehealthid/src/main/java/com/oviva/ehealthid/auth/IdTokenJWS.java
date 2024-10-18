@@ -3,9 +3,11 @@ package com.oviva.ehealthid.auth;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nimbusds.jose.JWSObject;
+import java.util.List;
 
 public record IdTokenJWS(JWSObject jws, IdToken body) {
 
+  // https://openid.net/specs/openid-connect-core-1_0.html#IDToken
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record IdToken(
       @JsonProperty("iss") String iss,
@@ -16,7 +18,10 @@ public record IdTokenJWS(JWSObject jws, IdToken body) {
       @JsonProperty("nbf") long nbf,
       @JsonProperty("nonce") String nonce,
       @JsonProperty("acr") String acr,
-      @JsonProperty("amr") String amr,
+
+      // A_23129-03
+      // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/latest/#A_23129-03
+      @JsonProperty("amr") List<String> amr,
       @JsonProperty("email") String email,
 
       // telematik claims according to

@@ -12,9 +12,11 @@ import com.oviva.ehealthid.fedclient.api.InMemoryCacheImpl;
 import com.oviva.ehealthid.fedclient.api.JavaHttpClient;
 import com.oviva.ehealthid.fedclient.api.OpenIdClient;
 import com.oviva.ehealthid.fedclient.api.UrlFormBodyBuilder;
+import com.oviva.ehealthid.test.ECKeyGenerator;
 import com.oviva.ehealthid.test.Environment;
 import com.oviva.ehealthid.test.GematikHeaderDecoratorHttpClient;
 import com.oviva.ehealthid.util.JwksUtils;
+import com.oviva.ehealthid.util.TlsContext;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -57,7 +59,7 @@ class AuthenticationFlowExampleTest {
 
     // path to the JWKS containing the private keys to decrypt ID tokens, the public part
     // is in your entity configuration
-    var relyingPartyEncryptionJwks = JwksUtils.load(Path.of("../relying-party-enc_jwks.json"));
+    var relyingPartyEncryptionJwks = JwksUtils.load(Path.of("../sig_t_oviva_io_jwks.json"));
 
     // setup the file `.env.properties` to provide the X-Authorization header for the Gematik
     // test environment
@@ -78,7 +80,14 @@ class AuthenticationFlowExampleTest {
             new InMemoryCacheImpl<>(clock, ttl));
 
     var fedmasterClient = new FederationMasterClientImpl(fedmaster, federationApiClient, clock);
-    var openIdClient = new OpenIdClient(httpClient);
+
+    // NOTE: This certificate needs to be publicly available!
+    var mtlsClientCert = ECKeyGenerator.generateSigningKeyWithCertificate(self);
+    var context = TlsContext.fromClientCertificate(mtlsClientCert);
+
+    var authenticatedHttpClient =
+        HttpClient.newBuilder().sslContext(context).connectTimeout(Duration.ofSeconds(10)).build();
+    var openIdClient = new OpenIdClient(new JavaHttpClient(authenticatedHttpClient));
 
     var flow =
         new AuthenticationFlow(
