@@ -37,16 +37,28 @@ public class ExtendedJWKSetDeserializer extends StdDeserializer<ExtendedJWKSet> 
   private String parseStringField(JsonParser jsonParser, TreeNode node, String fieldName)
       throws IOException {
 
-    return jsonParser
-        .getCodec()
-        .readValue(node.get(fieldName).traverse(jsonParser.getCodec()), String.class);
+    return parseField(jsonParser, node, fieldName, String.class);
   }
 
   private long parseLongField(JsonParser jsonParser, TreeNode node, String fieldName)
       throws IOException {
 
-    return jsonParser
-        .getCodec()
-        .readValue(node.get(fieldName).traverse(jsonParser.getCodec()), Long.class);
+    var v = parseField(jsonParser, node, fieldName, Long.class);
+    if (v == null) {
+      return 0;
+    }
+
+    return v;
+  }
+
+  private <T> T parseField(JsonParser jsonParser, TreeNode node, String fieldName, Class<T> clazz)
+      throws IOException {
+
+    var n = node.get(fieldName);
+    if (n == null) {
+      return null;
+    }
+
+    return jsonParser.getCodec().readValue(n.traverse(jsonParser.getCodec()), clazz);
   }
 }

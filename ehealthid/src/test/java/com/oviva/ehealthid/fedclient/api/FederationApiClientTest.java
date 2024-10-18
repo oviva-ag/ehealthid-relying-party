@@ -6,10 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.tomakehurst.wiremock.http.ContentTypeHeader;
 import com.github.tomakehurst.wiremock.http.Fault;
@@ -79,6 +76,23 @@ class FederationApiClientTest {
     var masterEntityStatement = jws.body();
     assertEquals(gematikIdp, masterEntityStatement.iss());
     assertEquals(gematikIdp, masterEntityStatement.sub());
+  }
+
+  @Test
+  @Disabled("e2e")
+  void fetchReferenceEnvironment_signedJwks() {
+
+    var apiClient = new FederationApiClientImpl(javaHttpClient);
+
+    var gematikSekIdp = URI.create("https://gsi-ref.dev.gematik.solutions");
+
+    var entityStatement = apiClient.fetchEntityConfiguration(gematikSekIdp);
+
+    var signedJwksUri = entityStatement.body().metadata().openidProvider().signedJwksUri();
+
+    var jwksJws = apiClient.fetchSignedJwks(URI.create(signedJwksUri));
+
+    assertFalse(jwksJws.body().toJWKSet().isEmpty());
   }
 
   @Test
@@ -219,5 +233,28 @@ class FederationApiClientTest {
         jws.body().metadata().federationEntity().idpListEndpoint());
 
     assertTrue(jws.verifySelfSigned());
+  }
+
+  @Test
+  void fetchSignedJwks(WireMockRuntimeInfo wm) {
+
+    var apiClient = new FederationApiClientImpl(javaHttpClient);
+
+    var path = "/jwks.jose";
+
+    stubFor(
+        get(path)
+            .willReturn(
+                aResponse()
+                    .withBody(
+                        """
+                        eyJhbGciOiJFUzI1NiIsInR5cCI6Imp3ay1zZXQranNvbiIsImtpZCI6InB1a19pZHBfc2lnIn0.eyJpc3MiOiJodHRwczovL2dzaS1yZWYuZGV2LmdlbWF0aWsuc29sdXRpb25zIiwiaWF0IjoxNzI5MjQ0OTg2LCJrZXlzIjpbeyJ1c2UiOiJzaWciLCJraWQiOiJwdWtfaWRwX3NpZyIsImt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiQWJ0MlV5cms2S2hjemV4bEJPd0pPVHNfZUIwRHNGYmNOeGF4YTBaMHZkNCIsInkiOiJZWktCSnRPVVlFV1RNa256RndCZGwtNnRWS3lXblVEdHhmMnEwcFNUNVg0IiwiYWxnIjoiRVMyNTYifSx7InVzZSI6InNpZyIsImtpZCI6InB1a19mZWRfaWRwX3Rva2VuIiwia3R5IjoiRUMiLCJjcnYiOiJQLTI1NiIsIngiOiJZekVQRnZwaHU0VDNHZ1dtalBYeFBUMC1QZG1fUTA0T0xFTkFIOTh6bi1NIiwieSI6IkFIUEhnZ3NxNll3RmZXMmZTSUp0YXdNTEFoOVpvS1BGVFpxUEZnUVcwdDQiLCJhbGciOiJFUzI1NiJ9XX0.MNtQWVD0COFK_3fIADcaqP6AaDltI2qr73_j6N5qSjd6Os_WZpK4Qp7z3ZKmZo42UqPpE1Lxt7mEGry_Rmg8gQ""")));
+
+    var signedJwksUri = URI.create(wm.getHttpBaseUrl() + path);
+
+    var signedJwks = apiClient.fetchSignedJwks(signedJwksUri);
+
+    assertEquals("https://gsi-ref.dev.gematik.solutions", signedJwks.body().iss());
+    assertFalse(signedJwks.body().keys().isEmpty());
   }
 }

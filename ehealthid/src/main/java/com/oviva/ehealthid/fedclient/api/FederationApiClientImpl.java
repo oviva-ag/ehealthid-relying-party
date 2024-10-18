@@ -15,6 +15,7 @@ public class FederationApiClientImpl implements FederationApiClient {
 
   public static final String ENTITY_STATEMENT_MEDIA_TYPE = "application/entity-statement+jwt";
   public static final String SIGNED_JWKS_MEDIA_TYPE = "application/jwk-set+jwt";
+  public static final String ALT_SIGNED_JWKS_MEDIA_TYPE = "application/jwk-set+json";
   public static final String WELLKNOWN_FEDERATION_DOCUMENT = "openid-federation";
   public static final String WELLKNOWN_PATH = ".well-known";
 
@@ -59,7 +60,11 @@ public class FederationApiClientImpl implements FederationApiClient {
   @NonNull
   @Override
   public ExtendedJWKSetJWS fetchSignedJwks(URI signedJwksUrl) {
-    var body = doGetRequest(signedJwksUrl, SIGNED_JWKS_MEDIA_TYPE, null);
+
+    // the Gematik IdP lies about the content-type, hence also requesting 'application/jwk-set+json'
+    var body =
+        doGetRequest(
+            signedJwksUrl, SIGNED_JWKS_MEDIA_TYPE + ", " + ALT_SIGNED_JWKS_MEDIA_TYPE, null);
     return ExtendedJWKSetJWS.parse(body);
   }
 
