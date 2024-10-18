@@ -273,6 +273,7 @@ public class Main implements AutoCloseable {
             new FederationApiClientImpl(fedHttpClient),
             new InMemoryCacheImpl<>(clock, ttl),
             new InMemoryCacheImpl<>(clock, ttl),
+            new InMemoryCacheImpl<>(clock, ttl),
             new InMemoryCacheImpl<>(clock, ttl));
 
     var fedmasterClient = new FederationMasterClientImpl(fedmaster, federationApiClient, clock);

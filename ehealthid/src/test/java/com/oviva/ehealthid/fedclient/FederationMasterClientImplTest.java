@@ -7,15 +7,12 @@ import static org.mockito.Mockito.when;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.oviva.ehealthid.fedclient.api.EntityStatement;
+import com.oviva.ehealthid.fedclient.api.*;
 import com.oviva.ehealthid.fedclient.api.EntityStatement.FederationEntity;
 import com.oviva.ehealthid.fedclient.api.EntityStatement.Metadata;
-import com.oviva.ehealthid.fedclient.api.EntityStatementJWS;
-import com.oviva.ehealthid.fedclient.api.FederationApiClient;
-import com.oviva.ehealthid.fedclient.api.IdpList;
 import com.oviva.ehealthid.fedclient.api.IdpList.IdpEntity;
-import com.oviva.ehealthid.fedclient.api.IdpListJWS;
 import com.oviva.ehealthid.test.ECKeyGenerator;
 import com.oviva.ehealthid.util.JsonCodec;
 import com.oviva.ehealthid.util.JwsUtils;
@@ -361,6 +358,235 @@ class FederationMasterClientImplTest {
 
     // then
     assertEquals(entityStatementJWS.body().sub(), issuer.toString());
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_missingOpenIdProvider() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+
+    var entityStatement = openIdProviderEntityConfiguration(issuer, sectoralIdpKeypair, null);
+    assertThrows(
+        FederationException.class, () -> client.resolveOpenIdProviderJwks(entityStatement));
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_noKeys() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+
+    var entityStatement =
+        openIdProviderEntityConfiguration(
+            issuer,
+            sectoralIdpKeypair,
+            EntityStatement.OpenidProvider.create().jwks(new JWKSet()).build());
+
+    assertThrows(
+        FederationException.class, () -> client.resolveOpenIdProviderJwks(entityStatement));
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_embeddedJwks() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+
+    var openIdProviderJwks = new JWKSet(ECKeyGenerator.generate()).toPublicJWKSet();
+
+    var entityStatement =
+        openIdProviderEntityConfiguration(
+            issuer,
+            sectoralIdpKeypair,
+            EntityStatement.OpenidProvider.create().jwks(openIdProviderJwks).build());
+
+    var got = client.resolveOpenIdProviderJwks(entityStatement);
+
+    assertEquals(openIdProviderJwks, got);
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_signedJwksUri() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+    var signedJwksUri = URI.create("https://idp-tk.example.com/signed-jwks.jose");
+
+    var openIdProviderJwks = new JWKSet(ECKeyGenerator.generate()).toPublicJWKSet();
+    var signedJwks =
+        signedJwks(issuer, NOW.plusSeconds(40), openIdProviderJwks.getKeys(), sectoralIdpKeypair);
+
+    when(federationApiClient.fetchSignedJwks(signedJwksUri)).thenReturn(signedJwks);
+
+    var entityStatement =
+        openIdProviderEntityConfiguration(
+            issuer,
+            sectoralIdpKeypair,
+            EntityStatement.OpenidProvider.create()
+                .signedJwksUri(signedJwksUri.toString())
+                .build());
+
+    // when
+    var got = client.resolveOpenIdProviderJwks(entityStatement);
+
+    // then
+    assertEquals(openIdProviderJwks, got);
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_signedJwksUri_noIssuer() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+    var signedJwksUri = URI.create("https://idp-tk.example.com/signed-jwks.jose");
+
+    var openIdProviderJwks = new JWKSet(ECKeyGenerator.generate()).toPublicJWKSet();
+    var signedJwks =
+        signedJwks(null, NOW.plusSeconds(40), openIdProviderJwks.getKeys(), sectoralIdpKeypair);
+
+    when(federationApiClient.fetchSignedJwks(signedJwksUri)).thenReturn(signedJwks);
+
+    var entityStatement =
+        openIdProviderEntityConfiguration(
+            issuer,
+            sectoralIdpKeypair,
+            EntityStatement.OpenidProvider.create()
+                .signedJwksUri(signedJwksUri.toString())
+                .build());
+
+    // when
+    var got = client.resolveOpenIdProviderJwks(entityStatement);
+
+    // then
+    assertEquals(openIdProviderJwks, got);
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_signedJwksUri_badIssuer() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+    var badIssuer = URI.create("https://mallory.example.com");
+    var signedJwksUri = URI.create("https://idp-tk.example.com/signed-jwks.jose");
+
+    var openIdProviderJwks = new JWKSet(ECKeyGenerator.generate()).toPublicJWKSet();
+    var signedJwks =
+        signedJwks(
+            badIssuer, NOW.plusSeconds(40), openIdProviderJwks.getKeys(), sectoralIdpKeypair);
+
+    when(federationApiClient.fetchSignedJwks(signedJwksUri)).thenReturn(signedJwks);
+
+    var entityStatement =
+        openIdProviderEntityConfiguration(
+            issuer,
+            sectoralIdpKeypair,
+            EntityStatement.OpenidProvider.create()
+                .signedJwksUri(signedJwksUri.toString())
+                .build());
+
+    // when & then
+    assertThrows(
+        FederationException.class, () -> client.resolveOpenIdProviderJwks(entityStatement));
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_signedJwksUri_expired() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+    var signedJwksUri = URI.create("https://idp-tk.example.com/signed-jwks.jose");
+
+    var openIdProviderJwks = new JWKSet(ECKeyGenerator.generate()).toPublicJWKSet();
+    var thePast = NOW.minusSeconds(60);
+    var signedJwks = signedJwks(issuer, thePast, openIdProviderJwks.getKeys(), sectoralIdpKeypair);
+
+    when(federationApiClient.fetchSignedJwks(signedJwksUri)).thenReturn(signedJwks);
+
+    var entityStatement =
+        openIdProviderEntityConfiguration(
+            issuer,
+            sectoralIdpKeypair,
+            EntityStatement.OpenidProvider.create()
+                .signedJwksUri(signedJwksUri.toString())
+                .build());
+
+    // when & then
+    assertThrows(
+        FederationException.class, () -> client.resolveOpenIdProviderJwks(entityStatement));
+  }
+
+  @Test
+  void fetchOpenIdProviderJwks_signedJwksUri_badSignature() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var unrelatedKeypair = ECKeyGenerator.generate();
+    var issuer = URI.create("https://idp-tk.example.com");
+    var signedJwksUri = URI.create("https://idp-tk.example.com/signed-jwks.jose");
+
+    var openIdProviderJwks = new JWKSet(ECKeyGenerator.generate()).toPublicJWKSet();
+    var signedJwks =
+        signedJwks(issuer, NOW.plusSeconds(17), openIdProviderJwks.getKeys(), unrelatedKeypair);
+
+    when(federationApiClient.fetchSignedJwks(signedJwksUri)).thenReturn(signedJwks);
+
+    var entityStatement =
+        openIdProviderEntityConfiguration(
+            issuer,
+            sectoralIdpKeypair,
+            EntityStatement.OpenidProvider.create()
+                .signedJwksUri(signedJwksUri.toString())
+                .build());
+
+    // when & then
+    assertThrows(
+        FederationException.class, () -> client.resolveOpenIdProviderJwks(entityStatement));
+  }
+
+  private ExtendedJWKSetJWS signedJwks(URI iss, Instant expiry, List<JWK> keys, ECKey signingKey) {
+
+    var publicJwks = new JWKSet(keys).toPublicJWKSet().getKeys();
+
+    var body =
+        new ExtendedJWKSet(
+            expiry.getEpochSecond(), iss == null ? null : iss.toString(), publicJwks);
+
+    var signed = JwsUtils.toJws(signingKey, JsonCodec.writeValueAsString(body));
+
+    return new ExtendedJWKSetJWS(signed, body);
+  }
+
+  private EntityStatementJWS openIdProviderEntityConfiguration(
+      URI sub, ECKey sectoralIdpKeyPair, EntityStatement.OpenidProvider op) {
+
+    var body =
+        EntityStatement.create()
+            .iss(sub.toString())
+            .sub(sub.toString())
+            .exp(NOW.plusSeconds(60))
+            .jwks(toPublicJwks(sectoralIdpKeyPair))
+            .metadata(Metadata.create().openidProvider(op).build())
+            .build();
+
+    var signed = JwsUtils.toJws(sectoralIdpKeyPair, JsonCodec.writeValueAsString(body));
+
+    return new EntityStatementJWS(signed, body);
   }
 
   private EntityStatementJWS badSignedSectoralIdpEntityConfiguration(
