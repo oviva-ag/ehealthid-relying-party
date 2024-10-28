@@ -61,13 +61,11 @@ class JsonCodecTest {
 
   private String allMessages(Throwable e) {
     var buf = new StringBuilder();
-    while (true) {
-      if (e == null) {
-        return buf.toString();
-      }
+    while (e != null) {
       buf.append(e.getMessage()).append('\n');
       e = e.getCause();
     }
+    return buf.toString();
   }
 
   private record HelloWorld(List<String> hello) {}
