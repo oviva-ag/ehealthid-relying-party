@@ -2,9 +2,7 @@ package com.oviva.ehealthid.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +40,35 @@ class JsonCodecTest {
         new FailingEncodeTC(loop, SerializeException.class),
         new FailingEncodeTC(new JsonCodecTest(), SerializeException.class));
   }
+
+  @Test
+  void testDebug_includeSource() {
+
+    var raw = """
+    {"hello": "world" }\
+    """;
+    var bytes = raw.getBytes(StandardCharsets.UTF_8);
+
+    // when
+    var e =
+        assertThrows(
+            DeserializeException.class, () -> JsonCodec.readValue(bytes, HelloWorld.class));
+
+    // then
+    var msg = allMessages(e);
+    assertTrue(msg.contains(raw));
+  }
+
+  private String allMessages(Throwable e) {
+    var buf = new StringBuilder();
+    while (e != null) {
+      buf.append(e.getMessage()).append('\n');
+      e = e.getCause();
+    }
+    return buf.toString();
+  }
+
+  private record HelloWorld(List<String> hello) {}
 
   @Test
   void readBadJson() {
