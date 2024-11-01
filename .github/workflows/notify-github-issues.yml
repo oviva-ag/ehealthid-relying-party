@@ -12,7 +12,7 @@ jobs:
       id-token: 'write'
     steps:
       - id: 'notify_google_chat'
-        uses: 'google-github-actions/send-google-chat-webhook@v0.0.2'
+        uses: 'google-github-actions/send-google-chat-webhook@v0.0.4'
         with:
           webhook_url: '${{ secrets.GOOGLE_CHAT_ARGON_NOTIFICATIONS_CHANNEL }}'
           mention: "<users/all>"
