@@ -4,6 +4,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.oviva.ehealthid.auth.IdTokenJWS;
@@ -15,21 +16,22 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
+import javax.swing.*;
 
 public class TokenIssuerImpl implements TokenIssuer {
 
   private final URI issuer;
 
-  private final KeyStore keyStore;
+  private final SigningKeyProvider signingKeyProvider;
 
   private final Duration TTL = Duration.ofSeconds(60);
   private final Clock clock = Clock.systemUTC();
 
   private final CodeRepo codeRepo;
 
-  public TokenIssuerImpl(URI issuer, KeyStore keyStore, CodeRepo codeRepo) {
+  public TokenIssuerImpl(URI issuer, SigningKeyProvider signingKeyProvider, CodeRepo codeRepo) {
     this.issuer = issuer;
-    this.keyStore = keyStore;
+    this.signingKeyProvider = signingKeyProvider;
     this.codeRepo = codeRepo;
   }
 
@@ -87,7 +89,7 @@ public class TokenIssuerImpl implements TokenIssuer {
 
   String issueIdToken(String audience, String nonce, IdTokenJWS federatedIdToken) {
     try {
-      var jwk = keyStore.signingKey();
+      var jwk = signingKeyProvider.signingKey();
       var signer = new ECDSASigner(jwk);
 
       // Prepare JWT with claims set
@@ -148,7 +150,7 @@ public class TokenIssuerImpl implements TokenIssuer {
 
   private String issueAccessToken(Duration ttl, String audience) {
     try {
-      var jwk = keyStore.signingKey();
+      var jwk = signingKeyProvider.signingKey();
       var signer = new ECDSASigner(jwk);
 
       // Prepare JWT with claims set
@@ -172,5 +174,9 @@ public class TokenIssuerImpl implements TokenIssuer {
     } catch (JOSEException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public interface SigningKeyProvider {
+    ECKey signingKey();
   }
 }

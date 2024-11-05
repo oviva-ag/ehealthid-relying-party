@@ -3,7 +3,6 @@ package com.oviva.ehealthid.relyingparty.util;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.nimbusds.jose.util.Base64;
@@ -23,16 +22,29 @@ public class KeyGenerator {
 
   private KeyGenerator() {}
 
-  @NonNull
-  public static JWK generateSigningKeyWithCertificate(@NonNull URI issuer) {
+  public static ECKey generateSigningKey() {
 
     try {
-      var key =
-          new ECKeyGenerator(Curve.P_256)
-              .keyUse(KeyUse.SIGNATURE)
-              .keyIDFromThumbprint(true)
-              .generate();
+      return new ECKeyGenerator(Curve.P_256)
+          .keyIDFromThumbprint(true)
+          .keyUse(KeyUse.SIGNATURE)
+          .generate();
+    } catch (JOSEException e) {
+      throw new IllegalStateException("failed to generate signing key", e);
+    }
+  }
 
+  @NonNull
+  public static ECKey generateSigningKeyWithCertificate(@NonNull URI issuer) {
+
+    var key = generateSigningKey();
+    return addCertificate(key, issuer);
+  }
+
+  @NonNull
+  public static ECKey addCertificate(ECKey key, @NonNull URI issuer) {
+
+    try {
       var now = Instant.now();
       var nbf = now.minus(Duration.ofHours(3));
 
@@ -55,12 +67,12 @@ public class KeyGenerator {
         | JOSEException
         | CertificateEncodingException e) {
       throw new IllegalStateException(
-          "failed to generate signing key for issuer=%s".formatted(issuer), e);
+          "failed to add certificate for issuer=%s".formatted(issuer), e);
     }
   }
 
   @NonNull
-  public static JWK generateEncryptionKey() {
+  public static ECKey generateEncryptionKey() {
     try {
       return new ECKeyGenerator(Curve.P_256)
           .keyUse(KeyUse.ENCRYPTION)

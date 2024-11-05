@@ -1,4 +1,4 @@
-package com.oviva.ehealthid.relyingparty.poc;
+package com.oviva.ehealthid.relyingparty.testenv;
 
 import com.oviva.ehealthid.fedclient.api.HttpClient;
 import java.util.ArrayList;

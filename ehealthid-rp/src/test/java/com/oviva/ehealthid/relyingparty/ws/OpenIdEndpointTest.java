@@ -7,10 +7,10 @@ import static org.mockito.Mockito.when;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
-import com.oviva.ehealthid.relyingparty.svc.KeyStore;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 class OpenIdEndpointTest {
@@ -45,8 +45,8 @@ class OpenIdEndpointTest {
             """
       {"kty":"EC","use":"sig","crv":"P-256","x":"yi3EF1QZS1EiAfAAfjoDyZkRnf59H49gUyklmfwKwSY","y":"Y_SGRGjwacDuT8kbcaX1Igyq8aRfJFNBMKLb2yr0x18"}
       """);
-    var keyStore = mock(KeyStore.class);
-    when(keyStore.signingKey()).thenReturn(key);
+    var keyStore = mock(Supplier.class);
+    when(keyStore.get()).thenReturn(key);
 
     var sut = new OpenIdEndpoint(BASE_URI, null, keyStore);
 

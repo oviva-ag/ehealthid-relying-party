@@ -16,7 +16,7 @@ public class JwksUtils {
       return JWKSet.load(fin);
     } catch (IOException | ParseException e) {
       var fullPath = path.toAbsolutePath();
-      throw new RuntimeException(
+      throw new IllegalStateException(
           "failed to load JWKS from '%s' ('%s')".formatted(path, fullPath), e);
     }
   }

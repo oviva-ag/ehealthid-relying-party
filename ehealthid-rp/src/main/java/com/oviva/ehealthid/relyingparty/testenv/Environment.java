@@ -1,4 +1,4 @@
-package com.oviva.ehealthid.relyingparty.poc;
+package com.oviva.ehealthid.relyingparty.testenv;
 
 import java.io.IOException;
 import java.nio.file.Files;

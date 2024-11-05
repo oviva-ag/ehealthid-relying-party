@@ -31,8 +31,12 @@ public class EmbeddedRelyingParty implements AutoCloseable {
 
     var config =
         StaticConfig.fromRawProperties(
+            //
+            // openid_provider_sig_jwks_path=src/test/resources/fixtures/example_sig_jwks.json
             """
                 federation_es_jwks_path=src/test/resources/fixtures/example_sig_jwks.json
+                openid_rp_sig_jwks_path=src/test/resources/fixtures/rp_sig_jwks.json
+                openid_rp_enc_jwks_path=src/test/resources/fixtures/rp_enc_jwks.json
                 base_uri=%s
                 idp_discovery_uri=%s
                 redirect_uris=%s

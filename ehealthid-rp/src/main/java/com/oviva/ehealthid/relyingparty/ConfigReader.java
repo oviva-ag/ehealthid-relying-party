@@ -42,7 +42,7 @@ public class ConfigReader {
 
   public Config read() {
 
-    var federationEntityStatementJwksPath = loadJwks(CONFIG_FEDERATION_ENTITY_STATEMENT_JWKS_PATH);
+    var federationEntityStatementJwks = loadJwks(CONFIG_FEDERATION_ENTITY_STATEMENT_JWKS_PATH);
 
     var baseUri =
         configProvider
@@ -83,10 +83,6 @@ public class ConfigReader {
             .iss(baseUri)
             .appName(appName)
             .federationMaster(fedmaster)
-
-            // safety, remove the private key as we don't need it here
-            .entitySigningKeys(federationEntityStatementJwksPath.toPublicJWKSet())
-            .entitySigningKey(federationEntityStatementJwksPath.getKeys().get(0).toECKey())
             .ttl(entityStatementTtl)
             .scopes(getScopes())
             .redirectUris(List.of(baseUri.resolve("/auth/callback").toString()))

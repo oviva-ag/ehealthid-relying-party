@@ -1,3 +1,7 @@
+# Debugging Entity-Statements
+
+curl https://pta-ehealthid.ovivadiga.com/.well-known/openid-federation | jwt decode -j - | jq -r .payload.metadata.openid_relying_party.jwks.keys[0].x5c[0] | base64 -d | openssl x509 -text
+
 
 # Library IntegrationTest flow with Gematik Reference IDP
 

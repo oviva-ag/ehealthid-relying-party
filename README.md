@@ -8,6 +8,18 @@ a good old OpenID Connect Relying Party (OIDC RP).
 
 Identity Providers such as Keycloak can link accounts with OIDC out-of-the-box
 
+## State of Compatibility
+
+### Productive Environment (PU)
+
+| Sectoral IdP           | End-to-End | Provider |
+|------------------------|------------|----------|
+| Techniker Krankenkasse | ✅          | IBM      |
+| Gothaer                | 🚫         | RISE     |
+
+> [!NOTE]  
+> Most providers can not be independently tested as there are no test accounts available.
+
 ## Authentication Flow IDP / Relying Party
 
 ```mermaid
@@ -122,23 +134,31 @@ Use environment variables to configure the relying party server.
 
 (*) required configuration
 
-| Name                                     | Description                                                                                                                                       | Example                                                           |
-|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| `EHEALTHID_RP_FEDERATION_ES_JWKS_PATH`*  | Path to a JWKS with at least one keypair for signature of the entity statement. All these keys __MUST__ be registered with the federation master. | `./sig_jwks.json`                                                 |
-| `EHEALTHID_RP_REDIRECT_URIS`*            | Valid redirection URIs for OpenID connect.                                                                                                        | `https://sso-mydiga.example.com/auth/callback`                    |
-| `EHEALTHID_RP_BASE_URI`*                 | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.    | `https://mydiga-rp.example.com`                                   |
-| `EHEALTHID_RP_IDP_DISCOVERY_URI`*        | The URI of the discovery document of your identity provider. Used to fetch public keys for client authentication.                                 | `https://sso-mydiga.example.com/.well-known/openid-configuration` |
-| `EHEALTHID_RP_FEDERATION_MASTER`*        | The URI of the federation master.                                                                                                                 | `https://app-test.federationmaster.de`                            |
-| `EHEALTHID_RP_APP_NAME`*                 | The application name within the federation.                                                                                                       | `Awesome DiGA`                                                    |
-| `EHEALTHID_RP_HOST`                      | Host to bind to.                                                                                                                                  | `0.0.0.0`                                                         |
-| `EHEALTHID_RP_PORT`                      | Port to bind to.                                                                                                                                  | `1234`                                                            |
-| `EHEALTHID_RP_ES_TTL`                    | The time to live for the entity statement. In ISO8601 format.                                                                                     | `PT12H`                                                           |
-| `EHEALTHID_RP_SCOPES`                    | The comma separated list of scopes requested in the federation. This __MUST__ match what was registered with the federation master.               | `openid,urn:telematik:versicherter`                               |
-| `EHEALTHID_RP_SESSION_STORE_TTL`         | The time to live for sessions. In ISO8601 format.                                                                                                 | `PT20M`                                                           |
-| `EHEALTHID_RP_SESSION_STORE_MAX_ENTRIES` | The maximum number of sessions to store. Keeps memory bounded.                                                                                    | `1000`                                                            |
-| `EHEALTHID_RP_CODE_STORE_TTL`            | The time to live for codes, i.e. successful logins where the code is not redeemed yet. In ISO8601 format.                                         | `PT5M`                                                            |
-| `EHEALTHID_RP_CODE_STORE_MAX_ENTRIES`    | The maximum number of codes to store. Keeps memory bounded.                                                                                       | `1000`                                                            |
-| `EHEALTHID_RP_LOG_LEVEL`                 | The log level.                                                                                                                                    | `INFO`                                                            |
+| Name                                         | Description                                                                                                                                                                | Example                                                           |
+|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| `EHEALTHID_RP_FEDERATION_ES_JWKS_PATH`*      | Path to a JWKS with at least one keypair for signature of the entity statement. All these keys __MUST__ be registered with the federation master.                          | `./sig_jwks.json`                                                 |
+| `EHEALTHID_RP_OPENID_RP_SIG_JWKS_PATH`*      | Path to a JWKS with signing keys of our relying party, i.e. for mTLS client certificates                                                                                   | `./openid_rp_sig_jwks.json`                                       | 
+| `EHEALTHID_RP_OPENID_RP_ENC_JWKS_PATH`*      | Path to a JWKS with the keys used for encryption between the federation and the relying party, i.e. to encrypt id_tokens                                                   | `./openid_rp_enc_jwks.json`                                       |
+| `EHEALTHID_RP_REDIRECT_URIS`*                | Valid redirection URIs for OpenID connect.                                                                                                                                 | `https://sso-mydiga.example.com/auth/callback`                    |
+| `EHEALTHID_RP_BASE_URI`*                     | The external base URI of the relying party. This is also the `issuer` towards the OpenID federation. Additional paths are unsupported for now.                             | `https://mydiga-rp.example.com`                                   |
+| `EHEALTHID_RP_IDP_DISCOVERY_URI`*            | The URI of the discovery document of your identity provider. Used to fetch public keys for client authentication.                                                          | `https://sso-mydiga.example.com/.well-known/openid-configuration` |
+| `EHEALTHID_RP_FEDERATION_MASTER`*            | The URI of the federation master.                                                                                                                                          | `https://app-test.federationmaster.de`                            |
+| `EHEALTHID_RP_APP_NAME`*                     | The application name within the federation.                                                                                                                                | `Awesome DiGA`                                                    |
+| `EHEALTHID_RP_HOST`                          | Host to bind to.                                                                                                                                                           | `0.0.0.0`                                                         |
+| `EHEALTHID_RP_PORT`                          | Port to bind to.                                                                                                                                                           | `1234`                                                            |
+| `EHEALTHID_RP_ES_TTL`                        | The time to live for the entity statement. In ISO8601 format.                                                                                                              | `PT12H`                                                           |
+| `EHEALTHID_RP_SCOPES`                        | The comma separated list of scopes requested in the federation. This __MUST__ match what was registered with the federation master.                                        | `openid,urn:telematik:versicherter`                               |
+| `EHEALTHID_RP_SESSION_STORE_TTL`             | The time to live for sessions. In ISO8601 format.                                                                                                                          | `PT20M`                                                           |
+| `EHEALTHID_RP_SESSION_STORE_MAX_ENTRIES`     | The maximum number of sessions to store. Keeps memory bounded.                                                                                                             | `1000`                                                            |
+| `EHEALTHID_RP_CODE_STORE_TTL`                | The time to live for codes, i.e. successful logins where the code is not redeemed yet. In ISO8601 format.                                                                  | `PT5M`                                                            |
+| `EHEALTHID_RP_CODE_STORE_MAX_ENTRIES`        | The maximum number of codes to store. Keeps memory bounded.                                                                                                                | `1000`                                                            |
+| `EHEALTHID_RP_LOG_LEVEL`                     | The log level.                                                                                                                                                             | `INFO`                                                            |
+| `EHEALTHID_RP_OPENID_PROVIDER_SIG_JWKS_PATH` | Path to a JWKS with signing keys for our openIdProvider, for example the id_token issued by the relying party will be signed with it. Will be generated if not configured. | `./openid_provider_sig_jwks.json`                                 |
+
+public static final String CONFIG_FEDERATION_SIG_JWKS_PATH = "federation_sig_jwks_path";
+public static final String CONFIG_OPENID_RP_SIG_JWKS_PATH = "openid_rp_sig_jwks_path";
+public static final String CONFIG_OPENID_RP_ENC_JWKS_PATH = "openid_rp_enc_jwks_path";
+public static final String CONFIG_OPENID_PROVIDER_SIG_JWKS_PATH = "openid_provider_sig_jwks_path";
 
 # Generate Keys & Register for Federation
 
