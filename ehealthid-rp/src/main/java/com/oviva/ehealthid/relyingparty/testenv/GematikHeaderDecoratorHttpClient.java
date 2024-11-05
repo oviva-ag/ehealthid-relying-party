@@ -6,6 +6,10 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Currently Gematik's IdP is not publicly accessible and needs a special header. For simplicity, we
+ * just inject the header if the host matches.
+ */
 public class GematikHeaderDecoratorHttpClient implements HttpClient {
 
   private static final Logger logger =
