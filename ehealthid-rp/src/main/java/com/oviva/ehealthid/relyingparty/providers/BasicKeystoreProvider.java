@@ -113,24 +113,28 @@ public class BasicKeystoreProvider {
 
     var federationJwks = federationSigningKey.getKeys().stream().map(JWK::toECKey).toList();
 
-    var cache = new ConcurrentHashMap<URI, ECKey>();
-
-    Function<URI, ECKey> rpSigningKeyProvider =
-        uri ->
-            cache.compute(
-                uri,
-                (u, key) -> {
-                  if (key == null) {
-                    key = KeyGenerator.addCertificate(openIdRelyingPartySigningKey, u);
-                  }
-                  return key;
-                });
+    var rpSigningKeyProvider = cachedSigningKeyProvider(openIdRelyingPartySigningKey);
 
     return new StaticKeyStores(
         rpSigningKeyProvider,
         openIdRelyingPartyEncryptionKey,
         openIdProviderSigningKey,
         federationJwks);
+  }
+
+  private static Function<URI, ECKey> cachedSigningKeyProvider(ECKey openIdRelyingPartySigningKey) {
+
+    var cache = new ConcurrentHashMap<URI, ECKey>();
+
+    return uri ->
+        cache.compute(
+            uri,
+            (u, key) -> {
+              if (key == null) {
+                key = KeyGenerator.addCertificate(openIdRelyingPartySigningKey, u);
+              }
+              return key;
+            });
   }
 
   static class StaticKeyStores implements KeyStores {
