@@ -155,11 +155,6 @@ Use environment variables to configure the relying party server.
 | `EHEALTHID_RP_LOG_LEVEL`                     | The log level.                                                                                                                                                             | `INFO`                                                            |
 | `EHEALTHID_RP_OPENID_PROVIDER_SIG_JWKS_PATH` | Path to a JWKS with signing keys for our openIdProvider, for example the id_token issued by the relying party will be signed with it. Will be generated if not configured. | `./openid_provider_sig_jwks.json`                                 |
 
-public static final String CONFIG_FEDERATION_SIG_JWKS_PATH = "federation_sig_jwks_path";
-public static final String CONFIG_OPENID_RP_SIG_JWKS_PATH = "openid_rp_sig_jwks_path";
-public static final String CONFIG_OPENID_RP_ENC_JWKS_PATH = "openid_rp_enc_jwks_path";
-public static final String CONFIG_OPENID_PROVIDER_SIG_JWKS_PATH = "openid_provider_sig_jwks_path";
-
 # Generate Keys & Register for Federation
 
 In order to participate in the GesundheitsID one needs to register the entity statement of the IDP

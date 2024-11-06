@@ -48,7 +48,7 @@ class EnvironmentTest {
   }
 
   @Test
-  void test_envFile_notFound(@TempDir Path tempDir) throws IOException {
+  void test_envFile_notFound(@TempDir Path tempDir) {
 
     var f = tempDir.resolve("does_not_exist");
 

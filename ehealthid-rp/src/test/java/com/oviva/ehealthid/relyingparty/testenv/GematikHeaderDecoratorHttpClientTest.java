@@ -26,8 +26,10 @@ class GematikHeaderDecoratorHttpClientTest {
     var uri = URI.create("https://example.com");
     var req = new HttpClient.Request(uri, "GET", List.of(), null);
 
-    var res = client.call(req);
+    // when
+    client.call(req);
 
+    // then
     var captor = ArgumentCaptor.forClass(HttpClient.Request.class);
     verify(httpClient).call(captor.capture());
 
@@ -52,7 +54,7 @@ class GematikHeaderDecoratorHttpClientTest {
     var req = new HttpClient.Request(uri, "GET", List.of(), null);
 
     // when
-    var res = client.call(req);
+    client.call(req);
 
     // then
     var captor = ArgumentCaptor.forClass(HttpClient.Request.class);

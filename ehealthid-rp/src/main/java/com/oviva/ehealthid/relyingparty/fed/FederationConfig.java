@@ -1,6 +1,5 @@
 package com.oviva.ehealthid.relyingparty.fed;
 
-import com.nimbusds.jose.jwk.ECKey;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -32,8 +31,6 @@ public record FederationConfig(
     private List<String> redirectUris;
     private List<String> scopes;
     private String appName;
-    private ECKey relyingPartySigningKey;
-    private ECKey relyingPartyEncryptionKey;
 
     private Builder() {}
 

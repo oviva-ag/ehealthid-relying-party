@@ -2,7 +2,6 @@ package com.oviva.ehealthid.relyingparty;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.oviva.ehealthid.auth.AuthenticationFlow;
@@ -45,8 +44,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.security.KeyPair;
-import java.security.interfaces.ECPublicKey;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -201,18 +198,6 @@ public class Main implements AutoCloseable {
                     .addExactPath(MetricsEndpoint.PATH, new MetricsEndpoint(meterRegistry)))
             .build();
     managementServer.start();
-  }
-
-  private ECKey toEcKey(KeyPair kp) {
-    try {
-      return new ECKey.Builder(Curve.P_256, (ECPublicKey) kp.getPublic())
-          .keyIDFromThumbprint()
-          .privateKey(kp.getPrivate())
-          .keyUse(KeyUse.SIGNATURE)
-          .build();
-    } catch (JOSEException e) {
-      throw new IllegalStateException("cannot create EC JWK from keypair", e);
-    }
   }
 
   private com.oviva.ehealthid.fedclient.api.HttpClient instrumentHttpClient(

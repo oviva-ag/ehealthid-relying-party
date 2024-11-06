@@ -137,6 +137,8 @@ public class BasicKeystoreProvider {
             });
   }
 
+  private BasicKeystoreProvider() {}
+
   static class StaticKeyStores implements KeyStores {
 
     private final Function<URI, ECKey> rpSigKeysProvider;
