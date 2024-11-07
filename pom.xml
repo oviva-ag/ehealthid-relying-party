@@ -38,12 +38,12 @@
     <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
-    <version.jboss-logging>3.6.0.Final</version.jboss-logging>
-    <version.slf4j>2.0.13</version.slf4j>
-    <version.micrometer>1.13.2</version.micrometer>
-    <version.nimbus-jose-jwt>9.40</version.nimbus-jose-jwt>
-    <version.logback.classic>1.5.6</version.logback.classic>
-    <version.handlebars>4.3.1</version.handlebars>
+    <version.jboss-logging>3.6.1.Final</version.jboss-logging>
+    <version.slf4j>2.0.16</version.slf4j>
+    <version.micrometer>1.13.6</version.micrometer>
+    <version.nimbus-jose-jwt>9.45</version.nimbus-jose-jwt>
+    <version.logback.classic>1.5.12</version.logback.classic>
+    <version.handlebars>4.4.0</version.handlebars>
 
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <jacoco.version>0.8.12</jacoco.version>
@@ -95,7 +95,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.40.0</version>
+        <version>1.43.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -112,7 +112,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
-        <version>2.17.2</version>
+        <version>2.18.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -124,17 +124,17 @@
       <dependency>
         <groupId>com.nimbusds</groupId>
         <artifactId>oauth2-oidc-sdk</artifactId>
-        <version>11.14</version>
+        <version>11.20.1</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk18on</artifactId>
-        <version>1.78.1</version>
+        <version>1.79</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcpkix-jdk18on</artifactId>
-        <version>1.78.1</version>
+        <version>1.79</version>
       </dependency>
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
@@ -159,7 +159,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.10.3</version>
+        <version>5.11.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -171,14 +171,14 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.12.0</version>
+        <version>5.14.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>1.20.1</version>
+        <version>1.20.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -192,7 +192,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.15.0</version>
+        <version>3.17.0</version>
       </dependency>
       <dependency>
         <groupId>com.github.jknack</groupId>
@@ -218,7 +218,7 @@
       <dependency>
         <groupId>org.wiremock</groupId>
         <artifactId>wiremock</artifactId>
-        <version>3.9.1</version>
+        <version>3.9.2</version>
         <exclusions>
           <exclusion>
             <groupId>com.github.jknack</groupId>
@@ -243,7 +243,7 @@
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
-        <version>6.2.9.Final</version>
+        <version>6.2.10.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -276,12 +276,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -296,12 +296,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.2</version>
+          <version>3.1.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.2</version>
+          <version>3.1.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -329,11 +329,11 @@
         </plugin>
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.12.1</version>
+          <version>3.21.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.7.1</version>
+          <version>3.8.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -345,7 +345,7 @@
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.8.0</version>
+            <version>1.9.0</version>
           </dependency>
         </dependencies>
         <executions>
