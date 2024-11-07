@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
@@ -54,18 +55,34 @@ class FederationEndpointTest {
             .appName("My App")
             .scopes(List.of("openid", "email"))
             .federationMaster(FEDMASTER)
-            .relyingPartyKeys(new JWKSet(encryptionKey))
-            .entitySigningKeys(new JWKSet(signatureKey))
-            .entitySigningKey(signatureKey)
             .ttl(Duration.ofMinutes(5))
             .build();
+
+    var federationKeys =
+        new FederationEndpoint.FederationKeys() {
+
+          @Override
+          public JWKSet federationKeys() {
+            return new JWKSet(signatureKey);
+          }
+
+          @Override
+          public ECKey federationSigningKey() {
+            return signatureKey;
+          }
+
+          @Override
+          public JWKSet relyingPartyJwks() {
+            return new JWKSet(encryptionKey);
+          }
+        };
 
     server =
         SeBootstrap.start(
                 new Application() {
                   @Override
                   public Set<Object> getSingletons() {
-                    return Set.of(new FederationEndpoint(config));
+                    return Set.of(new FederationEndpoint(config, federationKeys));
                   }
                 },
                 Configuration.builder().host("127.0.0.1").port(0).build())

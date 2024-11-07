@@ -1,8 +1,8 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
-import com.oviva.ehealthid.relyingparty.svc.KeyStore;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -12,18 +12,23 @@ import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Path("/")
 public class OpenIdEndpoint {
 
   private final URI baseUri;
   private final RelyingPartyConfig relyingPartyConfig;
-  private final KeyStore keyStore;
+  private final Supplier<ECKey> openIdProviderSigningKey;
 
-  public OpenIdEndpoint(URI baseUri, RelyingPartyConfig relyingPartyConfig, KeyStore keyStore) {
+  public OpenIdEndpoint(
+      URI baseUri,
+      RelyingPartyConfig relyingPartyConfig,
+      Supplier<ECKey> openIdProviderSigningKey) {
     this.baseUri = baseUri;
+
     this.relyingPartyConfig = relyingPartyConfig;
-    this.keyStore = keyStore;
+    this.openIdProviderSigningKey = openIdProviderSigningKey;
   }
 
   @GET
@@ -53,7 +58,7 @@ public class OpenIdEndpoint {
   @Path("/jwks.json")
   @Produces(MediaType.APPLICATION_JSON)
   public Response jwks() {
-    var key = keyStore.signingKey().toPublicJWK();
+    var key = openIdProviderSigningKey.get().toPublicJWK();
 
     var cacheControl = new CacheControl();
     cacheControl.setMaxAge((int) Duration.ofMinutes(30).getSeconds());

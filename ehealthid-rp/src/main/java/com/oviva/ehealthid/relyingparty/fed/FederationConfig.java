@@ -1,7 +1,5 @@
 package com.oviva.ehealthid.relyingparty.fed;
 
-import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWKSet;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -10,16 +8,6 @@ public record FederationConfig(
     URI iss,
     URI sub,
     URI federationMaster,
-
-    // trusted signing keys in the federation
-    JWKSet entitySigningKeys,
-
-    // the actual private key used for signing, _MUST_ be part of `entitySigningKeys`
-    ECKey entitySigningKey,
-
-    // keys uses for the relying-party, i.e. mTLS and idToken encryption
-    JWKSet relyingPartyKeys,
-    ECKey relyingPartySigningKey,
     Duration ttl,
     List<String> redirectUris,
     List<String> scopes,
@@ -30,18 +18,7 @@ public record FederationConfig(
   }
 
   public Builder builder() {
-    return new Builder(
-        iss,
-        sub,
-        federationMaster,
-        entitySigningKeys,
-        entitySigningKey,
-        relyingPartyKeys,
-        relyingPartySigningKey,
-        ttl,
-        redirectUris,
-        scopes,
-        appName);
+    return new Builder(iss, sub, federationMaster, ttl, redirectUris, scopes, appName);
   }
 
   public static final class Builder {
@@ -50,15 +27,10 @@ public record FederationConfig(
     private URI sub;
     private URI federationMaster;
 
-    private ECKey entitySigningKey;
-    private JWKSet entitySigningKeys;
-
-    private JWKSet relyingPartyKeys;
     private Duration ttl;
     private List<String> redirectUris;
     private List<String> scopes;
     private String appName;
-    private ECKey relyingPartySigningKey;
 
     private Builder() {}
 
@@ -66,10 +38,6 @@ public record FederationConfig(
         URI iss,
         URI sub,
         URI federationMaster,
-        JWKSet entitySigningKeys,
-        ECKey entitySigningKey,
-        JWKSet relyingPartyKeys,
-        ECKey relyingPartySigningKey,
         Duration ttl,
         List<String> redirectUris,
         List<String> scopes,
@@ -77,14 +45,10 @@ public record FederationConfig(
       this.iss = iss;
       this.sub = sub;
       this.federationMaster = federationMaster;
-      this.entitySigningKey = entitySigningKey;
-      this.entitySigningKeys = entitySigningKeys;
-      this.relyingPartyKeys = relyingPartyKeys;
       this.ttl = ttl;
       this.redirectUris = redirectUris;
       this.scopes = scopes;
       this.appName = appName;
-      this.relyingPartySigningKey = relyingPartySigningKey;
     }
 
     public Builder iss(URI iss) {
@@ -99,26 +63,6 @@ public record FederationConfig(
 
     public Builder federationMaster(URI federationMaster) {
       this.federationMaster = federationMaster;
-      return this;
-    }
-
-    public Builder entitySigningKey(ECKey signingKey) {
-      this.entitySigningKey = signingKey;
-      return this;
-    }
-
-    public Builder entitySigningKeys(JWKSet jwks) {
-      this.entitySigningKeys = jwks;
-      return this;
-    }
-
-    public Builder relyingPartyKeys(JWKSet jwks) {
-      this.relyingPartyKeys = jwks;
-      return this;
-    }
-
-    public Builder relyingPartySigningKey(ECKey signingKey) {
-      this.relyingPartySigningKey = signingKey;
       return this;
     }
 
@@ -143,18 +87,7 @@ public record FederationConfig(
     }
 
     public FederationConfig build() {
-      return new FederationConfig(
-          iss,
-          sub,
-          federationMaster,
-          entitySigningKeys,
-          entitySigningKey,
-          relyingPartyKeys,
-          relyingPartySigningKey,
-          ttl,
-          redirectUris,
-          scopes,
-          appName);
+      return new FederationConfig(iss, sub, federationMaster, ttl, redirectUris, scopes, appName);
     }
   }
 }

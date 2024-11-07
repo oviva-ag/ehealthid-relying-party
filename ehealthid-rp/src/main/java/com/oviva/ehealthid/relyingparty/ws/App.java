@@ -3,22 +3,25 @@ package com.oviva.ehealthid.relyingparty.ws;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+import com.nimbusds.jose.jwk.ECKey;
 import com.oviva.ehealthid.relyingparty.ConfigReader.Config;
 import com.oviva.ehealthid.relyingparty.fed.FederationEndpoint;
+import com.oviva.ehealthid.relyingparty.providers.KeyStores;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
-import com.oviva.ehealthid.relyingparty.svc.KeyStore;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.util.JoseModule;
 import jakarta.ws.rs.core.Application;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.jboss.resteasy.plugins.providers.ByteArrayProvider;
 import org.jboss.resteasy.plugins.providers.StringTextStar;
 
 public class App extends Application {
 
   private final Config config;
-  private final KeyStore keyStore;
+  private final Supplier<ECKey> openIdProviderSigningKeys;
+  private final KeyStores keyStores;
   private final TokenIssuer tokenIssuer;
   private final ClientAuthenticator clientAuthenticator;
 
@@ -26,25 +29,32 @@ public class App extends Application {
 
   public App(
       Config config,
-      KeyStore keyStore,
+      KeyStores keyStores,
       TokenIssuer tokenIssuer,
       ClientAuthenticator clientAuthenticator,
       AuthService authService) {
     this.config = config;
-    this.keyStore = keyStore;
+    this.keyStores = keyStores;
     this.tokenIssuer = tokenIssuer;
     this.clientAuthenticator = clientAuthenticator;
     this.authService = authService;
+
+    this.openIdProviderSigningKeys =
+        () -> {
+          var ks = keyStores.openIdProviderJwksKeystore();
+          return ks.keys().get(0);
+        };
   }
 
   @Override
   public Set<Object> getSingletons() {
 
     return Set.of(
-        new FederationEndpoint(config.federation()),
+        new FederationEndpoint(
+            config.federation(), new FederationKeysAdapter(config.federation().sub(), keyStores)),
         new AuthEndpoint(authService),
         new TokenEndpoint(tokenIssuer, clientAuthenticator),
-        new OpenIdEndpoint(config.baseUri(), config.relyingParty(), keyStore),
+        new OpenIdEndpoint(config.baseUri(), config.relyingParty(), openIdProviderSigningKeys),
         new JacksonJsonProvider(configureObjectMapper()));
   }
 

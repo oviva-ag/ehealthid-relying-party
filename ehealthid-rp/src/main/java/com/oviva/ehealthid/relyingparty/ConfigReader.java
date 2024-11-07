@@ -1,13 +1,10 @@
 package com.oviva.ehealthid.relyingparty;
 
-import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.relyingparty.cfg.ConfigProvider;
 import com.oviva.ehealthid.relyingparty.cfg.RelyingPartyConfig;
 import com.oviva.ehealthid.relyingparty.fed.FederationConfig;
 import com.oviva.ehealthid.relyingparty.util.Strings;
-import com.oviva.ehealthid.util.JwksUtils;
 import java.net.URI;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -41,8 +38,6 @@ public class ConfigReader {
   }
 
   public Config read() {
-
-    var federationEntityStatementJwksPath = loadJwks(CONFIG_FEDERATION_ENTITY_STATEMENT_JWKS_PATH);
 
     var baseUri =
         configProvider
@@ -83,10 +78,6 @@ public class ConfigReader {
             .iss(baseUri)
             .appName(appName)
             .federationMaster(fedmaster)
-
-            // safety, remove the private key as we don't need it here
-            .entitySigningKeys(federationEntityStatementJwksPath.toPublicJWKSet())
-            .entitySigningKey(federationEntityStatementJwksPath.getKeys().get(0).toECKey())
             .ttl(entityStatementTtl)
             .scopes(getScopes())
             .redirectUris(List.of(baseUri.resolve("/auth/callback").toString()))
@@ -151,20 +142,6 @@ public class ConfigReader {
         .mapToInt(Integer::parseInt)
         .findFirst()
         .orElse(defaultValue);
-  }
-
-  private JWKSet loadJwks(String configName) {
-
-    var path =
-        configProvider
-            .get(configName)
-            .map(Path::of)
-            .orElseThrow(
-                () ->
-                    new IllegalArgumentException(
-                        "missing jwks path for '%s'".formatted(configName)));
-
-    return JwksUtils.load(path);
   }
 
   public record Config(

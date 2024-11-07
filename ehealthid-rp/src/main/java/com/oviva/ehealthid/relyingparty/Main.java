@@ -2,8 +2,7 @@ package com.oviva.ehealthid.relyingparty;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.oviva.ehealthid.auth.AuthenticationFlow;
 import com.oviva.ehealthid.fedclient.FederationMasterClientImpl;
@@ -16,20 +15,19 @@ import com.oviva.ehealthid.relyingparty.ConfigReader.CodeStoreConfig;
 import com.oviva.ehealthid.relyingparty.ConfigReader.SessionStoreConfig;
 import com.oviva.ehealthid.relyingparty.cfg.ConfigProvider;
 import com.oviva.ehealthid.relyingparty.cfg.EnvConfigProvider;
-import com.oviva.ehealthid.relyingparty.poc.GematikHeaderDecoratorHttpClient;
+import com.oviva.ehealthid.relyingparty.providers.BasicKeystoreProvider;
 import com.oviva.ehealthid.relyingparty.svc.AfterCreatedExpiry;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.CaffeineCodeRepo;
 import com.oviva.ehealthid.relyingparty.svc.CaffeineSessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
 import com.oviva.ehealthid.relyingparty.svc.CodeRepo;
-import com.oviva.ehealthid.relyingparty.svc.KeyStore;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.SessionRepo.Session;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer.Code;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuerImpl;
+import com.oviva.ehealthid.relyingparty.testenv.GematikHeaderDecoratorHttpClient;
 import com.oviva.ehealthid.relyingparty.util.DiscoveryJwkSetSource;
-import com.oviva.ehealthid.relyingparty.util.KeyGenerator;
 import com.oviva.ehealthid.relyingparty.util.LoggingHttpClient;
 import com.oviva.ehealthid.relyingparty.ws.App;
 import com.oviva.ehealthid.relyingparty.ws.HealthEndpoint;
@@ -48,11 +46,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Clock;
 import java.time.Duration;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,23 +123,34 @@ public class Main implements AutoCloseable {
 
     var config = configReader.read();
 
-    // generate fresh keys for the relying-party
-    config = replaceRelyingPartyKeys(config);
+    var keyStores = BasicKeystoreProvider.load(configProvider);
 
-    var keyStore = new KeyStore();
     var meterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     var codeRepo = buildCodeRepo(config.codeStoreConfig(), meterRegistry);
-    var tokenIssuer = new TokenIssuerImpl(config.baseUri(), keyStore, codeRepo);
+    var tokenIssuer =
+        new TokenIssuerImpl(
+            config.baseUri(),
+            keyStores.openIdProviderJwksKeystore().keys().get(0)::toECKey,
+            codeRepo);
     var sessionRepo = buildSessionRepo(config.sessionStore(), meterRegistry);
 
     // the relying party signing key is for mTLS
-    var mTlsClientCertificate = config.federation().relyingPartySigningKey();
+    var mTlsClientCertificate =
+        keyStores.relyingPartySigJwksKeystore(config.federation().sub()).keys().get(0);
+
+    var relyingPartyKeys =
+        keyStores.relyingPartyEncJwksKeystore().keys().stream()
+            .map(k -> (JWK) k)
+            .collect(Collectors.toCollection(ArrayList::new));
+    relyingPartyKeys.add(mTlsClientCertificate);
+
+    var relyingPartyJwks = new JWKSet(relyingPartyKeys);
 
     var authFlow =
         buildAuthFlow(
             config.baseUri(),
             config.federation().federationMaster(),
-            config.federation().relyingPartyKeys(),
+            relyingPartyJwks,
             mTlsClientCertificate);
 
     var discoveryHttpClient =
@@ -165,7 +175,7 @@ public class Main implements AutoCloseable {
 
     server =
         SeBootstrap.start(
-                new App(config, keyStore, tokenIssuer, clientAuthenticator, authService),
+                new App(config, keyStores, tokenIssuer, clientAuthenticator, authService),
                 Configuration.builder().host(config.host()).port(config.port()).build())
             .toCompletableFuture()
             .get();
@@ -173,6 +183,12 @@ public class Main implements AutoCloseable {
     var localUri = server.configuration().baseUri();
     logger.atInfo().log("Magic at {} ({})", config.baseUri(), localUri);
 
+    bootManagementServer(config, meterRegistry);
+    logger.atInfo().log("Management Server can be found at port {}", config.managementPort());
+  }
+
+  private void bootManagementServer(
+      ConfigReader.Config config, PrometheusMeterRegistry meterRegistry) {
     managementServer =
         Undertow.builder()
             .addHttpListener(config.managementPort(), config.host())
@@ -182,56 +198,6 @@ public class Main implements AutoCloseable {
                     .addExactPath(MetricsEndpoint.PATH, new MetricsEndpoint(meterRegistry)))
             .build();
     managementServer.start();
-
-    logger.atInfo().log("Management Server can be found at port {}", config.managementPort());
-  }
-
-  private ConfigReader.Config replaceRelyingPartyKeys(ConfigReader.Config config) {
-
-    logger.atInfo().log(
-        "Generating fresh 'openid_relying_party' keys for mTLS and id_token encryption.");
-
-    var signingKey = KeyGenerator.generateSigningKeyWithCertificate(config.federation().sub());
-    var encKey = KeyGenerator.generateEncryptionKey();
-
-    var keys = new JWKSet(List.of(signingKey, encKey));
-
-    logger
-        .atDebug()
-        .addKeyValue("kid", signingKey.getKeyID())
-        .addKeyValue("jwk", signingKey.toJSONString())
-        .log(
-            "openid_relying_party signing key, kid={} jwk={}",
-            signingKey.getKeyID(),
-            signingKey.toJSONString());
-
-    logger
-        .atDebug()
-        .addKeyValue("kid", encKey.getKeyID())
-        .addKeyValue("jwk", encKey.toJSONString())
-        .log(
-            "openid_relying_party encryption key, kid={} jwk={}",
-            encKey.getKeyID(),
-            encKey.toJSONString());
-
-    var fedConfig =
-        config
-            .federation()
-            .builder()
-            .relyingPartySigningKey(signingKey.toECKey())
-            .relyingPartyKeys(keys)
-            .build();
-
-    return new ConfigReader.Config(
-        config.relyingParty(),
-        fedConfig,
-        config.host(),
-        config.port(),
-        config.managementPort(),
-        config.baseUri(),
-        config.idpDiscoveryUri(),
-        config.sessionStore(),
-        config.codeStoreConfig());
   }
 
   private com.oviva.ehealthid.fedclient.api.HttpClient instrumentHttpClient(

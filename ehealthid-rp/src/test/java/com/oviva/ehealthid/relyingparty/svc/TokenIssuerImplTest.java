@@ -28,10 +28,10 @@ class TokenIssuerImplTest {
   @Test
   void issueCode_unique() {
     var issuer = URI.create("https://idp.example.com");
-    var keyStore = mock(KeyStore.class);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var session = Session.create().build();
 
@@ -51,10 +51,10 @@ class TokenIssuerImplTest {
   @Test
   void issueCode_notExpired() {
     var issuer = URI.create("https://idp.example.com");
-    var keyStore = mock(KeyStore.class);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var session = Session.create().build();
 
@@ -70,10 +70,10 @@ class TokenIssuerImplTest {
   @Test
   void issueCode_propagatesValues() {
     var issuer = URI.create("https://idp.example.com");
-    var keyStore = mock(KeyStore.class);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var nonce = UUID.randomUUID().toString();
     var redirectUri = URI.create("https://myapp.example.com/callback");
@@ -112,10 +112,10 @@ class TokenIssuerImplTest {
   @Test
   void redeem_nonExisting() {
     var issuer = URI.create("https://idp.example.com");
-    var keyStore = mock(KeyStore.class);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var code = UUID.randomUUID().toString();
 
@@ -130,12 +130,12 @@ class TokenIssuerImplTest {
     var issuer = URI.create("https://idp.example.com");
 
     var k = genKey();
-    var keyStore = mock(KeyStore.class);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
 
-    when(keyStore.signingKey()).thenReturn(k);
+    when(signingKeyProvider.signingKey()).thenReturn(k);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var redirectUri = URI.create("https://myapp.example.com");
     var clientId = "myapp";
@@ -168,11 +168,11 @@ class TokenIssuerImplTest {
     var issuer = URI.create("https://idp.example.com");
 
     var k = genKey();
-    var keyStore = mock(KeyStore.class);
-    when(keyStore.signingKey()).thenReturn(k);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
+    when(signingKeyProvider.signingKey()).thenReturn(k);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var id = UUID.randomUUID().toString();
 
@@ -217,11 +217,11 @@ class TokenIssuerImplTest {
     var issuer = URI.create("https://idp.example.com");
 
     var k = genKey();
-    var keyStore = mock(KeyStore.class);
-    when(keyStore.signingKey()).thenReturn(k);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
+    when(signingKeyProvider.signingKey()).thenReturn(k);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var id = UUID.randomUUID().toString();
 
@@ -282,11 +282,11 @@ class TokenIssuerImplTest {
     var issuer = URI.create("https://idp.example.com");
 
     var k = genKey();
-    var keyStore = mock(KeyStore.class);
-    when(keyStore.signingKey()).thenReturn(k);
+    var signingKeyProvider = mock(TokenIssuerImpl.SigningKeyProvider.class);
+    when(signingKeyProvider.signingKey()).thenReturn(k);
     var codeRepo = mock(CodeRepo.class);
 
-    var sut = new TokenIssuerImpl(issuer, keyStore, codeRepo);
+    var sut = new TokenIssuerImpl(issuer, signingKeyProvider, codeRepo);
 
     var id = UUID.randomUUID().toString();
 

@@ -1,5 +1,7 @@
 package com.oviva.ehealthid.relyingparty.fed;
 
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWKSet;
 import com.oviva.ehealthid.fedclient.api.EntityStatement;
 import com.oviva.ehealthid.fedclient.api.EntityStatement.FederationEntity;
 import com.oviva.ehealthid.fedclient.api.EntityStatement.Metadata;
@@ -17,9 +19,11 @@ public class FederationEndpoint {
 
   static final String MEDIA_TYPE_ENTITY_STATEMENT = "application/entity-statement+jwt";
   private final FederationConfig federationConfig;
+  private final FederationKeys federationKeys;
 
-  public FederationEndpoint(FederationConfig federationConfig) {
+  public FederationEndpoint(FederationConfig federationConfig, FederationKeys federationKeys) {
     this.federationConfig = federationConfig;
+    this.federationKeys = federationKeys;
   }
 
   @Path("/.well-known/openid-federation")
@@ -27,8 +31,8 @@ public class FederationEndpoint {
   @Produces(MEDIA_TYPE_ENTITY_STATEMENT)
   public Response get() {
 
-    var federationEntityJwks = federationConfig.entitySigningKeys().toPublicJWKSet();
-    var relyingPartyJwks = federationConfig.relyingPartyKeys().toPublicJWKSet();
+    var federationEntityJwks = federationKeys.federationKeys();
+    var relyingPartyJwks = federationKeys.relyingPartyJwks();
 
     var now = Instant.now();
     var exp = now.plus(federationConfig.ttl());
@@ -71,12 +75,23 @@ public class FederationEndpoint {
                     .build())
             .jwks(federationEntityJwks)
             .build()
-            .sign(federationConfig.entitySigningKey());
+            .sign(federationKeys.federationSigningKey());
 
     return Response.ok(jws.serialize())
         .header("x-kc-provider", "ovi")
         .cacheControl(cacheForTtl(now))
         .build();
+  }
+
+  public interface FederationKeys {
+
+    /** key used to self-sign the entity key, MUST be registered in the federation */
+    JWKSet federationKeys();
+
+    /** key used to self-sign the entity key, MUST be registered in the federation */
+    ECKey federationSigningKey();
+
+    JWKSet relyingPartyJwks();
   }
 
   private CacheControl cacheForTtl(Instant now) {

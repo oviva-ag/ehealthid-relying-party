@@ -44,12 +44,6 @@ class ConfigReaderTest {
     assertEquals(baseUri, config.federation().iss().toString());
     assertEquals(baseUri, config.federation().sub().toString());
     assertEquals(List.of("openid", "urn:telematik:versicherter"), config.federation().scopes());
-
-    assertNotNull(config.federation().entitySigningKey());
-    assertNotNull(config.federation().entitySigningKeys().getKeyByKeyId("test-sig"));
-
-    // these will be generated
-    assertNull(config.federation().relyingPartyKeys());
   }
 
   @Test
