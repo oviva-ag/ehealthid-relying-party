@@ -10,6 +10,8 @@ import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Environment;
 import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Scope;
 import com.oviva.ehealthid.fedclient.api.EntityStatementJWS;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -19,6 +21,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +74,17 @@ public class FedRegistrationCommand implements Callable<Integer> {
       names = {"--vfs-confirmation"},
       description = "gematik-Verfahrensschlüssel (starts with VFS_DiGA_...)")
   private String vfsConfirmation;
+
+  @Option(
+      names = {"--proxy"},
+      description =
+          "if issuer-uri is behind a proxy, specify the proxy address (e.g. '172.0.0.0:4711')")
+  private String proxy;
+
+  @Option(
+      names = {"--header"},
+      description = "a http header (e.g. 'X-Authorization:Bearertoken')")
+  private String httpHeader;
 
   public static void main(String[] args) {
 
@@ -142,11 +156,57 @@ public class FedRegistrationCommand implements Callable<Integer> {
     }
   }
 
-  private EntityConfiguration fetchEntityConfiguration() {
-    var httpClient = HttpClient.newHttpClient();
+  private static void applyProxyIfPresent(
+      final String proxy, final BiConsumer<String, Integer> hostPortConsumer) {
+    if (proxy != null && !proxy.isEmpty()) {
+      final String[] proxyParts = proxy.split(":");
+      if (proxyParts.length == 2) {
+        try {
+          final String host = proxyParts[0];
+          final int port = Integer.parseInt(proxyParts[1]);
+          hostPortConsumer.accept(host, port);
+        } catch (final NumberFormatException e) {
+          logger.atError().log("Invalid proxy port: " + proxyParts[1]);
+          throw new RuntimeException();
+        }
+      } else {
+        logger.atError().log("Invalid proxy format. Expected format: host:port");
+        throw new RuntimeException();
+      }
+    }
+  }
 
-    var entityConfigurationUri = issuerUri.resolve("/.well-known/openid-federation");
-    var req = HttpRequest.newBuilder(entityConfigurationUri).GET().build();
+  private static void applyHttpHeaderIfPresent(
+      final String headerParam, final BiConsumer<String, String> headerConsumer) {
+    if (headerParam != null && !headerParam.isEmpty()) {
+      final String[] headerParts = headerParam.split(":", 2);
+      if (headerParts.length == 2) {
+        final String headerName = headerParts[0].trim();
+        final String headerValue = headerParts[1].trim();
+
+        if (!headerName.isEmpty() && !headerValue.isEmpty()) {
+          headerConsumer.accept(headerName, headerValue);
+        } else {
+          logger.atError().log("Invalid header format. Header name or value is empty.");
+        }
+      } else {
+        logger.atError().log("Invalid header format. Expected format: HeaderName:HeaderValue");
+      }
+    }
+  }
+
+  private EntityConfiguration fetchEntityConfiguration() {
+    final HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+    applyProxyIfPresent(
+        proxy,
+        (host, port) ->
+            httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(host, port))));
+    final HttpClient httpClient = httpClientBuilder.build();
+
+    final var entityConfigurationUri = issuerUri.resolve("/.well-known/openid-federation");
+    final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(entityConfigurationUri).GET();
+    applyHttpHeaderIfPresent(httpHeader, requestBuilder::header);
+    final var req = requestBuilder.build();
 
     try {
       var res = httpClient.send(req, BodyHandlers.ofString());
