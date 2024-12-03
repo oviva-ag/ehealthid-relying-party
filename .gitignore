@@ -11,3 +11,4 @@ federation_registration_form.xml
 dependency-reduced-pom.xml
 .DS_Store
 logs.json
+fedreg_*.xml

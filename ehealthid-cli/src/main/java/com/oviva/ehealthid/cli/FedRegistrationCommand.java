@@ -10,6 +10,8 @@ import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Environment;
 import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Scope;
 import com.oviva.ehealthid.fedclient.api.EntityStatementJWS;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -71,6 +73,18 @@ public class FedRegistrationCommand implements Callable<Integer> {
       names = {"--vfs-confirmation"},
       description = "gematik-Verfahrensschlüssel (starts with VFS_DiGA_...)")
   private String vfsConfirmation;
+
+  @Option(
+      names = {"--proxy"},
+      description =
+          "if issuer-uri is behind a proxy, specify the proxy address (e.g. '172.0.0.0:4711')")
+  private String proxy;
+
+  @Option(
+      names = {"--header"},
+      description =
+          "additional http headers (e.g. 'X-Authorization: Bearertoken'), can be repeated")
+  private String[] httpHeaders;
 
   public static void main(String[] args) {
 
@@ -143,12 +157,22 @@ public class FedRegistrationCommand implements Callable<Integer> {
   }
 
   private EntityConfiguration fetchEntityConfiguration() {
-    var httpClient = HttpClient.newHttpClient();
 
-    var entityConfigurationUri = issuerUri.resolve("/.well-known/openid-federation");
-    var req = HttpRequest.newBuilder(entityConfigurationUri).GET().build();
+    final var entityConfigurationUri = issuerUri.resolve("/.well-known/openid-federation");
 
     try {
+      final HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+      withProxy(httpClientBuilder);
+
+      final HttpClient httpClient = httpClientBuilder.build();
+
+      final HttpRequest.Builder requestBuilder =
+          HttpRequest.newBuilder(entityConfigurationUri).GET();
+
+      withRequestExtraHeaders(requestBuilder);
+
+      final var req = requestBuilder.build();
+
       var res = httpClient.send(req, BodyHandlers.ofString());
       if (res.statusCode() != 200) {
         throw new RuntimeException(
@@ -178,6 +202,59 @@ public class FedRegistrationCommand implements Callable<Integer> {
       } else {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  private void withProxy(HttpClient.Builder builder) {
+    if (proxy == null || proxy.isBlank()) {
+      return;
+    }
+
+    if ("default".equalsIgnoreCase(proxy)) {
+      builder.proxy(ProxySelector.getDefault());
+      logger.atInfo().log("Setting default system proxy");
+      return;
+    }
+
+    var proxyParts = proxy.split(":");
+    if (proxyParts.length == 2) {
+      try {
+        var host = proxyParts[0];
+        var port = Integer.parseInt(proxyParts[1]);
+
+        logger.atInfo().log("Setting proxy to '{}:{}'", host, port);
+        builder.proxy(ProxySelector.of(new InetSocketAddress(host, port)));
+      } catch (final NumberFormatException e) {
+        logger.atError().log("Invalid proxy port: " + proxyParts[1]);
+        throw new RuntimeException("Invalid proxy port: " + proxyParts[1]);
+      }
+    } else {
+      throw new IllegalArgumentException("Invalid proxy format. Expected format: host:port");
+    }
+  }
+
+  private void withRequestExtraHeaders(HttpRequest.Builder builder) {
+    if (httpHeaders == null) {
+      return;
+    }
+
+    for (var h : httpHeaders) {
+      var headerParts = h.split(":", 2);
+      if (headerParts.length != 2) {
+        throw new IllegalArgumentException(
+            "Invalid header format, got: '%s' expected '<name>:<value>'".formatted(h));
+      }
+
+      var name = headerParts[0].trim();
+      var value = headerParts[1].trim();
+
+      if (name.isEmpty() || value.isEmpty()) {
+
+        throw new IllegalArgumentException(
+            "Invalid header format, got: '%s' expected '<name>:<value>'".formatted(h));
+      }
+
+      builder.header(name, value);
     }
   }
 
