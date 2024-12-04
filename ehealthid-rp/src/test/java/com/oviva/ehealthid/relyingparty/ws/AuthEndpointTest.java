@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.AuthorizationRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.AuthorizationResponse;
@@ -13,7 +12,6 @@ import com.oviva.ehealthid.relyingparty.svc.AuthService.CallbackRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.SelectedIdpRequest;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.util.IdGenerator;
-import com.oviva.ehealthid.relyingparty.ws.AuthEndpoint.AuthResponse;
 import jakarta.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.util.List;
@@ -97,44 +95,6 @@ class AuthEndpointTest {
 
       // then
       assertEquals(Status.OK.getStatusCode(), res.getStatus());
-
-      var sessionCookie = res.getCookies().get("session_id");
-      assertEquals(sessionId, sessionCookie.getValue());
-    }
-  }
-
-  @Test
-  void authJson_success() {
-    var identityProviders = List.of(new IdpEntry("a", "A", null), new IdpEntry("b", "B", null));
-
-    var sessionId = IdGenerator.generateID();
-    var authService = mock(AuthService.class);
-    when(authService.auth(any()))
-        .thenReturn(new AuthorizationResponse(identityProviders, sessionId));
-    var sut = new AuthEndpoint(authService);
-
-    var scope = "openid";
-    var state = UUID.randomUUID().toString();
-    var nonce = UUID.randomUUID().toString();
-    var responseType = "code";
-    var clientId = "myapp";
-
-    // when
-    try (var res = sut.authJson(scope, state, responseType, clientId, REDIRECT_URI, nonce)) {
-
-      // then
-      assertEquals(Status.OK.getStatusCode(), res.getStatus());
-
-      var authResponse = res.readEntity(AuthResponse.class);
-      var actualIdentityProviders = authResponse.identityProviders();
-      assertEquals(identityProviders.size(), actualIdentityProviders.size());
-      for (int i = 0; i < identityProviders.size(); i++) {
-        var expected = identityProviders.get(i);
-        var actual = actualIdentityProviders.get(i);
-        assertEquals(expected.iss(), actual.iss());
-        assertEquals(expected.name(), actual.name());
-        assertEquals(expected.logoUrl(), actual.logoUrl());
-      }
 
       var sessionCookie = res.getCookies().get("session_id");
       assertEquals(sessionId, sessionCookie.getValue());

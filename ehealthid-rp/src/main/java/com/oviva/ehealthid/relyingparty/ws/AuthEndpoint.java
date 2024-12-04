@@ -9,7 +9,6 @@ import com.oviva.ehealthid.relyingparty.svc.AuthService.AuthorizationRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.CallbackRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.SelectedIdpRequest;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
-import com.oviva.ehealthid.relyingparty.ws.AuthEndpoint.AuthResponse.IdpEntry;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -65,34 +64,6 @@ public class AuthEndpoint {
     var form = pages.selectIdpForm(res.identityProviders(), locale);
 
     return Response.ok(form, MediaType.TEXT_HTML_TYPE)
-        .cookie(createSessionCookie(res.sessionId()))
-        .build();
-  }
-
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response authJson(
-      @QueryParam("scope") String scope,
-      @QueryParam("state") String state,
-      @QueryParam("response_type") String responseType,
-      @QueryParam("client_id") String clientId,
-      @QueryParam("redirect_uri") String redirectUri,
-      @QueryParam("nonce") String nonce) {
-
-    var uri = mustParse(redirectUri);
-
-    var res =
-        authService.auth(
-            new AuthorizationRequest(scope, state, responseType, clientId, uri, nonce));
-
-    var availableIdentityProviders =
-        res.identityProviders().stream()
-            .map(idp -> new IdpEntry(idp.iss(), idp.name(), idp.logoUrl()))
-            .toList();
-
-    var body = new AuthResponse(availableIdentityProviders);
-
-    return Response.ok(body, MediaType.APPLICATION_JSON_TYPE)
         .cookie(createSessionCookie(res.sessionId()))
         .build();
   }
