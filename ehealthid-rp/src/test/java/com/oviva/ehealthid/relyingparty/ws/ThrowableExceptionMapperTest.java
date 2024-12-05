@@ -7,16 +7,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.github.mustachejava.util.HtmlEscaper;
+import com.oviva.ehealthid.auth.AuthException;
+import com.oviva.ehealthid.fedclient.FederationException;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
-import com.oviva.ehealthid.relyingparty.ws.ThrowableExceptionMapper.Problem;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.*;
 import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -145,7 +145,6 @@ class ThrowableExceptionMapperTest {
   void toResponse_withBody() {
 
     when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
-    when(headers.getAcceptableMediaTypes()).thenReturn(List.of(MediaType.WILDCARD_TYPE));
     mockHeaders("de-DE");
 
     // when
@@ -155,27 +154,6 @@ class ThrowableExceptionMapperTest {
     assertEquals(500, res.getStatus());
     assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
     assertNotNull(res.getEntity());
-  }
-
-  @Test
-  void toResponse_withJson() {
-
-    when(headers.getAcceptableMediaTypes())
-        .thenReturn(
-            List.of(
-                MediaType.APPLICATION_JSON_TYPE,
-                MediaType.TEXT_HTML_TYPE,
-                MediaType.WILDCARD_TYPE));
-
-    var msg = "Ooops! An error :/";
-
-    // when
-    var res = mapper.toResponse(new ValidationException(new Message(msg)));
-
-    // then
-    assertEquals(400, res.getStatus());
-    assertEquals(MediaType.APPLICATION_JSON_TYPE, res.getMediaType());
-    assertEquals(new Problem("/server_error", msg), res.getEntity());
   }
 
   @Test
@@ -201,9 +179,8 @@ class ThrowableExceptionMapperTest {
   }
 
   @Test
-  void toResponse_withBody_withValidationExc() {
+  void toResponse_withBody_withValidationException() {
 
-    when(headers.getAcceptableMediaTypes()).thenReturn(List.of(MediaType.WILDCARD_TYPE));
     doReturn("de-DE").when(headers).getHeaderString("Accept-Language");
 
     // when
@@ -211,7 +188,40 @@ class ThrowableExceptionMapperTest {
 
     // then
     assertEquals(400, res.getStatus());
-    System.out.println(res.getEntity());
+    assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
+    assertNotNull(res.getEntity());
+  }
+
+  @Test
+  void toResponse_withBody_withFederationException() {
+
+    doReturn("de-DE").when(headers).getHeaderString("Accept-Language");
+    doReturn(URI.create("https://example.com")).when(uriInfo).getRequestUri();
+    doReturn(null).when(headers).getHeaderString("user-agent");
+
+    // when
+    var res =
+        mapper.toResponse(
+            new FederationException("Nope!", FederationException.Reason.BAD_FEDERATION_MASTER));
+
+    // then
+    assertEquals(500, res.getStatus());
+    assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
+    assertNotNull(res.getEntity());
+  }
+
+  @Test
+  void toResponse_withBody_withAuthenticationException() {
+
+    doReturn("de-DE").when(headers).getHeaderString("Accept-Language");
+    doReturn(URI.create("https://example.com")).when(uriInfo).getRequestUri();
+    doReturn(null).when(headers).getHeaderString("user-agent");
+
+    // when
+    var res = mapper.toResponse(new AuthException("Nope!", AuthException.Reason.INVALID_ID_TOKEN));
+
+    // then
+    assertEquals(500, res.getStatus());
     assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
     assertNotNull(res.getEntity());
   }
@@ -221,7 +231,6 @@ class ThrowableExceptionMapperTest {
   void toResponse_withBody_withValidationExceptionAndDynamicContent(
       String language, String messageKey, String message) {
 
-    when(headers.getAcceptableMediaTypes()).thenReturn(List.of(MediaType.WILDCARD_TYPE));
     doReturn(language).when(headers).getHeaderString("Accept-Language");
 
     // when
