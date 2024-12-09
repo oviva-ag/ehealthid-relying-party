@@ -8,9 +8,11 @@ import com.oviva.ehealthid.fedclient.FederationMasterClient;
 import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.fedclient.api.EntityStatement;
 import com.oviva.ehealthid.fedclient.api.EntityStatement.OpenidProvider;
+import com.oviva.ehealthid.fedclient.api.HttpException;
 import com.oviva.ehealthid.fedclient.api.OpenIdClient;
 import com.oviva.ehealthid.fedclient.api.OpenIdClient.ParResponse;
 import com.oviva.ehealthid.fedclient.api.ParBodyBuilder;
+import com.oviva.ehealthid.util.JsonCodec;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jakarta.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -80,7 +82,12 @@ public class SelectSectoralIdpStepImpl implements SelectSectoralIdpStep {
             .acrValues("gematik-ehealth-loa-high")
             .responseType("code");
 
-    var res = doPushedAuthorizationRequest(parBody, trustedIdpEntityStatement.body());
+    ParResponse res = null;
+    try {
+      res = doPushedAuthorizationRequest(parBody, trustedIdpEntityStatement.body());
+    } catch (HttpException | JsonCodec.JsonException e) {
+      throw AuthExceptions.failedParRequest(sectoralIdpIss, e);
+    }
 
     var redirectUri = buildAuthorizationUrl(res.requestUri(), trustedIdpEntityStatement.body());
 
@@ -104,7 +111,7 @@ public class SelectSectoralIdpStepImpl implements SelectSectoralIdpStep {
     var authzEndpoint = openidConfig.authorizationEndpoint();
 
     if (authzEndpoint == null || authzEndpoint.isBlank()) {
-      throw AuthExceptions.missingAuthorizationUrl(trustedEntityStatement.sub());
+      throw AuthExceptions.missingAuthorizationEndpoint(trustedEntityStatement.sub());
     }
 
     return UriBuilder.fromUri(authzEndpoint)
@@ -119,7 +126,7 @@ public class SelectSectoralIdpStepImpl implements SelectSectoralIdpStep {
     var openidConfig = getIdpOpenIdProvider(trustedEntityStatement);
     var parEndpoint = openidConfig.pushedAuthorizationRequestEndpoint();
     if (parEndpoint == null || parEndpoint.isBlank()) {
-      throw AuthExceptions.missingParUrl(trustedEntityStatement.sub());
+      throw AuthExceptions.missingParEndpoint(trustedEntityStatement.sub());
     }
 
     return openIdClient.requestPushedUri(URI.create(parEndpoint), builder);
