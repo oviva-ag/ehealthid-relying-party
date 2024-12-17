@@ -12,10 +12,17 @@ Identity Providers such as Keycloak can link accounts with OIDC out-of-the-box
 
 ### Productive Environment (PU)
 
-| Sectoral IdP           | End-to-End | Provider |
-|------------------------|------------|----------|
-| Techniker Krankenkasse | ✅          | IBM      |
-| Gothaer                | 🚫         | RISE     |
+In short:
+
+- `Bitmarck/RISE` does not work
+- `IBM/Verimi` works
+
+| Sectoral IdP           | End-to-End | Enabler |
+|------------------------|------------|---------|
+| Techniker Krankenkasse | ✅          | IBM     |
+| Gothaer                | 🚫         | RISE    |
+| BIG direkt             | 🚫         | RISE    |
+| DAK Gesundheit         | 🚫         | RISE    |
 
 > [!NOTE]  
 > Most providers can not be independently tested as there are no test accounts available.
