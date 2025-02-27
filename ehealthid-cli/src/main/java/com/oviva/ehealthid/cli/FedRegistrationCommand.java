@@ -264,7 +264,7 @@ public class FedRegistrationCommand implements Callable<Integer> {
         .flatMap(
             s ->
                 switch (s) {
-                    // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/index.html#A_22989-01
+                  // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/index.html#A_22989-01
                   case "urn:telematik:geburtsdatum" -> Stream.of(Scope.DATE_OF_BIRTH);
                   case "urn:telematik:alter" -> Stream.of(Scope.AGE);
                   case "urn:telematik:display_name" -> Stream.of(Scope.DISPLAY_NAME);

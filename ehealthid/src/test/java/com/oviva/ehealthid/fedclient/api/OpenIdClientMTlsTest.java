@@ -47,7 +47,8 @@ class OpenIdClientMTlsTest {
   private static final String PAR_RESPONSE =
       """
   { "request_uri":"%s", "expires_in": 1234 }
-  """.formatted(PAR_REDIRECT);
+  """
+          .formatted(PAR_REDIRECT);
 
   @RegisterExtension
   static WireMockExtension wmServer =
