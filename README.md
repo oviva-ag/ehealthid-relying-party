@@ -49,7 +49,7 @@ sequenceDiagram
 
 - [ehealthid-rp](./ehealthid-rp) - A standalone application to act as a OpenID Connect (OIDC)
   Relying Party. Bridges OIDC and Germany's GesundheitsID OpenID federation.
-- [ehealthid-cli](./ehealthid-cli) - A script to generate keys and federation registration forms.
+- [ehealthid-cli](./ehealthid-cli) - A script to generate keys and federation (de-)registration forms.
 - [ehealthid](./ehealthid) - A plain Java library to build RelyingParties for GesundheitsID.
     - API clients
     - Models for the EntityStatments, IDP list endpoints etc.
@@ -96,6 +96,14 @@ export MEMBER_ID=FDmyDiGa0112TU
 # this prints the XML for registration in the federation, send it
 # as an email attachment to Gematik 
 # see: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
+
+#---- Once you no longer need it, it needs to be deregistered
+
+./cli.sh feddereg \
+    --environment=TU \
+    --issuer-uri=$ISSUER_URI \
+    --member-id="$MEMBER_ID"
+# see also: https://wiki.gematik.de/pages/viewpage.action?pageId=544316583
 ```
 
 **IMPORTANT:**
