@@ -43,7 +43,8 @@
     <version.micrometer>1.14.4</version.micrometer>
     <version.nimbus-jose-jwt>9.40</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.17</version.logback.classic>
-    <version.handlebars>4.4.0</version.handlebars>
+    <!--  wiremock 3.12.0 depends on 4.3.1 and breaks with 4.4.0 -->
+    <version.handlebars>4.3.1</version.handlebars>
 
     <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
     <jacoco.version>0.8.12</jacoco.version>

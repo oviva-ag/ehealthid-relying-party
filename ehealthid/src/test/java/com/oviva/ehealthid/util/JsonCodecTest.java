@@ -44,7 +44,8 @@ class JsonCodecTest {
   @Test
   void testDebug_includeSource() {
 
-    var raw = """
+    var raw =
+        """
     {"hello": "world" }\
     """;
     var bytes = raw.getBytes(StandardCharsets.UTF_8);
@@ -72,9 +73,11 @@ class JsonCodecTest {
 
   @Test
   void readBadJson() {
-    var raw = """
+    var raw =
+        """
     {"a": bad }
-    """.getBytes(StandardCharsets.UTF_8);
+    """
+            .getBytes(StandardCharsets.UTF_8);
     assertThrows(DeserializeException.class, () -> JsonCodec.readValue(raw, Object.class));
   }
 
