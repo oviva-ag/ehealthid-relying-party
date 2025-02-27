@@ -1,12 +1,9 @@
-package com.oviva.ehealthid.cli;
+package com.oviva.ehealthid.cli.forms;
 
-import com.github.mustachejava.DefaultMustacheFactory;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Scope;
-import java.io.StringReader;
-import java.io.StringWriter;
+import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Scope;
 import java.net.URI;
 import java.security.Key;
 import java.util.Base64;
@@ -95,15 +92,8 @@ public class RegistratonFormRenderer {
   }
 
   private static String renderTemplate(String template, Model m) {
-
-    var mf = new DefaultMustacheFactory();
-    var compiledTemplate = mf.compile(new StringReader(template), "entity-statement-registration");
-
-    var w = new StringWriter();
-
     var rm = RenderModel.fromModel(m);
-    compiledTemplate.execute(w, rm);
-    return w.toString();
+    return MustacheRenderer.render(template, rm);
   }
 
   public record Model(
@@ -116,14 +106,14 @@ public class RegistratonFormRenderer {
       List<Scope> scopes,
       JWKSet jwks) {
 
-    enum Environment {
+    public enum Environment {
       RU,
       TU,
       PU
     }
 
     // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/index.html#A_22989-01
-    enum Scope {
+    public enum Scope {
       AGE,
       DISPLAY_NAME,
       EMAIL,

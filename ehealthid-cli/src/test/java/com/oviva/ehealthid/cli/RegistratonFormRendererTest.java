@@ -1,7 +1,7 @@
 package com.oviva.ehealthid.cli;
 
-import static com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Environment.PU;
-import static com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Environment.TU;
+import static com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Environment.PU;
+import static com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Environment.TU;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.nimbusds.jose.JOSEException;
@@ -10,8 +10,9 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
-import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model;
-import com.oviva.ehealthid.cli.RegistratonFormRenderer.Model.Scope;
+import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer;
+import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model;
+import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Scope;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.List;
