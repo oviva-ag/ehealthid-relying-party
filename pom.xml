@@ -41,7 +41,7 @@
     <version.jboss-logging>3.6.1.Final</version.jboss-logging>
     <version.slf4j>2.0.17</version.slf4j>
     <version.micrometer>1.14.4</version.micrometer>
-    <version.nimbus-jose-jwt>9.40</version.nimbus-jose-jwt>
+    <version.nimbus-jose-jwt>10.0.2</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.17</version.logback.classic>
     <!--  wiremock 3.12.0 depends on 4.3.1 and breaks with 4.4.0 -->
     <version.handlebars>4.3.1</version.handlebars>
