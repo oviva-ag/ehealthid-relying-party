@@ -18,7 +18,7 @@ public record EntityStatementJWS(JWSObject jws, EntityStatement body) implements
 
       var jws = JWSObject.parse(wire);
 
-      if (!ENTITY_STATEMENT_TYP.equals(jws.getHeader().getType().getType())) {
+      if (!isValidTyp(jws)) {
         throw FederationExceptions.notAnEntityStatement(jws.getHeader().getType().getType());
       }
 
@@ -29,6 +29,16 @@ public record EntityStatementJWS(JWSObject jws, EntityStatement body) implements
     } catch (ParseException e) {
       throw FederationExceptions.badEntityStatement(e);
     }
+  }
+
+  private static boolean isValidTyp(JWSObject jws) {
+
+    if (jws.getHeader() == null || jws.getHeader().getType() == null) {
+      return false;
+    }
+    var typ = jws.getHeader().getType().getType();
+
+    return ENTITY_STATEMENT_TYP.equals(typ);
   }
 
   public boolean verifySelfSigned() {
