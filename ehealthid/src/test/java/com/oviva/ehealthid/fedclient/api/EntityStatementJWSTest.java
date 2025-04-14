@@ -24,6 +24,10 @@ class EntityStatementJWSTest {
         new TC("empty", "", RuntimeException.class),
         new TC("blank", " \t\n ", RuntimeException.class),
         new TC("too short", "ab.ab.ab", RuntimeException.class),
+        new TC(
+            "missing 'typ'",
+            "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3MDQ5NjAwODEsImlhdCI6MTcwNDg3MzY4MSwiaXNzIjoiaHR0cHM6Ly9hcHAtcmVmLmZlZGVyYXRpb25tYXN0ZXIuZGUiLCJqd2tzIjp7ImtleXMiOlt7ImFsZyI6IkVTMjU2IiwiY3J2IjoiUC0yNTYiLCJraWQiOiJwdWtfZmVkbWFzdGVyX3NpZyIsImt0eSI6IkVDIiwidXNlIjoic2lnIiwieCI6ImNkSVI4ZExicWFHcnpmZ3l1MzY1S001czAwempGcThERmFVRnFCdnJXTHMiLCJ5IjoiWFZwMXlTSjJrakVJbnBqVFp5MHdENTlhZkVYRUxwY2swZms3dnJNV3JidyJ9XX0sIm1ldGFkYXRhIjp7ImZlZGVyYXRpb25fZW50aXR5Ijp7ImZlZGVyYXRpb25fZmV0Y2hfZW5kcG9pbnQiOiJodHRwczovL2FwcC1yZWYuZmVkZXJhdGlvbm1hc3Rlci5kZS9mZWRlcmF0aW9uL2ZldGNoIiwiZmVkZXJhdGlvbl9saXN0X2VuZHBvaW50IjoiaHR0cHM6Ly9hcHAtcmVmLmZlZGVyYXRpb25tYXN0ZXIuZGUvZmVkZXJhdGlvbi9saXN0IiwiaWRwX2xpc3RfZW5kcG9pbnQiOiJodHRwczovL2FwcC1yZWYuZmVkZXJhdGlvbm1hc3Rlci5kZS9mZWRlcmF0aW9uL2xpc3RpZHBzIn19LCJzdWIiOiJodHRwczovL2FwcC1yZWYuZmVkZXJhdGlvbm1hc3Rlci5kZSJ9Cg.D2UkTIcVGT35LBw7EAReVs-ho4i3Masf66-XW0Xpf1nxb9uxvfEqd_BxmDZq3tclt9R2WixKwlmWL5jusLym2A",
+            RuntimeException.class),
         new TC("bad characters", ":D@#$%^&*(", RuntimeException.class));
   }
 
@@ -45,6 +49,14 @@ class EntityStatementJWSTest {
   void badType() {
 
     var raw = toB64("{\"typ\":\"?\"}") + "." + toB64("{}") + ".abc";
+
+    assertThrows(Exception.class, () -> EntityStatementJWS.parse(raw));
+  }
+
+  @Test
+  void nullType() {
+
+    var raw = toB64("{\"typ\":null}") + "." + toB64("{}") + ".abc";
 
     assertThrows(Exception.class, () -> EntityStatementJWS.parse(raw));
   }
