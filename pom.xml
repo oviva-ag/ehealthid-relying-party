@@ -40,9 +40,9 @@
 
     <version.jboss-logging>3.6.1.Final</version.jboss-logging>
     <version.slf4j>2.0.17</version.slf4j>
-    <version.micrometer>1.14.4</version.micrometer>
+    <version.micrometer>1.14.5</version.micrometer>
     <version.nimbus-jose-jwt>10.0.2</version.nimbus-jose-jwt>
-    <version.logback.classic>1.5.17</version.logback.classic>
+    <version.logback.classic>1.5.18</version.logback.classic>
     <!--  wiremock 3.12.0 depends on 4.3.1 and breaks with 4.4.0 -->
     <version.handlebars>4.3.1</version.handlebars>
 
@@ -66,7 +66,7 @@
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
-        <version>4.9.2</version>
+        <version>4.9.3</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -160,7 +160,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.12.0</version>
+        <version>5.12.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -172,7 +172,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.16.0</version>
+        <version>5.16.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -244,7 +244,7 @@
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
-        <version>6.2.11.Final</version>
+        <version>6.2.12.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -277,12 +277,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.5.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.5.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -346,7 +346,7 @@
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.9.0</version>
+            <version>1.10.0</version>
           </dependency>
         </dependencies>
         <executions>
