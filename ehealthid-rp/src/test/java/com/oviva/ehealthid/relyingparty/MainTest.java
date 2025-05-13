@@ -152,13 +152,13 @@ class MainTest {
             .response();
 
     var locationHeader = response.getHeader("Location");
-    assertTrue(locationHeader.contains("error.unsupportedScope"));
+    assertTrue(locationHeader.contains(errorValue));
   }
 
   private static Stream<Arguments> provideWrongScopeAndResponseType() {
     return Stream.of(
         Arguments.of("wrongScope", "code", "error.unsupportedScope"),
-        Arguments.of("openId", "wrongResponseType", "error.unsupportedResponseType"));
+        Arguments.of("openid", "wrongResponseType", "error.unsupportedResponseType"));
   }
 
   @ParameterizedTest
@@ -203,48 +203,6 @@ class MainTest {
         Arguments.of("de-DE", "not a valid URL", "Falsch uri"),
         Arguments.of("en-US", "", "Blank uri"),
         Arguments.of("de-DE", "", "Leere Uri"));
-  }
-
-  @ParameterizedTest
-  @MethodSource("serverErrorLocalized")
-  void run_auth(String language, int errorCode, String error) {
-    var baseUri = application.baseUri();
-
-    var scope = "openid";
-    var state = UUID.randomUUID().toString();
-    var nonce = UUID.randomUUID().toString();
-    var responseType = "code";
-    var clientId = "myapp";
-
-    var response =
-        given()
-            .log()
-            .all()
-            .header("Accept-Language", language)
-            .queryParam("scope", scope)
-            .queryParam("nonce", nonce)
-            .queryParam("responseType", responseType)
-            .queryParam("client_Id", clientId)
-            .queryParam("state", state)
-            .queryParam("redirect_uri", "https://myapp.example.com")
-            .when()
-            .get(baseUri.resolve(AUTH_PATH))
-            .then()
-            .contentType(ContentType.HTML)
-            .statusCode(errorCode)
-            .extract()
-            .response();
-
-    var responseBody = response.getBody().asString();
-    assertTrue(responseBody.contains(language));
-    assertTrue(responseBody.contains(error));
-  }
-
-  private static Stream<Arguments> serverErrorLocalized() {
-    return Stream.of(
-        Arguments.of("en-US", 500, "Ohh no! Unexpected server error. Please try again."),
-        Arguments.of(
-            "de-DE", 500, "Ohh nein! Unerwarteter Serverfehler. Bitte versuchen Sie es erneut."));
   }
 
   @Test

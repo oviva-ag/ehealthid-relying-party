@@ -203,9 +203,10 @@ public class AuthService {
       throw new ValidationException(localizedErrorMessage, uri);
     }
 
-    if (!relyingPartyConfig.supportedResponseTypes().contains(request.responseType())) {
-      var localizedErrorMessage =
-          new Message("error.unsupportedResponseType", request.responseType());
+    var responseType = request.responseType();
+    if (responseType == null
+        || !relyingPartyConfig.supportedResponseTypes().contains(responseType)) {
+      var localizedErrorMessage = new Message("error.unsupportedResponseType", responseType);
       var uri =
           OpenIdErrors.redirectWithError(
               redirect,
