@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="json" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.oviva.ehealthid.relyingparty.logging.JsonEncoder"/>
+    </appender>
+    <root level="DEBUG">
+        <appender-ref ref="json"/>
+    </root>
+</configuration>

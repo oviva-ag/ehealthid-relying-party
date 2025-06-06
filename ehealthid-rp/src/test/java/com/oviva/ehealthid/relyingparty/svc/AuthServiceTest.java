@@ -199,7 +199,7 @@ class AuthServiceTest {
     var issued = new Code(code, null, null, REDIRECT_URI, nonce, clientId, null);
     when(tokenIssuer.issueCode(session, null)).thenReturn(issued);
 
-    var req = new CallbackRequest(sessionId, null);
+    var req = new CallbackRequest(sessionId, "somecode");
 
     // when
     var res = sut.callback(req);
