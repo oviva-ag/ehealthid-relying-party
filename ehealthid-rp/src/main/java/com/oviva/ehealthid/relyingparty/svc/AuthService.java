@@ -130,6 +130,8 @@ public class AuthService {
   @NonNull
   public URI callback(@NonNull CallbackRequest request) {
 
+    validateCallbackRequest(request);
+
     var session = mustFindSession(request.sessionId());
 
     var idToken =
@@ -148,6 +150,15 @@ public class AuthService {
         .queryParam("code", issued.code())
         .queryParam("state", session.state())
         .build();
+  }
+
+  private void validateCallbackRequest(CallbackRequest request) {
+    if (request.code() == null
+        || request.code().isBlank()
+        || request.sessionId() == null
+        || request.sessionId().isBlank()) {
+      throw new ValidationException(new Message("error.invalidCallback"));
+    }
   }
 
   @Nullable
