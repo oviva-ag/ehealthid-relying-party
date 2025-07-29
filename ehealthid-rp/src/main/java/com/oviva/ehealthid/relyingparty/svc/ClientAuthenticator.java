@@ -64,6 +64,7 @@ public class ClientAuthenticator {
 
       processor.setJWSKeySelector(keySelector);
 
+      // https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
       processor.setJWTClaimsSetVerifier(
           new DefaultJWTClaimsVerifier<>(
               new JWTClaimsSet.Builder().audience(baseUri.toString()).build(),
