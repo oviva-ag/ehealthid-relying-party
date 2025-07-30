@@ -4,6 +4,7 @@ import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.*;
 
 import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
+import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +24,12 @@ public class Pages {
 
     return renderer.render(
         "select-idp.html.mustache", Map.of("identityProviders", identityProviders), locale);
+  }
+
+  public String jumpToApp(URI destination, Locale locale) {
+
+    return renderer.render(
+        "jump-to-app.html.mustache", Map.of("destination", destination.toString()), locale);
   }
 
   public String error(Message errorMessage, Locale locale) {
