@@ -65,13 +65,216 @@
     <div class="provider-wrapper">
         <h1>GesundheitsID</h1>
         <label for="idp-selection">{{#trans}}idp.selection{{/trans}}</label>
-        <select name="identityProvider" id="idp-selection">
-            {{#identityProviders}}
-            <option value="{{iss}}">{{name}}</option>
-            {{/identityProviders}}
-        </select>
+        <div class="autocomplete-container">
+            <input type="text"
+                   id="idp-selection"
+                   class="autocomplete-input"
+                   placeholder="Type to search providers..."
+                   autocomplete="off">
+            <input type="hidden" name="identityProvider" id="identity-provider-value">
+            <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
+        </div>
     </div>
     <input type="submit" value="{{#trans}}idp.login{{/trans}}">
-</form>
+</form><script>
+    //TODO -> provided by backend
+    const providers = [
+        {"url": "https://a.example.com", "name": "AoK Tesfalen"},
+        {"url": "https://a.example.com", "name": "AOK Bestfalen"},
+        {"url": "https://a.example.com", "name": "AOK Testmark"},
+        {"url": "https://a.example.com", "name": "Vereinigte AOK"},
+        {"url": "https://a.example.com", "name": "Aotest"},
+        {"url": "https://d.example.com", "name": "Barmer"},
+        {"url": "https://b.example.com", "name": "Siemens"},
+        {"url": "https://c.example.com", "name": "Zuse"},
+    ];
+
+    class AutoComplete {
+        constructor(inputElement, dropdownElement, hiddenElement, data) {
+            this.input = inputElement;
+            this.dropdown = dropdownElement;
+            this.hidden = hiddenElement;
+
+            this.data = data.map(item => ({...item, tokens: this.tokenize(item.name)}));
+
+            this.filteredData = [];
+            this.highlightedIndex = -1;
+            this.isOpen = false;
+
+            this.init();
+        }
+
+        tokenize(text) {
+            return text.toLowerCase().split(' ').map(token => token.trim());
+        }
+
+        init() {
+            this.input.addEventListener('input', (e) => this.handleInput(e));
+            this.input.addEventListener('focus', (e) => this.handleFocus(e));
+            this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+            this.input.addEventListener('blur', (e) => this.handleBlur(e));
+
+            // Prevent form submission if no valid selection
+            this.input.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
+
+        handleInput(e) {
+            const value = e.target.value.toLowerCase();
+
+            this.filteredData = this.filter(value);
+
+            if (this.filteredData.length > 0 && value.length > 0) {
+                this.showDropdown();
+            } else {
+                this.hideDropdown();
+            }
+
+            // Clear hidden input if text doesn't match any provider exactly
+            const exactMatch = this.data.find(item =>
+                    item.name.toLowerCase() === value
+            );
+            if (!exactMatch) {
+                this.hidden.value = '';
+            }
+        }
+
+        filter(value) {
+
+            if (!value || value.length === 0) {
+                return [];
+            }
+
+            const needleTokens = this.tokenize(value);
+            if (needleTokens.length === 0) {
+                return [];
+            }
+
+            return this.data.filter(item => this.matchingTokens(needleTokens, item.tokens));
+        }
+
+        matchingTokens(needleTokens, itemTokens) {
+            // each search token needs to match at least one of the items tokens
+            for (let needle of needleTokens) {
+                let found = false;
+                for (let token of itemTokens) {
+                    if (token.startsWith(needle)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        handleFocus(e) {
+            if (this.input.value.length > 0) {
+                this.handleInput(e);
+            }
+        }
+
+        handleKeydown(e) {
+            if (!this.isOpen) return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.highlightedIndex = Math.min(
+                            this.highlightedIndex + 1,
+                            this.filteredData.length - 1
+                    );
+                    this.updateHighlight();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.highlightedIndex = Math.max(this.highlightedIndex - 1, -1);
+                    this.updateHighlight();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (this.highlightedIndex >= 0) {
+                        this.selectItem(this.filteredData[this.highlightedIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    this.hideDropdown();
+                    this.input.blur();
+                    break;
+            }
+        }
+
+        handleBlur(e) {
+            // Delay hiding to allow for clicks on dropdown items
+            setTimeout(() => {
+                this.hideDropdown();
+            }, 150);
+        }
+
+        handleSubmit(e) {
+            if (!this.hidden.value) {
+                e.preventDefault();
+                alert('Please select a valid GesundheitsID Provider');
+                this.input.focus();
+            }
+        }
+
+        showDropdown() {
+            this.dropdown.innerHTML = '';
+            this.highlightedIndex = -1;
+
+            this.filteredData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.textContent = item.name;
+                div.addEventListener('mousedown', (e) => {
+                    e.preventDefault(); // Prevent blur event
+                    this.selectItem(item);
+                });
+                div.addEventListener('mouseenter', () => {
+                    this.highlightedIndex = index;
+                    this.updateHighlight();
+                });
+                this.dropdown.appendChild(div);
+            });
+
+            this.dropdown.style.display = 'block';
+            this.isOpen = true;
+        }
+
+        hideDropdown() {
+            this.dropdown.style.display = 'none';
+            this.isOpen = false;
+            this.highlightedIndex = -1;
+        }
+
+        updateHighlight() {
+            const items = this.dropdown.querySelectorAll('.autocomplete-item');
+            items.forEach((item, index) => {
+                item.classList.toggle('highlighted', index === this.highlightedIndex);
+            });
+        }
+
+        selectItem(item) {
+            this.input.value = item.name;
+            this.hidden.value = item.url;
+            this.hideDropdown();
+
+            // Add visual feedback for selection
+            const items = this.dropdown.querySelectorAll('.autocomplete-item');
+            items.forEach(el => el.classList.remove('selected'));
+        }
+    }
+
+    // Initialize autocomplete when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputElement = document.getElementById('idp-selection');
+        const dropdownElement = document.getElementById('autocomplete-dropdown');
+        const hiddenElement = document.getElementById('identity-provider-value');
+
+        new AutoComplete(inputElement, dropdownElement, hiddenElement, providers);
+    });
+</script>
 {{/body}}
 {{/layout.html.mustache}}
