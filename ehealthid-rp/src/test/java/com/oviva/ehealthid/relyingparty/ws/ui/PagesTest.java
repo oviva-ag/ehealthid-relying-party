@@ -54,6 +54,15 @@ class PagesTest {
   }
 
   @Test
+  void jumpToApp_withFixture() {
+    var sut = new Pages(renderer);
+
+    var rendered = sut.jumpToApp(URI.create("https://idp.example.com"), Locale.GERMANY);
+
+    assertEquals(Fixtures.getUtf8String("pages_golden_jump-to-app.bin"), rendered);
+  }
+
+  @Test
   void error_withFixture() {
     var sut = new Pages(renderer);
 

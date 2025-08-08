@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
 
 LABEL org.opencontainers.image.source="https://github.com/oviva-ag/ehealthid-relying-party"
 

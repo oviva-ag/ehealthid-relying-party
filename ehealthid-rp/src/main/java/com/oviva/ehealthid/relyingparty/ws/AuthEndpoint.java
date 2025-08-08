@@ -96,13 +96,19 @@ public class AuthEndpoint {
   @POST
   @Path("/select-idp")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.TEXT_HTML)
   public Response postSelectIdp(
       @CookieParam("session_id") String sessionId,
-      @FormParam("identityProvider") String identityProvider) {
+      @FormParam("identityProvider") String identityProvider,
+      @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     var redirect =
         authService.selectedIdentityProvider(new SelectedIdpRequest(sessionId, identityProvider));
-    return Response.seeOther(redirect).build();
+
+    var locale = getNegotiatedLocale(acceptLanguage);
+    var page = pages.jumpToApp(redirect, locale);
+
+    return Response.ok(page, MediaType.TEXT_HTML_TYPE).build();
   }
 
   @GET

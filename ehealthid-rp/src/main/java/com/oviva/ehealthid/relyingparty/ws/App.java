@@ -14,6 +14,8 @@ import com.oviva.ehealthid.util.JoseModule;
 import jakarta.ws.rs.core.Application;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jboss.resteasy.plugins.providers.ByteArrayProvider;
 import org.jboss.resteasy.plugins.providers.StringTextStar;
 
@@ -49,13 +51,22 @@ public class App extends Application {
   @Override
   public Set<Object> getSingletons() {
 
-    return Set.of(
-        new FederationEndpoint(
-            config.federation(), new FederationKeysAdapter(config.federation().sub(), keyStores)),
-        new AuthEndpoint(authService),
-        new TokenEndpoint(tokenIssuer, clientAuthenticator),
-        new OpenIdEndpoint(config.baseUri(), config.relyingParty(), openIdProviderSigningKeys),
-        new JacksonJsonProvider(configureObjectMapper()));
+    var singletons =
+        Set.of(
+            new FederationEndpoint(
+                config.federation(),
+                new FederationKeysAdapter(config.federation().sub(), keyStores)),
+            new AuthEndpoint(authService),
+            new TokenEndpoint(tokenIssuer, clientAuthenticator),
+            new OpenIdEndpoint(config.baseUri(), config.relyingParty(), openIdProviderSigningKeys),
+            new JacksonJsonProvider(configureObjectMapper()));
+
+    if (RequestLogDumpProvider.isEnabled()) {
+      singletons =
+          Stream.concat(singletons.stream(), Stream.of(new RequestLogDumpProvider()))
+              .collect(Collectors.toSet());
+    }
+    return singletons;
   }
 
   @Override

@@ -130,6 +130,8 @@ public class AuthService {
   @NonNull
   public URI callback(@NonNull CallbackRequest request) {
 
+    validateCallbackRequest(request);
+
     var session = mustFindSession(request.sessionId());
 
     var idToken =
@@ -148,6 +150,15 @@ public class AuthService {
         .queryParam("code", issued.code())
         .queryParam("state", session.state())
         .build();
+  }
+
+  private void validateCallbackRequest(CallbackRequest request) {
+    if (request.code() == null
+        || request.code().isBlank()
+        || request.sessionId() == null
+        || request.sessionId().isBlank()) {
+      throw new ValidationException(new Message("error.invalidCallback"));
+    }
   }
 
   @Nullable
@@ -203,9 +214,10 @@ public class AuthService {
       throw new ValidationException(localizedErrorMessage, uri);
     }
 
-    if (!relyingPartyConfig.supportedResponseTypes().contains(request.responseType())) {
-      var localizedErrorMessage =
-          new Message("error.unsupportedResponseType", request.responseType());
+    var responseType = request.responseType();
+    if (responseType == null
+        || !relyingPartyConfig.supportedResponseTypes().contains(responseType)) {
+      var localizedErrorMessage = new Message("error.unsupportedResponseType", responseType);
       var uri =
           OpenIdErrors.redirectWithError(
               redirect,

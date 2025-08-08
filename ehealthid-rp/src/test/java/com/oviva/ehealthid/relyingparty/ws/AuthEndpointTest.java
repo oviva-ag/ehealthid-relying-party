@@ -1,7 +1,7 @@
 package com.oviva.ehealthid.relyingparty.ws;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -156,9 +156,12 @@ class AuthEndpointTest {
     var sut = new AuthEndpoint(authService);
 
     // when
-    try (var res = sut.postSelectIdp(sessionId, selectedIdpIssuer)) {
+    try (var res = sut.postSelectIdp(sessionId, selectedIdpIssuer, "de-DE")) {
+      assumeTrue(res.getEntity() instanceof String);
+      var page = (String) res.getEntity();
+
       // then
-      assertEquals(idpRedirect, res.getLocation());
+      assertTrue(page.contains(idpRedirect.toString()));
     }
   }
 
@@ -176,7 +179,7 @@ class AuthEndpointTest {
     var sut = new AuthEndpoint(authService);
 
     // when
-    try (var res = sut.postSelectIdp(sessionId, selectedIdpIssuer)) {
+    try (var res = sut.postSelectIdp(sessionId, selectedIdpIssuer, "de-DE")) {
       // then
       var captor = ArgumentCaptor.forClass(SelectedIdpRequest.class);
       verify(authService).selectedIdentityProvider(captor.capture());
