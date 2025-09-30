@@ -1,0 +1,129 @@
+function initCombobox(containerId) {
+  const comboboxContainer = document.getElementById(containerId);
+
+  if (!comboboxContainer) {
+    return;
+  }
+
+  const combobox = {
+    trigger: comboboxContainer.querySelector('.combobox-trigger'),
+    displayText: comboboxContainer.querySelector('.combobox-text'),
+    searchInput: comboboxContainer.querySelector('.combobox-search-input'),
+    valueInput: comboboxContainer.querySelector('input[type="hidden"]'),
+    options: comboboxContainer.querySelectorAll('.combobox-option'),
+    emptyMessage: comboboxContainer.querySelector('.combobox-empty-state')
+  };
+
+  function openCombobox() {
+    comboboxContainer.classList.add('open');
+    combobox.displayText.style.display = 'none';
+    combobox.searchInput.style.display = 'block';
+    combobox.searchInput.focus();
+    document.addEventListener('click', closeOnOutsideClick);
+  }
+
+  function closeCombobox() {
+    comboboxContainer.classList.remove('open');
+    combobox.displayText.style.display = 'block';
+    combobox.searchInput.style.display = 'none';
+    combobox.searchInput.value = '';
+    showMatchingOptions('');
+    document.removeEventListener('click', closeOnOutsideClick);
+  }
+
+  function closeOnOutsideClick(event) {
+    if (!comboboxContainer.contains(event.target)) {
+      closeCombobox();
+    }
+  }
+
+  function normalizeText(text) {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function showMatchingOptions(searchTerm) {
+    const normalizedSearch = normalizeText(searchTerm);
+    const searchWords = normalizedSearch.split(' ').filter(Boolean);
+    let visibleItems = 0;
+
+    combobox.options.forEach(option => {
+      const optionName = normalizeText(option.dataset.name);
+      const isVisible = searchWords.length === 0 || searchWords.every(word => optionName.includes(word));
+      option.classList.toggle('hidden', !isVisible);
+
+      if (isVisible) {
+        visibleItems++;
+      }
+    });
+
+    const shouldShowEmptyMessage = visibleItems === 0;
+    combobox.emptyMessage.style.display = shouldShowEmptyMessage ? 'block' : 'none';
+  }
+
+  function selectOption(option) {
+    combobox.options.forEach(opt => opt.classList.remove('selected'));
+    option.classList.add('selected');
+
+    combobox.displayText.textContent = option.dataset.name;
+    combobox.valueInput.value = option.dataset.value;
+
+    closeCombobox();
+  }
+
+  function selectFirstComboboxOption() {
+    const visibleOptions = Array.from(combobox.options).filter(opt => 
+      !opt.classList.contains('hidden')
+    );
+
+    if (!visibleOptions.length) {
+      return;
+    }
+    
+    selectOption(visibleOptions[0]);
+  }
+
+  combobox.trigger.addEventListener('click', event => {
+    event.preventDefault();
+    const isOpen = comboboxContainer.classList.contains('open');
+
+    if (!isOpen) {
+      openCombobox();
+    } else {
+      closeCombobox();
+    }
+  });
+
+  combobox.searchInput.addEventListener('input', () => {
+    showMatchingOptions(combobox.searchInput.value);
+  });
+
+  combobox.searchInput.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeCombobox();
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      selectFirstComboboxOption();
+    }
+  });
+
+  combobox.options.forEach(option => {
+    option.addEventListener('click', event => {
+      event.preventDefault();
+      selectOption(option);
+    });
+  });
+
+  if (combobox.options.length > 0) {
+    selectOption(combobox.options[0]);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initCombobox('idp-select');
+});

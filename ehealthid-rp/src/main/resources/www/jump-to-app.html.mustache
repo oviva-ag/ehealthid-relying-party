@@ -1,37 +1,16 @@
 {{<layout.html.mustache}}
-    {{$head}}
-        <style>
-
-            a.jump-to-app {
-                width: 100%;
-                height: 40px;
-                margin: 10px 0;
-                border: 1px solid #00A88F;
-                font-size: 14px;
-                font-style: normal;
-                font-weight: 600;
-                line-height: 150%; /* 21px */
-                letter-spacing: 0.15px;
-                text-align: center;
-                text-decoration: none;
-
-                padding: 10px 20px;
-                cursor: pointer;
-                color: white;
-
-                border-radius: 24px;
-
-                background: #00A88F;
-            }
-
-            a.jump-to-app:hover, a.jump-to-app:active {
-                background-color: rgba(0, 168, 143, 0.92);
-            }
-        </style>
-    {{/head}}
-    {{$body}}
-        <h1>{{#trans}}jumpToApp.title{{/trans}}</h1>
-        <p>{{#trans}}jumpToApp.subtitle{{/trans}}</p>
-        <a class="jump-to-app" href="{{destination}}">{{#trans}}jumpToApp.button{{/trans}}</a>
-    {{/body}}
+{{$body}}
+<div class="container">
+  <div class="heading">
+    <h1 class="title">{{#trans}}jumpToApp.title{{/trans}}</h1>
+    <p class="text">{{#trans}}jumpToApp.description{{/trans}}</p>
+  </div>
+  
+  <div class="actions">
+    <a href="{{destination}}" class="primary-button">
+      {{#trans}}continue{{/trans}}
+    </a>
+  </div>
+</div>
+{{/body}}
 {{/layout.html.mustache}}
