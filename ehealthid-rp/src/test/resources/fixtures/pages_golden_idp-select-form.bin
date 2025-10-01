@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         <div class="combobox-trigger">
             <span class="combobox-text"></span>
-            <input type="text" class="combobox-search-input" placeholder="idp.searchPlaceholder" autocomplete="off" style="display: none;">
+            <input type="text" class="combobox-search-input" placeholder="Search..." autocomplete="off" style="display: none;">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" clip-rule="evenodd" d="M4.25 6.5L8 10.25L11.75 6.5H4.25Z" fill="#000E30"/>
 </svg>
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         <div class="combobox-dropdown">
           <div class="combobox-empty-state" style="display: none;">
-            <span>idp.noResults</span>
+            <span>No results found.</span>
           </div>
           
           <div class="combobox-option" data-value="https://a.example.com" data-name="AoK Tesfalen">

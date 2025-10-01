@@ -187,11 +187,11 @@ class PagesTest {
         Arguments.of(
             Locale.US,
             "error.invalidSession",
-            "Oops, session unknown or expired. Please start again."),
+            "Oops! The session is unknown or has expired. Please try again."),
         Arguments.of(
             Locale.GERMANY,
             "error.invalidSession",
-            "Oops, Sitzung unbekannt oder abgelaufen. Bitte starten Sie erneut."),
+            "Ups! Die Sitzung ist unbekannt oder abgelaufen. Bitte versuche es erneut."),
         Arguments.of(Locale.US, "backToApp", "Back to app"),
         Arguments.of(Locale.GERMANY, "backToApp", "Zurück zur App"));
   }
