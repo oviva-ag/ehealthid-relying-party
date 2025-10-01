@@ -56,7 +56,7 @@ public class AuthEndpoint {
       @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     var uri = mustParse(redirectUri);
-    var appUri = parseUri(appUriStr);
+    var appUri = parseAppUri(appUriStr);
     var req = new AuthorizationRequest(scope, state, responseType, clientId, uri, appUri, nonce);
     var res = authService.auth(req);
 
@@ -83,13 +83,20 @@ public class AuthEndpoint {
   }
 
   @Nullable
-  private URI parseUri(@Nullable String uri) {
+  private URI parseAppUri(@Nullable String uri) {
     if (uri == null || uri.isBlank()) {
       return null;
     }
 
     try {
-      return new URI(uri);
+      var parsedUri = new URI(uri);
+
+      if (!"https".equals(parsedUri.getScheme())) {
+        var localizedMessage = new Message("error.insecureAppUri", uri);
+        throw new ValidationException(localizedMessage);
+      }
+
+      return parsedUri;
     } catch (URISyntaxException e) {
       var localizedMessage = new Message("error.badUri", uri);
       throw new ValidationException(localizedMessage);
