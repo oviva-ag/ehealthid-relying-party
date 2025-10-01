@@ -36,9 +36,11 @@ public class AuthEndpoint {
   private final Pages pages = new Pages(new TemplateRenderer());
 
   private final AuthService authService;
+  private final URI appUri;
 
-  public AuthEndpoint(AuthService authService) {
+  public AuthEndpoint(AuthService authService, @Nullable URI appUri) {
     this.authService = authService;
+    this.appUri = appUri;
   }
 
   // Authorization Request
@@ -51,14 +53,13 @@ public class AuthEndpoint {
       @QueryParam("response_type") String responseType,
       @QueryParam("client_id") String clientId,
       @QueryParam("redirect_uri") String redirectUri,
-      @QueryParam("app_uri") String appUriStr,
       @QueryParam("nonce") String nonce,
       @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     var uri = mustParse(redirectUri);
-    var appUri = parseAppUri(appUriStr);
-    var req = new AuthorizationRequest(scope, state, responseType, clientId, uri, appUri, nonce);
-    var res = authService.auth(req);
+    var res =
+        authService.auth(
+            new AuthorizationRequest(scope, state, responseType, clientId, uri, nonce));
 
     var locale = getNegotiatedLocale(acceptLanguage);
     var form = pages.selectIdpForm(res.identityProviders(), appUri, locale);
@@ -76,27 +77,6 @@ public class AuthEndpoint {
     }
     try {
       return new URI(uri);
-    } catch (URISyntaxException e) {
-      var localizedMessage = new Message("error.badUri", uri);
-      throw new ValidationException(localizedMessage);
-    }
-  }
-
-  @Nullable
-  private URI parseAppUri(@Nullable String uri) {
-    if (uri == null || uri.isBlank()) {
-      return null;
-    }
-
-    try {
-      var parsedUri = new URI(uri);
-
-      if (!"https".equals(parsedUri.getScheme())) {
-        var localizedMessage = new Message("error.insecureAppUri", uri);
-        throw new ValidationException(localizedMessage);
-      }
-
-      return parsedUri;
     } catch (URISyntaxException e) {
       var localizedMessage = new Message("error.badUri", uri);
       throw new ValidationException(localizedMessage);

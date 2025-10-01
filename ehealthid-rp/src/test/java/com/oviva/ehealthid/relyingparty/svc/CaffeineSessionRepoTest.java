@@ -21,7 +21,7 @@ class CaffeineSessionRepoTest {
   @Test
   void save_noId() {
     var sut = new CaffeineSessionRepo(null, Duration.ofMinutes(5));
-    var session = new Session(null, null, null, null, null, null, null, null, null, null);
+    var session = new Session(null, null, null, null, null, null, null, null, null);
 
     assertThrows(IllegalArgumentException.class, () -> sut.save(session));
   }
@@ -45,7 +45,6 @@ class CaffeineSessionRepoTest {
             .state(state)
             .nonce(nonce)
             .redirectUri(redirectUri)
-            .appUri(appUri)
             .clientId(clientId)
             .build();
 
@@ -61,7 +60,6 @@ class CaffeineSessionRepoTest {
     assertEquals(id, got.id());
     assertEquals(state, got.state());
     assertEquals(redirectUri, got.redirectUri());
-    assertEquals(appUri, got.appUri());
     assertEquals(clientId, got.clientId());
 
     verify(cache).put(id, session);
@@ -94,7 +92,6 @@ class CaffeineSessionRepoTest {
                     .state(state)
                     .nonce(nonce)
                     .redirectUri(redirectUri)
-                    .appUri(appUri)
                     .clientId(clientId)
                     .build())
         .forEach(sut::save);
@@ -110,7 +107,6 @@ class CaffeineSessionRepoTest {
           assertEquals(id, got.id());
           assertEquals(state, got.state());
           assertEquals(redirectUri, got.redirectUri());
-          assertEquals(appUri, got.appUri());
           assertEquals(clientId, got.clientId());
         });
   }
@@ -140,7 +136,6 @@ class CaffeineSessionRepoTest {
             .state(state)
             .nonce(nonce)
             .redirectUri(redirectUri)
-            .appUri(appUri)
             .clientId(clientId)
             .build();
     sut.save(session);
@@ -154,7 +149,6 @@ class CaffeineSessionRepoTest {
     assertEquals(id, got1.id());
     assertEquals(state, got1.state());
     assertEquals(redirectUri, got1.redirectUri());
-    assertEquals(appUri, got1.appUri());
     assertEquals(clientId, got1.clientId());
 
     assertNull(got2);
@@ -184,7 +178,6 @@ class CaffeineSessionRepoTest {
                     .state(state)
                     .nonce(nonce)
                     .redirectUri(redirectUri)
-                    .appUri(appUri)
                     .clientId(clientId)
                     .build())
         .forEach(sut::save);

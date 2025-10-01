@@ -9,7 +9,6 @@ import com.oviva.ehealthid.relyingparty.fed.FederationEndpoint;
 import com.oviva.ehealthid.relyingparty.providers.KeyStores;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
-import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.util.JoseModule;
 import jakarta.ws.rs.core.Application;
@@ -27,7 +26,6 @@ public class App extends Application {
   private final KeyStores keyStores;
   private final TokenIssuer tokenIssuer;
   private final ClientAuthenticator clientAuthenticator;
-  private final SessionRepo sessionRepo;
 
   private final AuthService authService;
 
@@ -36,13 +34,11 @@ public class App extends Application {
       KeyStores keyStores,
       TokenIssuer tokenIssuer,
       ClientAuthenticator clientAuthenticator,
-      SessionRepo sessionRepo,
       AuthService authService) {
     this.config = config;
     this.keyStores = keyStores;
     this.tokenIssuer = tokenIssuer;
     this.clientAuthenticator = clientAuthenticator;
-    this.sessionRepo = sessionRepo;
     this.authService = authService;
 
     this.openIdProviderSigningKeys =
@@ -60,10 +56,10 @@ public class App extends Application {
             new FederationEndpoint(
                 config.federation(),
                 new FederationKeysAdapter(config.federation().sub(), keyStores)),
-            new AuthEndpoint(authService),
+            new AuthEndpoint(authService, config.appUri()),
             new TokenEndpoint(tokenIssuer, clientAuthenticator),
             new OpenIdEndpoint(config.baseUri(), config.relyingParty(), openIdProviderSigningKeys),
-            new ThrowableExceptionMapper(sessionRepo),
+            new ThrowableExceptionMapper(config.appUri()),
             new JacksonJsonProvider(configureObjectMapper()));
 
     if (RequestLogDumpProvider.isEnabled()) {

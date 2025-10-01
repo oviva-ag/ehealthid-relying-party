@@ -175,8 +175,7 @@ public class Main implements AutoCloseable {
 
     server =
         SeBootstrap.start(
-                new App(
-                    config, keyStores, tokenIssuer, clientAuthenticator, sessionRepo, authService),
+                new App(config, keyStores, tokenIssuer, clientAuthenticator, authService),
                 Configuration.builder().host(config.host()).port(config.port()).build())
             .toCompletableFuture()
             .get();

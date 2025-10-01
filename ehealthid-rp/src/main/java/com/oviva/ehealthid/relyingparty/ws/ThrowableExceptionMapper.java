@@ -6,7 +6,6 @@ import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.getNegotiatedLoc
 import com.oviva.ehealthid.auth.AuthException;
 import com.oviva.ehealthid.fedclient.FederationException;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
-import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
@@ -36,7 +35,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
   private static final String AUTH_ERROR_MESSAGE = "error.authError";
 
   private final Pages pages = new Pages(new TemplateRenderer());
-  private final SessionRepo sessionRepo;
+  private final URI appUri;
 
   @Context UriInfo uriInfo;
   @Context Request request;
@@ -44,8 +43,8 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
   private Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
 
-  public ThrowableExceptionMapper(SessionRepo sessionRepo) {
-    this.sessionRepo = sessionRepo;
+  public ThrowableExceptionMapper(@Nullable URI appUri) {
+    this.appUri = appUri;
   }
 
   @Override
@@ -96,7 +95,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
     var headerString = headers.getHeaderString("Accept-Language");
     var locale = getNegotiatedLocale(headerString);
-    var appUri = getAppUri();
 
     var body = pages.error(message, appUri, locale);
 
@@ -111,34 +109,6 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
         .entity(body.getBytes(StandardCharsets.UTF_8))
         .type(MediaType.TEXT_HTML_TYPE)
         .build();
-  }
-
-  @Nullable
-  private URI getAppUri() {
-    var session = getSession();
-
-    if (session == null) {
-      return null;
-    }
-
-    return session.appUri();
-  }
-
-  @Nullable
-  private SessionRepo.Session getSession() {
-    var sessionCookie = headers.getCookies().get("session_id");
-
-    if (sessionCookie == null) {
-      return null;
-    }
-
-    var sessionId = sessionCookie.getValue();
-
-    if (sessionId == null || sessionId.isBlank()) {
-      return null;
-    }
-
-    return sessionRepo.load(sessionId);
   }
 
   private void debugLog(Throwable exception) {

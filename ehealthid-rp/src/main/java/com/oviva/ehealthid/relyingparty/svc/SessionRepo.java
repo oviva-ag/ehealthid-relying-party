@@ -21,7 +21,6 @@ public interface SessionRepo {
       String state,
       String nonce,
       URI redirectUri,
-      URI appUri,
       String clientId,
       String codeVerifier,
       SelectSectoralIdpStep selectSectoralIdpStep,
@@ -38,7 +37,6 @@ public interface SessionRepo {
           .state(state)
           .nonce(nonce)
           .redirectUri(redirectUri)
-          .appUri(appUri)
           .clientId(clientId)
           .codeVerifier(codeVerifier)
           .selectSectoralIdpStep(selectSectoralIdpStep)
@@ -52,7 +50,6 @@ public interface SessionRepo {
       private String state;
       private String nonce;
       private URI redirectUri;
-      private URI appUri;
       private String clientId;
       private String codeVerifier;
       private SelectSectoralIdpStep selectSectoralIdpStep;
@@ -82,11 +79,6 @@ public interface SessionRepo {
 
       public Builder redirectUri(URI redirectUri) {
         this.redirectUri = redirectUri;
-        return this;
-      }
-
-      public Builder appUri(URI appUri) {
-        this.appUri = appUri;
         return this;
       }
 
@@ -125,7 +117,6 @@ public interface SessionRepo {
             state,
             nonce,
             redirectUri,
-            appUri,
             clientId,
             codeVerifier,
             selectSectoralIdpStep,

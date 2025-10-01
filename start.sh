@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export EHEALTHID_RP_APP_NAME=Awesome DiGA
+export EHEALTHID_RP_APP_URI=https://sso-mydiga.example.com/app
 export EHEALTHID_RP_BASE_URI=https://t.oviva.io
 export EHEALTHID_RP_FEDERATION_ES_JWKS_PATH=./sig_t_oviva_io_jwks.json
 export EHEALTHID_RP_FEDERATION_MASTER=https://app-ref.federationmaster.de

@@ -11,7 +11,6 @@ import com.oviva.ehealthid.auth.AuthException;
 import com.oviva.ehealthid.fedclient.FederationException;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
-import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
@@ -19,7 +18,6 @@ import jakarta.ws.rs.core.*;
 import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,16 +35,16 @@ import org.slf4j.LoggerFactory;
 class ThrowableExceptionMapperTest {
 
   private static final URI REQUEST_URI = URI.create("https://example.com/my/request");
+  private static final URI APP_URI = URI.create("https://app.example.com/app");
   @Mock UriInfo uriInfo;
   @Mock Request request;
   @Mock HttpHeaders headers;
-  @Mock SessionRepo sessionRepo;
   @Spy Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
   ThrowableExceptionMapper mapper;
 
   @BeforeEach
   void setUp() throws Exception {
-    mapper = new ThrowableExceptionMapper(sessionRepo);
+    mapper = new ThrowableExceptionMapper(APP_URI);
     setField(mapper, "uriInfo", uriInfo);
     setField(mapper, "request", request);
     setField(mapper, "headers", headers);
@@ -203,7 +201,7 @@ class ThrowableExceptionMapperTest {
     doReturn("de-DE").when(headers).getHeaderString("Accept-Language");
 
     // when
-    var res = mapper.toResponse(new ValidationException(new Message("error.invalidSession", null)));
+    var res = mapper.toResponse(new ValidationException(new Message("error.invalidSession")));
 
     // then
     assertEquals(400, res.getStatus());
@@ -285,18 +283,9 @@ class ThrowableExceptionMapperTest {
   }
 
   @Test
-  void toResponse_getsAppUriFromSession() {
-    var appUri = URI.create("https://app.example.com/app");
-    var sessionId = "test-session-id";
-    var sessionCookie = mock(Cookie.class);
-    var cookies = Map.of("session_id", sessionCookie);
-    var session = SessionRepo.Session.create().id(sessionId).appUri(appUri).build();
-
+  void toResponse_usesAppUriFromConfig() {
     when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
     when(request.getMethod()).thenReturn("GET");
-    when(headers.getCookies()).thenReturn(cookies);
-    when(sessionCookie.getValue()).thenReturn(sessionId);
-    when(sessionRepo.load(sessionId)).thenReturn(session);
     when(headers.getHeaderString("Accept-Language")).thenReturn("de-DE");
     when(headers.getHeaderString("user-agent")).thenReturn("test-agent");
 
@@ -306,11 +295,9 @@ class ThrowableExceptionMapperTest {
     assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
     assertNotNull(res.getEntity());
 
-    verify(sessionRepo).load(sessionId);
-
     var page = (byte[]) res.getEntity();
     var htmlBody = new String(page, StandardCharsets.UTF_8);
-    assertThat(htmlBody, containsString(appUri.toString()));
+    assertThat(htmlBody, containsString(APP_URI.toString()));
   }
 
   private void mockHeaders(String locales) {
