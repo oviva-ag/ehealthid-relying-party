@@ -51,17 +51,17 @@ public class AuthEndpoint {
       @QueryParam("response_type") String responseType,
       @QueryParam("client_id") String clientId,
       @QueryParam("redirect_uri") String redirectUri,
+      @QueryParam("app_uri") String appUriStr,
       @QueryParam("nonce") String nonce,
       @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     var uri = mustParse(redirectUri);
-
-    var res =
-        authService.auth(
-            new AuthorizationRequest(scope, state, responseType, clientId, uri, nonce));
+    var appUri = parseUri(appUriStr);
+    var req = new AuthorizationRequest(scope, state, responseType, clientId, uri, appUri, nonce);
+    var res = authService.auth(req);
 
     var locale = getNegotiatedLocale(acceptLanguage);
-    var form = pages.selectIdpForm(res.identityProviders(), locale);
+    var form = pages.selectIdpForm(res.identityProviders(), appUri, locale);
 
     return Response.ok(form, MediaType.TEXT_HTML_TYPE)
         .cookie(createSessionCookie(res.sessionId()))
@@ -74,6 +74,20 @@ public class AuthEndpoint {
       var localizedMessage = new Message("error.blankUri");
       throw new ValidationException(localizedMessage);
     }
+    try {
+      return new URI(uri);
+    } catch (URISyntaxException e) {
+      var localizedMessage = new Message("error.badUri", uri);
+      throw new ValidationException(localizedMessage);
+    }
+  }
+
+  @Nullable
+  private URI parseUri(@Nullable String uri) {
+    if (uri == null || uri.isBlank()) {
+      return null;
+    }
+
     try {
       return new URI(uri);
     } catch (URISyntaxException e) {
@@ -114,11 +128,17 @@ public class AuthEndpoint {
   @GET
   @Path("/callback")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.TEXT_HTML)
   public Response callback(
-      @CookieParam("session_id") String sessionId, @QueryParam("code") String code) {
+      @CookieParam("session_id") String sessionId,
+      @QueryParam("code") String code,
+      @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
-    var redirect = authService.callback(new CallbackRequest(sessionId, code));
-    return Response.seeOther(redirect).build();
+    var redirectUri = authService.callback(new CallbackRequest(sessionId, code));
+    var locale = getNegotiatedLocale(acceptLanguage);
+    var successPage = pages.success(redirectUri, locale);
+
+    return Response.ok(successPage, MediaType.TEXT_HTML_TYPE).build();
   }
 
   public record AuthResponse(@JsonProperty("identity_providers") List<IdpEntry> identityProviders) {

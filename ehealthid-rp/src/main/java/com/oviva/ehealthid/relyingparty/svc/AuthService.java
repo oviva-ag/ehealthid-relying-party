@@ -96,6 +96,7 @@ public class AuthService {
             .state(request.state())
             .nonce(request.nonce())
             .redirectUri(request.redirectUri())
+            .appUri(request.appUri())
             .clientId(request.clientId())
             .codeVerifier(verifier)
             .selectSectoralIdpStep(step1)
@@ -238,6 +239,7 @@ public class AuthService {
       String responseType,
       String clientId,
       URI redirectUri,
+      URI appUri,
       String nonce) {}
 
   public record AuthorizationResponse(List<IdpEntry> identityProviders, String sessionId) {}

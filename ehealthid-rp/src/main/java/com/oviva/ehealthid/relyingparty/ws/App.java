@@ -9,6 +9,7 @@ import com.oviva.ehealthid.relyingparty.fed.FederationEndpoint;
 import com.oviva.ehealthid.relyingparty.providers.KeyStores;
 import com.oviva.ehealthid.relyingparty.svc.AuthService;
 import com.oviva.ehealthid.relyingparty.svc.ClientAuthenticator;
+import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.TokenIssuer;
 import com.oviva.ehealthid.util.JoseModule;
 import jakarta.ws.rs.core.Application;
@@ -26,6 +27,7 @@ public class App extends Application {
   private final KeyStores keyStores;
   private final TokenIssuer tokenIssuer;
   private final ClientAuthenticator clientAuthenticator;
+  private final SessionRepo sessionRepo;
 
   private final AuthService authService;
 
@@ -34,11 +36,13 @@ public class App extends Application {
       KeyStores keyStores,
       TokenIssuer tokenIssuer,
       ClientAuthenticator clientAuthenticator,
+      SessionRepo sessionRepo,
       AuthService authService) {
     this.config = config;
     this.keyStores = keyStores;
     this.tokenIssuer = tokenIssuer;
     this.clientAuthenticator = clientAuthenticator;
+    this.sessionRepo = sessionRepo;
     this.authService = authService;
 
     this.openIdProviderSigningKeys =
@@ -59,6 +63,7 @@ public class App extends Application {
             new AuthEndpoint(authService),
             new TokenEndpoint(tokenIssuer, clientAuthenticator),
             new OpenIdEndpoint(config.baseUri(), config.relyingParty(), openIdProviderSigningKeys),
+            new ThrowableExceptionMapper(sessionRepo),
             new JacksonJsonProvider(configureObjectMapper()));
 
     if (RequestLogDumpProvider.isEnabled()) {
@@ -73,7 +78,7 @@ public class App extends Application {
   public Set<Class<?>> getClasses() {
 
     // https://github.com/resteasy/resteasy/blob/f5fedb83d75ac88cad8fe79c0711b46a9db6a5ed/resteasy-core/src/main/resources/META-INF/services/jakarta.ws.rs.ext.Providers
-    return Set.of(ThrowableExceptionMapper.class, StringTextStar.class, ByteArrayProvider.class);
+    return Set.of(StringTextStar.class, ByteArrayProvider.class);
   }
 
   private ObjectMapper configureObjectMapper() {

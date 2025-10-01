@@ -12,6 +12,7 @@ import com.oviva.ehealthid.relyingparty.svc.AuthService.CallbackRequest;
 import com.oviva.ehealthid.relyingparty.svc.AuthService.SelectedIdpRequest;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.util.IdGenerator;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 class AuthEndpointTest {
 
   private static final String REDIRECT_URI = "https://myapp.example.com";
+  private static final String APP_URI = "https://myapp.example.com/app";
 
   @Test
   void auth_badRequest() {
@@ -40,7 +42,8 @@ class AuthEndpointTest {
     // when & then
     assertThrows(
         ValidationException.class,
-        () -> sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce, language));
+        () ->
+            sut.auth(scope, state, responseType, clientId, REDIRECT_URI, APP_URI, nonce, language));
   }
 
   @Test
@@ -59,7 +62,8 @@ class AuthEndpointTest {
     var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce, language)) {
+    try (var res =
+        sut.auth(scope, state, responseType, clientId, REDIRECT_URI, APP_URI, nonce, language)) {
 
       // then
       var captor = ArgumentCaptor.forClass(AuthorizationRequest.class);
@@ -67,6 +71,7 @@ class AuthEndpointTest {
 
       var req = captor.getValue();
       assertEquals(REDIRECT_URI, req.redirectUri().toString());
+      assertEquals(APP_URI, req.appUri().toString());
       assertEquals(scope, req.scope());
       assertEquals(state, req.state());
       assertEquals(responseType, req.responseType());
@@ -91,7 +96,8 @@ class AuthEndpointTest {
     var language = "de-DE";
 
     // when
-    try (var res = sut.auth(scope, state, responseType, clientId, REDIRECT_URI, nonce, language)) {
+    try (var res =
+        sut.auth(scope, state, responseType, clientId, REDIRECT_URI, null, nonce, language)) {
 
       // then
       assertEquals(Status.OK.getStatusCode(), res.getStatus());
@@ -110,12 +116,14 @@ class AuthEndpointTest {
     var sut = new AuthEndpoint(authService);
 
     // when
-    try (var res = sut.callback(null, null)) {
+    try (var res = sut.callback(null, null, "de-DE")) {
 
       // then
-      assertEquals(Status.SEE_OTHER.getStatusCode(), res.getStatus());
-      var redirect = res.getLocation().toString();
-      assertEquals(callbackRedirect.toString(), redirect);
+      assertEquals(Status.OK.getStatusCode(), res.getStatus());
+      assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
+
+      var page = (String) res.getEntity();
+      assertTrue(page.contains(callbackRedirect.toString()));
     }
   }
 
@@ -131,7 +139,7 @@ class AuthEndpointTest {
     var sessionId = IdGenerator.generateID();
 
     // when
-    try (var res = sut.callback(sessionId, code)) {
+    try (var res = sut.callback(sessionId, code, "de-DE")) {
 
       var captor = ArgumentCaptor.forClass(CallbackRequest.class);
       verify(authService).callback(captor.capture());

@@ -45,7 +45,8 @@ class AuthServiceTest {
     var clientId = "myapp";
 
     // when
-    var req = new AuthorizationRequest(scope, state, responseType, clientId, REDIRECT_URI, nonce);
+    var req =
+        new AuthorizationRequest(scope, state, responseType, clientId, REDIRECT_URI, null, nonce);
     var e = assertThrows(ValidationException.class, () -> sut.auth(req));
     // then
     assertEquals(
@@ -66,7 +67,8 @@ class AuthServiceTest {
     var responseType = "code";
     var clientId = "myapp";
     var redirectUri = URI.create("https://bad.example.com/evil");
-    var req = new AuthorizationRequest(scope, state, responseType, clientId, redirectUri, nonce);
+    var req =
+        new AuthorizationRequest(scope, state, responseType, clientId, redirectUri, null, nonce);
 
     // when & then
     assertThrows(ValidationException.class, () -> sut.auth(req));
@@ -84,7 +86,8 @@ class AuthServiceTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "badtype";
     var clientId = "myapp";
-    var req = new AuthorizationRequest(scope, state, responseType, clientId, REDIRECT_URI, nonce);
+    var req =
+        new AuthorizationRequest(scope, state, responseType, clientId, REDIRECT_URI, null, nonce);
 
     var e = assertThrows(ValidationException.class, () -> sut.auth(req));
 
@@ -120,7 +123,8 @@ class AuthServiceTest {
     var nonce = UUID.randomUUID().toString();
     var responseType = "code";
     var clientId = "myapp";
-    var req = new AuthorizationRequest(scope, state, responseType, clientId, REDIRECT_URI, nonce);
+    var req =
+        new AuthorizationRequest(scope, state, responseType, clientId, REDIRECT_URI, null, nonce);
 
     // when
     var res = sut.auth(req);

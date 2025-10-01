@@ -31,9 +31,24 @@ class PagesTest {
                 new IdpEntry("https://b.example.com", "Siemens", null),
                 new IdpEntry("https://c.example.com", "Zuse", null),
                 new IdpEntry("https://d.example.com", "Barmer", null)),
+            null,
             Locale.US);
 
     assertEquals(Fixtures.getUtf8String("pages_golden_idp-select-form.bin"), rendered);
+  }
+
+  @Test
+  void selectIdpForm_withAppUri() {
+    var sut = new Pages(renderer);
+
+    var idps = List.of(new IdpEntry("https://a.example.com", "AoK Tesfalen", null));
+    var appUri = URI.create("https://app.example.com");
+    var locale = Locale.US;
+
+    var rendered = sut.selectIdpForm(idps, appUri, locale);
+
+    assertTrue(rendered.contains(appUri.toString()));
+    assertTrue(rendered.contains("Back to app"));
   }
 
   @ParameterizedTest
@@ -48,6 +63,7 @@ class PagesTest {
                 new IdpEntry("https://b.example.com", "Siemens", null),
                 new IdpEntry("https://c.example.com", "Zuse", null),
                 new IdpEntry("https://d.example.com", "Barmer", null)),
+            URI.create("https://app.example.com"),
             locale);
 
     assertTrue(rendered.contains(message));
@@ -66,9 +82,22 @@ class PagesTest {
   void error_withFixture() {
     var sut = new Pages(renderer);
 
-    var rendered = sut.error(new Message("error.serverError", ""), Locale.US);
+    var rendered = sut.error(new Message("error.serverError", ""), null, Locale.US);
 
     assertEquals(Fixtures.getUtf8String("pages_golden_error.bin"), rendered);
+  }
+
+  @Test
+  void error_withAppUri() {
+    var sut = new Pages(renderer);
+    var message = new Message("error.serverError", "");
+    var appUri = URI.create("https://app.example.com");
+    var locale = Locale.US;
+
+    var rendered = sut.error(message, appUri, locale);
+
+    assertTrue(rendered.contains(appUri.toString()));
+    assertTrue(rendered.contains("Back to app"));
   }
 
   @ParameterizedTest
@@ -76,7 +105,7 @@ class PagesTest {
   void error_simpleError(Locale locale, String messageKey, String message) {
     var sut = new Pages(renderer);
 
-    var rendered = sut.error(new Message(messageKey, ""), locale);
+    var rendered = sut.error(new Message(messageKey, ""), null, locale);
 
     assertTrue(rendered.contains(message));
   }
@@ -87,8 +116,42 @@ class PagesTest {
     var sut = new Pages(renderer);
     var uri = URI.create("https://idp.example.com");
 
-    var rendered = sut.error(new Message(messageKey, String.valueOf(uri)), locale);
+    var rendered = sut.error(new Message(messageKey, String.valueOf(uri)), null, locale);
     assertTrue(StringEscapeUtils.unescapeHtml4(rendered).contains(message));
+  }
+
+  @Test
+  void success_withFixture() {
+    var sut = new Pages(renderer);
+    var redirectUri = URI.create("https://app.example.com/callback");
+    var locale = Locale.US;
+
+    var rendered = sut.success(redirectUri, locale);
+
+    assertEquals(Fixtures.getUtf8String("pages_golden_success.bin"), rendered);
+  }
+
+  @Test
+  void success_withRedirectUri() {
+    var sut = new Pages(renderer);
+    var redirectUri = URI.create("https://app.example.com/callback");
+    var locale = Locale.US;
+
+    var rendered = sut.success(redirectUri, locale);
+
+    assertTrue(rendered.contains(redirectUri.toString()));
+    assertTrue(rendered.contains("Continue"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideLanguageAndMessageForSuccess")
+  void success_withInternationalisation(Locale locale, String message) {
+    var sut = new Pages(renderer);
+    var redirectUri = URI.create("https://app.example.com/callback");
+
+    var rendered = sut.success(redirectUri, locale);
+
+    assertTrue(rendered.contains(message));
   }
 
   private static Stream<Arguments> provideLanguageAndMessageForSelectIdp() {
@@ -97,10 +160,12 @@ class PagesTest {
         Arguments.of(Locale.GERMANY, "de-DE"),
         Arguments.of(Locale.US, "Login with GesundheitsID"),
         Arguments.of(Locale.GERMANY, "Anmeldung mit GesundheitsID"),
-        Arguments.of(Locale.US, "Select your GesundheitsID Provider"),
-        Arguments.of(Locale.GERMANY, "Wählen Sie Ihren GesundheitsID Anbieter"),
+        Arguments.of(Locale.US, "Select your GesundheitsID provider."),
+        Arguments.of(Locale.GERMANY, "Wähle deinen GesundheitsID-Anbieter aus."),
         Arguments.of(Locale.US, "Login"),
-        Arguments.of(Locale.GERMANY, "Einloggen"));
+        Arguments.of(Locale.GERMANY, "Einloggen"),
+        Arguments.of(Locale.US, "Back to app"),
+        Arguments.of(Locale.GERMANY, "Zurück zur App"));
   }
 
   private static Stream<Arguments> provideKeyAndMessageError() {
@@ -126,7 +191,9 @@ class PagesTest {
         Arguments.of(
             Locale.GERMANY,
             "error.invalidSession",
-            "Oops, Sitzung unbekannt oder abgelaufen. Bitte starten Sie erneut."));
+            "Oops, Sitzung unbekannt oder abgelaufen. Bitte starten Sie erneut."),
+        Arguments.of(Locale.US, "backToApp", "Back to app"),
+        Arguments.of(Locale.GERMANY, "backToApp", "Zurück zur App"));
   }
 
   private static Stream<Arguments> provideKeyWithDynamicContentMessageError() {
@@ -155,5 +222,18 @@ class PagesTest {
             Locale.GERMANY,
             "error.untrustedRedirect",
             "Nicht vertrauenswürdiger redirect_uri=https://idp.example.com. Falsch konfigurierter Server."));
+  }
+
+  private static Stream<Arguments> provideLanguageAndMessageForSuccess() {
+    return Stream.of(
+        Arguments.of(Locale.US, "GesundheitsID successfully linked!"),
+        Arguments.of(Locale.GERMANY, "GesundheitsID erfolgreich verknüpft!"),
+        Arguments.of(
+            Locale.US, "Your GesundheitsID is now linked. Simply log in with it in the future."),
+        Arguments.of(
+            Locale.GERMANY,
+            "Deine GesundheitsID ist jetzt verknüpft. Melde dich künftig einfach damit an."),
+        Arguments.of(Locale.US, "Continue"),
+        Arguments.of(Locale.GERMANY, "Weiter"));
   }
 }

@@ -10,6 +10,8 @@ import com.github.mustachejava.util.HtmlEscaper;
 import com.oviva.ehealthid.auth.AuthException;
 import com.oviva.ehealthid.fedclient.FederationException;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
+import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
+import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
@@ -17,13 +19,14 @@ import jakarta.ws.rs.core.*;
 import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,8 +40,24 @@ class ThrowableExceptionMapperTest {
   @Mock UriInfo uriInfo;
   @Mock Request request;
   @Mock HttpHeaders headers;
+  @Mock SessionRepo sessionRepo;
   @Spy Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
-  @InjectMocks ThrowableExceptionMapper mapper = new ThrowableExceptionMapper();
+  ThrowableExceptionMapper mapper;
+
+  @BeforeEach
+  void setUp() throws Exception {
+    mapper = new ThrowableExceptionMapper(sessionRepo);
+    setField(mapper, "uriInfo", uriInfo);
+    setField(mapper, "request", request);
+    setField(mapper, "headers", headers);
+    setField(mapper, "logger", logger);
+  }
+
+  private void setField(Object target, String fieldName, Object value) throws Exception {
+    var field = target.getClass().getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(target, value);
+  }
 
   private static Stream<Arguments> listValidLocale() {
     return Stream.of(
@@ -263,6 +282,35 @@ class ThrowableExceptionMapperTest {
     var w = new StringWriter();
     HtmlEscaper.escape(s, w);
     return w.toString();
+  }
+
+  @Test
+  void toResponse_getsAppUriFromSession() {
+    var appUri = URI.create("https://app.example.com/app");
+    var sessionId = "test-session-id";
+    var sessionCookie = mock(Cookie.class);
+    var cookies = Map.of("session_id", sessionCookie);
+    var session = SessionRepo.Session.create().id(sessionId).appUri(appUri).build();
+
+    when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
+    when(request.getMethod()).thenReturn("GET");
+    when(headers.getCookies()).thenReturn(cookies);
+    when(sessionCookie.getValue()).thenReturn(sessionId);
+    when(sessionRepo.load(sessionId)).thenReturn(session);
+    when(headers.getHeaderString("Accept-Language")).thenReturn("de-DE");
+    when(headers.getHeaderString("user-agent")).thenReturn("test-agent");
+
+    var res = mapper.toResponse(new IllegalArgumentException("Test exception"));
+
+    assertEquals(500, res.getStatus());
+    assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
+    assertNotNull(res.getEntity());
+
+    verify(sessionRepo).load(sessionId);
+
+    var page = (byte[]) res.getEntity();
+    var htmlBody = new String(page, StandardCharsets.UTF_8);
+    assertThat(htmlBody, containsString(appUri.toString()));
   }
 
   private void mockHeaders(String locales) {

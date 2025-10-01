@@ -6,9 +6,11 @@ import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.getNegotiatedLoc
 import com.oviva.ehealthid.auth.AuthException;
 import com.oviva.ehealthid.fedclient.FederationException;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
+import com.oviva.ehealthid.relyingparty.svc.SessionRepo;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -19,6 +21,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.Response.StatusType;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,11 +36,17 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
   private static final String AUTH_ERROR_MESSAGE = "error.authError";
 
   private final Pages pages = new Pages(new TemplateRenderer());
+  private final SessionRepo sessionRepo;
+
   @Context UriInfo uriInfo;
   @Context Request request;
   @Context HttpHeaders headers;
 
   private Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
+
+  public ThrowableExceptionMapper(SessionRepo sessionRepo) {
+    this.sessionRepo = sessionRepo;
+  }
 
   @Override
   public Response toResponse(Throwable exception) {
@@ -87,8 +96,9 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
 
     var headerString = headers.getHeaderString("Accept-Language");
     var locale = getNegotiatedLocale(headerString);
+    var appUri = getAppUri();
 
-    var body = pages.error(message, locale);
+    var body = pages.error(message, appUri, locale);
 
     // FIXES oviva-ag/ehealthid-relying-party #58 / EPA-102
     // resteasy has a built-in `MessageSanitizerContainerResponseFilter` escaping all non status
@@ -101,6 +111,34 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
         .entity(body.getBytes(StandardCharsets.UTF_8))
         .type(MediaType.TEXT_HTML_TYPE)
         .build();
+  }
+
+  @Nullable
+  private URI getAppUri() {
+    var session = getSession();
+
+    if (session == null) {
+      return null;
+    }
+
+    return session.appUri();
+  }
+
+  @Nullable
+  private SessionRepo.Session getSession() {
+    var sessionCookie = headers.getCookies().get("session_id");
+
+    if (sessionCookie == null) {
+      return null;
+    }
+
+    var sessionId = sessionCookie.getValue();
+
+    if (sessionId == null || sessionId.isBlank()) {
+      return null;
+    }
+
+    return sessionRepo.load(sessionId);
   }
 
   private void debugLog(Throwable exception) {
