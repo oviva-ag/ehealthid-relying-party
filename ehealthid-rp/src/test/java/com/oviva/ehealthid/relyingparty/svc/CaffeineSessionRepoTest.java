@@ -36,7 +36,6 @@ class CaffeineSessionRepoTest {
     var state = "myState";
     var nonce = UUID.randomUUID().toString();
     var redirectUri = URI.create("https://example.com/callback");
-    var appUri = URI.create("https://example.com/app");
     var clientId = "app";
 
     var session =
@@ -79,7 +78,6 @@ class CaffeineSessionRepoTest {
     var state = "myState";
     var nonce = UUID.randomUUID().toString();
     var redirectUri = URI.create("https://example.com/callback");
-    var appUri = URI.create("https://example.com/app");
     var clientId = "app";
 
     var sesionIds = IntStream.range(0, 100).mapToObj(Integer::toString).toList();
@@ -125,7 +123,6 @@ class CaffeineSessionRepoTest {
     var state = "myState";
     var nonce = UUID.randomUUID().toString();
     var redirectUri = URI.create("https://example.com/callback");
-    var appUri = URI.create("https://example.com/app");
     var clientId = "app";
 
     var id = IdGenerator.generateID();
@@ -165,7 +162,6 @@ class CaffeineSessionRepoTest {
     var state = "myState";
     var nonce = UUID.randomUUID().toString();
     var redirectUri = URI.create("https://example.com/callback");
-    var appUri = URI.create("https://example.com/app");
     var clientId = "app";
 
     var sesionIds = IntStream.range(0, 100).mapToObj(Integer::toString).toList();

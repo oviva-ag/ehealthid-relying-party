@@ -80,6 +80,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
 
+  display: flex;
   font-family: var(--font-family-inter);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-normal);
@@ -88,19 +89,12 @@ body {
   background-color: var(--color-neutral-1);
   color: var(--color-text-1);
   padding: var(--spacing-24);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: auto;
 }
 
 .app-container {
-  display: flex;
-  flex-direction: column;
-  max-width: 319px;
+  width: 319px;
   max-height: 100%;
+  margin: auto;
 }
 
 .container {

@@ -57,6 +57,7 @@ public class AuthEndpoint {
       @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
     var uri = mustParse(redirectUri);
+
     var res =
         authService.auth(
             new AuthorizationRequest(scope, state, responseType, clientId, uri, nonce));

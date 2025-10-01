@@ -19,12 +19,12 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,26 +36,12 @@ class ThrowableExceptionMapperTest {
 
   private static final URI REQUEST_URI = URI.create("https://example.com/my/request");
   private static final URI APP_URI = URI.create("https://app.example.com/app");
+
   @Mock UriInfo uriInfo;
   @Mock Request request;
   @Mock HttpHeaders headers;
   @Spy Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
-  ThrowableExceptionMapper mapper;
-
-  @BeforeEach
-  void setUp() throws Exception {
-    mapper = new ThrowableExceptionMapper(APP_URI);
-    setField(mapper, "uriInfo", uriInfo);
-    setField(mapper, "request", request);
-    setField(mapper, "headers", headers);
-    setField(mapper, "logger", logger);
-  }
-
-  private void setField(Object target, String fieldName, Object value) throws Exception {
-    var field = target.getClass().getDeclaredField(fieldName);
-    field.setAccessible(true);
-    field.set(target, value);
-  }
+  @InjectMocks ThrowableExceptionMapper mapper = new ThrowableExceptionMapper(APP_URI);
 
   private static Stream<Arguments> listValidLocale() {
     return Stream.of(
@@ -285,9 +271,7 @@ class ThrowableExceptionMapperTest {
   @Test
   void toResponse_usesAppUriFromConfig() {
     when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
-    when(request.getMethod()).thenReturn("GET");
-    when(headers.getHeaderString("Accept-Language")).thenReturn("de-DE");
-    when(headers.getHeaderString("user-agent")).thenReturn("test-agent");
+    mockHeaders("de-DE");
 
     var res = mapper.toResponse(new IllegalArgumentException("Test exception"));
 
