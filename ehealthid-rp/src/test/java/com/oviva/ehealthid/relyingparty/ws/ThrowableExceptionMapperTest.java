@@ -187,7 +187,7 @@ class ThrowableExceptionMapperTest {
     doReturn("de-DE").when(headers).getHeaderString("Accept-Language");
 
     // when
-    var res = mapper.toResponse(new ValidationException(new Message("error.invalidSession")));
+    var res = mapper.toResponse(new ValidationException(new Message("error.invalidSession", null)));
 
     // then
     assertEquals(400, res.getStatus());
@@ -277,11 +277,7 @@ class ThrowableExceptionMapperTest {
 
     assertEquals(500, res.getStatus());
     assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
-    assertNotNull(res.getEntity());
-
-    var page = (byte[]) res.getEntity();
-    var htmlBody = new String(page, StandardCharsets.UTF_8);
-    assertThat(htmlBody, containsString(APP_URI.toString()));
+    assertBodyContains(res, APP_URI.toString());
   }
 
   private void mockHeaders(String locales) {
