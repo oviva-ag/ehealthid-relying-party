@@ -10,7 +10,7 @@
   width: 100%;
   height: var(--height-input);
   padding: 0 var(--spacing-16);
-  padding-right: var(--spacing-40);
+  padding-right: var(--spacing-32);
   border: 1px solid var(--color-text-2);
   border-radius: var(--border-radius-input);
   background: var(--color-neutral-1);
@@ -57,6 +57,7 @@
   box-shadow: 0 6px 15px 0 rgba(0, 0, 0, 0.05);
   z-index: 1000;
   overflow-y: auto;
+  overscroll: contain;
 }
 
 .combobox.open .combobox-dropdown {
@@ -68,8 +69,10 @@
   top: 0;
   left: 0;
   right: var(--spacing-40);
+  width: 100%;
   height: 100%;
   padding: 0 var(--spacing-16);
+  padding-right: var(--spacing-32);
   border: none;
   background: transparent;
   font-size: var(--font-size-body);
@@ -97,6 +100,11 @@
   background-color: var(--color-neutral-2);
 }
 
+.combobox-option:focus {
+  outline: none;
+  background-color: var(--color-neutral-2);
+}
+
 .combobox-option:last-child {
   border-bottom: none;
 }
@@ -117,4 +125,17 @@
 .combobox-empty-state {
   color: var(--color-text-2);
   padding: var(--spacing-14) var(--spacing-16);
+}
+
+@keyframes prevent-input-autoscroll {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.input-focus-no-scroll {
+  animation: prevent-input-autoscroll 0.01s;
 }

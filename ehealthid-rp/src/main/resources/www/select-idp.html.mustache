@@ -18,7 +18,7 @@
     <div id="idp-select" class="combobox">
         <input type="hidden" name="identityProvider" value="">
         
-        <div class="combobox-trigger">
+        <div class="combobox-trigger" tabindex="0">
             <span class="combobox-text"></span>
             <input type="text" class="combobox-search-input" placeholder="{{#trans}}idp.searchPlaceholder{{/trans}}" autocomplete="off" style="display: none;">
             {{> assets/chevron-down-icon.svg }}
@@ -30,7 +30,7 @@
           </div>
           
           {{#identityProviders}}
-          <div class="combobox-option" data-value="{{iss}}" data-name="{{name}}">
+          <div class="combobox-option" data-value="{{iss}}" data-name="{{name}}" tabindex="0">
             <span>{{name}}</span>
             {{> assets/check-icon.svg }}
           </div>

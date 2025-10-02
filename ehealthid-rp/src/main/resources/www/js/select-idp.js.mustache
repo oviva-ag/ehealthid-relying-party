@@ -10,6 +10,7 @@ function initCombobox(containerId) {
     displayText: comboboxContainer.querySelector('.combobox-text'),
     searchInput: comboboxContainer.querySelector('.combobox-search-input'),
     valueInput: comboboxContainer.querySelector('input[type="hidden"]'),
+    dropdown: comboboxContainer.querySelector('.combobox-dropdown'),
     options: comboboxContainer.querySelectorAll('.combobox-option'),
     emptyMessage: comboboxContainer.querySelector('.combobox-empty-state')
   };
@@ -19,7 +20,16 @@ function initCombobox(containerId) {
     combobox.displayText.style.display = 'none';
     combobox.searchInput.style.display = 'block';
     combobox.searchInput.focus();
+    preventInputAutoscroll();
     document.addEventListener('click', closeOnOutsideClick);
+  }
+
+  function preventInputAutoscroll() {
+    combobox.searchInput.classList.add('input-focus-no-scroll');
+
+    setTimeout(() => {
+      combobox.searchInput.classList.remove('input-focus-no-scroll');
+    }, 500); 
   }
 
   function closeCombobox() {
@@ -67,13 +77,13 @@ function initCombobox(containerId) {
   }
 
   function selectOption(option) {
+    closeCombobox();
+    
     combobox.options.forEach(opt => opt.classList.remove('selected'));
     option.classList.add('selected');
 
     combobox.displayText.textContent = option.dataset.name;
     combobox.valueInput.value = option.dataset.value;
-
-    closeCombobox();
   }
 
   function selectFirstComboboxOption() {
@@ -88,22 +98,27 @@ function initCombobox(containerId) {
     selectOption(visibleOptions[0]);
   }
 
-  combobox.trigger.addEventListener('click', event => {
-    event.preventDefault();
+  combobox.trigger.addEventListener('focus', (event) => {
     const isOpen = comboboxContainer.classList.contains('open');
 
     if (!isOpen) {
       openCombobox();
-    } else {
-      closeCombobox();
     }
+  });
+
+  combobox.searchInput.addEventListener('blur', (event) => {
+    if (event.relatedTarget && comboboxContainer.contains(event.relatedTarget)) {
+      return;
+    }
+
+    closeCombobox();
   });
 
   combobox.searchInput.addEventListener('input', () => {
     showMatchingOptions(combobox.searchInput.value);
   });
 
-  combobox.searchInput.addEventListener('keydown', event => {
+  combobox.searchInput.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeCombobox();
     } else if (event.key === 'Enter') {
@@ -112,10 +127,21 @@ function initCombobox(containerId) {
     }
   });
 
+  combobox.dropdown.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeCombobox();
+    }
+  });
+
   combobox.options.forEach(option => {
-    option.addEventListener('click', event => {
-      event.preventDefault();
+    option.addEventListener('click', (event) => {
       selectOption(option);
+    });
+
+    option.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        selectOption(option);
+      }
     });
   });
 

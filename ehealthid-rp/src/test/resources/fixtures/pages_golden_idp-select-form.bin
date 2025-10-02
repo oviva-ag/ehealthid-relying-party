@@ -205,7 +205,7 @@ body {
   width: 100%;
   height: var(--height-input);
   padding: 0 var(--spacing-16);
-  padding-right: var(--spacing-40);
+  padding-right: var(--spacing-32);
   border: 1px solid var(--color-text-2);
   border-radius: var(--border-radius-input);
   background: var(--color-neutral-1);
@@ -252,6 +252,7 @@ body {
   box-shadow: 0 6px 15px 0 rgba(0, 0, 0, 0.05);
   z-index: 1000;
   overflow-y: auto;
+  overscroll: contain;
 }
 
 .combobox.open .combobox-dropdown {
@@ -263,8 +264,10 @@ body {
   top: 0;
   left: 0;
   right: var(--spacing-40);
+  width: 100%;
   height: 100%;
   padding: 0 var(--spacing-16);
+  padding-right: var(--spacing-32);
   border: none;
   background: transparent;
   font-size: var(--font-size-body);
@@ -292,6 +295,11 @@ body {
   background-color: var(--color-neutral-2);
 }
 
+.combobox-option:focus {
+  outline: none;
+  background-color: var(--color-neutral-2);
+}
+
 .combobox-option:last-child {
   border-bottom: none;
 }
@@ -314,6 +322,19 @@ body {
   padding: var(--spacing-14) var(--spacing-16);
 }
 
+@keyframes prevent-input-autoscroll {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.input-focus-no-scroll {
+  animation: prevent-input-autoscroll 0.01s;
+}
+
 </style>
 <script>
   function initCombobox(containerId) {
@@ -328,6 +349,7 @@ body {
     displayText: comboboxContainer.querySelector('.combobox-text'),
     searchInput: comboboxContainer.querySelector('.combobox-search-input'),
     valueInput: comboboxContainer.querySelector('input[type="hidden"]'),
+    dropdown: comboboxContainer.querySelector('.combobox-dropdown'),
     options: comboboxContainer.querySelectorAll('.combobox-option'),
     emptyMessage: comboboxContainer.querySelector('.combobox-empty-state')
   };
@@ -337,7 +359,16 @@ body {
     combobox.displayText.style.display = 'none';
     combobox.searchInput.style.display = 'block';
     combobox.searchInput.focus();
+    preventInputAutoscroll();
     document.addEventListener('click', closeOnOutsideClick);
+  }
+
+  function preventInputAutoscroll() {
+    combobox.searchInput.classList.add('input-focus-no-scroll');
+
+    setTimeout(() => {
+      combobox.searchInput.classList.remove('input-focus-no-scroll');
+    }, 500); 
   }
 
   function closeCombobox() {
@@ -385,13 +416,13 @@ body {
   }
 
   function selectOption(option) {
+    closeCombobox();
+    
     combobox.options.forEach(opt => opt.classList.remove('selected'));
     option.classList.add('selected');
 
     combobox.displayText.textContent = option.dataset.name;
     combobox.valueInput.value = option.dataset.value;
-
-    closeCombobox();
   }
 
   function selectFirstComboboxOption() {
@@ -406,22 +437,27 @@ body {
     selectOption(visibleOptions[0]);
   }
 
-  combobox.trigger.addEventListener('click', event => {
-    event.preventDefault();
+  combobox.trigger.addEventListener('focus', (event) => {
     const isOpen = comboboxContainer.classList.contains('open');
 
     if (!isOpen) {
       openCombobox();
-    } else {
-      closeCombobox();
     }
+  });
+
+  combobox.searchInput.addEventListener('blur', (event) => {
+    if (event.relatedTarget && comboboxContainer.contains(event.relatedTarget)) {
+      return;
+    }
+
+    closeCombobox();
   });
 
   combobox.searchInput.addEventListener('input', () => {
     showMatchingOptions(combobox.searchInput.value);
   });
 
-  combobox.searchInput.addEventListener('keydown', event => {
+  combobox.searchInput.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeCombobox();
     } else if (event.key === 'Enter') {
@@ -430,10 +466,21 @@ body {
     }
   });
 
+  combobox.dropdown.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeCombobox();
+    }
+  });
+
   combobox.options.forEach(option => {
-    option.addEventListener('click', event => {
-      event.preventDefault();
+    option.addEventListener('click', (event) => {
       selectOption(option);
+    });
+
+    option.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        selectOption(option);
+      }
     });
   });
 
@@ -461,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div id="idp-select" class="combobox">
         <input type="hidden" name="identityProvider" value="">
         
-        <div class="combobox-trigger">
+        <div class="combobox-trigger" tabindex="0">
             <span class="combobox-text"></span>
             <input type="text" class="combobox-search-input" placeholder="Search..." autocomplete="off" style="display: none;">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -475,28 +522,28 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>No results found.</span>
           </div>
           
-          <div class="combobox-option" data-value="https://a.example.com" data-name="AoK Tesfalen">
+          <div class="combobox-option" data-value="https://a.example.com" data-name="AoK Tesfalen" tabindex="0">
             <span>AoK Tesfalen</span>
             <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
 </svg>
 
           </div>
-          <div class="combobox-option" data-value="https://d.example.com" data-name="Barmer">
+          <div class="combobox-option" data-value="https://d.example.com" data-name="Barmer" tabindex="0">
             <span>Barmer</span>
             <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
 </svg>
 
           </div>
-          <div class="combobox-option" data-value="https://b.example.com" data-name="Siemens">
+          <div class="combobox-option" data-value="https://b.example.com" data-name="Siemens" tabindex="0">
             <span>Siemens</span>
             <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
 </svg>
 
           </div>
-          <div class="combobox-option" data-value="https://c.example.com" data-name="Zuse">
+          <div class="combobox-option" data-value="https://c.example.com" data-name="Zuse" tabindex="0">
             <span>Zuse</span>
             <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
