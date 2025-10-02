@@ -56,9 +56,10 @@ public class App extends Application {
             new FederationEndpoint(
                 config.federation(),
                 new FederationKeysAdapter(config.federation().sub(), keyStores)),
-            new AuthEndpoint(authService),
+            new AuthEndpoint(authService, config.appUri()),
             new TokenEndpoint(tokenIssuer, clientAuthenticator),
             new OpenIdEndpoint(config.baseUri(), config.relyingParty(), openIdProviderSigningKeys),
+            new ThrowableExceptionMapper(config.appUri()),
             new JacksonJsonProvider(configureObjectMapper()));
 
     if (RequestLogDumpProvider.isEnabled()) {
@@ -73,7 +74,7 @@ public class App extends Application {
   public Set<Class<?>> getClasses() {
 
     // https://github.com/resteasy/resteasy/blob/f5fedb83d75ac88cad8fe79c0711b46a9db6a5ed/resteasy-core/src/main/resources/META-INF/services/jakarta.ws.rs.ext.Providers
-    return Set.of(ThrowableExceptionMapper.class, StringTextStar.class, ByteArrayProvider.class);
+    return Set.of(StringTextStar.class, ByteArrayProvider.class);
   }
 
   private ObjectMapper configureObjectMapper() {

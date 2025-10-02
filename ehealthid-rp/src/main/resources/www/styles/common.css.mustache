@@ -1,0 +1,161 @@
+:root {
+  --font-family-inter: Inter, sans-serif;
+  --font-family-serif: "DM Serif Text", serif;
+  --font-size-headline: 28px;
+  --font-size-body: 16px;
+  --font-size-button: 18px;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+
+  --line-height-default: 150%;
+  --letter-spacing-headline: 0.5px;
+  --letter-spacing-body: 0.15px;
+
+  --color-primary-1: #00A88F;
+  --color-secondary-1: #00645F;
+  --color-neutral-1: #FFFFFF;
+  --color-neutral-2: #EBEBF0;
+  --color-text-1: #000E30;
+  --color-text-2: #6C6C70;
+
+  --height-input: 52px;
+  --height-button: 52px;
+
+  --border-radius-input: 16px;
+  --border-radius-button: 24px;
+
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-14: 14px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+
+  display: flex;
+  font-family: var(--font-family-inter);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-default);
+  letter-spacing: var(--letter-spacing-body);
+  background-color: var(--color-neutral-1);
+  color: var(--color-text-1);
+  padding: var(--spacing-24);
+}
+
+.app-container {
+  width: 319px;
+  max-height: 100%;
+  margin: auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-32);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-40);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-12);
+}
+
+.title {
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-headline);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-default);
+  letter-spacing: var(--letter-spacing-headline);
+  color: var(--color-text-1);
+  margin: 0;
+}
+
+.text {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-default);
+  letter-spacing: var(--letter-spacing-body);
+  color: var(--color-text-1);
+  margin: 0;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--height-button);
+  padding: var(--spacing-16);
+  border: none;
+  border-radius: var(--border-radius-button);
+  background: var(--color-primary-1);
+  font-size: var(--font-size-button);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-body);
+  text-decoration: none;
+  color: var(--color-neutral-1);
+  cursor: pointer;
+}
+
+.primary-button:hover, .primary-button:focus {
+  text-decoration: none;
+}
+
+.link {
+  display: block;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-body);
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-secondary-1);
+  cursor: pointer;
+}
+
+.link:hover, .link:focus, .link:visited {
+  outline: none;
+  text-decoration: underline;
+  color: var(--color-secondary-1);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+      90deg,
+      rgba(235, 235, 240, 0.1) 10%,
+      rgba(235, 235, 240, 1) 50%,
+      rgba(235, 235, 240, 0.1) 90%
+  );
+}

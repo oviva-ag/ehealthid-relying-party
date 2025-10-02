@@ -192,372 +192,56 @@ body {
 }
 
   </style>
-<style>
-  .combobox {
-  position: relative;
-  width: 100%;
-}
-
-.combobox-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: var(--height-input);
-  padding: 0 var(--spacing-16);
-  padding-right: var(--spacing-32);
-  border: 1px solid var(--color-text-2);
-  border-radius: var(--border-radius-input);
-  background: var(--color-neutral-1);
-  cursor: pointer;
-}
-
-.combobox-trigger svg {
-  position: absolute;
-  right: var(--spacing-8);
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.combobox-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.combobox.open .combobox-trigger,
-.combobox-trigger:focus {
-  outline: none;
-  border: 2px solid var(--color-text-1);
-  padding: 0 calc(var(--spacing-16) - 1px);
-  padding-right: calc(var(--spacing-40) - 1px);
-}
-
-.combobox.open .combobox-trigger svg {
-  transform: translateY(-50%) scaleY(-1);
-}
-
-.combobox-dropdown {
-  display: none;
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  max-height: 200px;
-  margin-bottom: var(--spacing-8);
-  background: var(--color-neutral-1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: var(--border-radius-input);
-  box-shadow: 0 6px 15px 0 rgba(0, 0, 0, 0.05);
-  z-index: 1000;
-  overflow-y: auto;
-  overscroll: contain;
-}
-
-.combobox.open .combobox-dropdown {
-  display: block;
-}
-
-.combobox-search-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: var(--spacing-40);
-  width: 100%;
-  height: 100%;
-  padding: 0 var(--spacing-16);
-  padding-right: var(--spacing-32);
-  border: none;
-  background: transparent;
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-normal);
-  line-height: var(--line-height-default);
-  letter-spacing: var(--letter-spacing-body);
-  color: var(--color-text-1);
-  outline: none;
-}
-
-.combobox-search-input::placeholder {
-  color: var(--color-text-2);
-}
-
-.combobox-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-14) var(--spacing-16);
-  border-bottom: 1px solid var(--color-neutral-2);
-  cursor: pointer;
-}
-
-.combobox-option:hover {
-  background-color: var(--color-neutral-2);
-}
-
-.combobox-option:focus {
-  outline: none;
-  background-color: var(--color-neutral-2);
-}
-
-.combobox-option:last-child {
-  border-bottom: none;
-}
-
-.combobox-option svg {
-  opacity: 0;
-  flex-shrink: 0;
-}
-
-.combobox-option.selected svg {
-  opacity: 1;
-}
-
-.combobox-option.hidden {
-  display: none;
-}
-
-.combobox-empty-state {
-  color: var(--color-text-2);
-  padding: var(--spacing-14) var(--spacing-16);
-}
-
-@keyframes prevent-input-autoscroll {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.input-focus-no-scroll {
-  animation: prevent-input-autoscroll 0.01s;
-}
-
-</style>
-<script>
-  function initCombobox(containerId) {
-  const comboboxContainer = document.getElementById(containerId);
-
-  if (!comboboxContainer) {
-    return;
-  }
-
-  const combobox = {
-    trigger: comboboxContainer.querySelector('.combobox-trigger'),
-    displayText: comboboxContainer.querySelector('.combobox-text'),
-    searchInput: comboboxContainer.querySelector('.combobox-search-input'),
-    valueInput: comboboxContainer.querySelector('input[type="hidden"]'),
-    dropdown: comboboxContainer.querySelector('.combobox-dropdown'),
-    options: comboboxContainer.querySelectorAll('.combobox-option'),
-    emptyMessage: comboboxContainer.querySelector('.combobox-empty-state')
-  };
-
-  function openCombobox() {
-    comboboxContainer.classList.add('open');
-    combobox.displayText.style.display = 'none';
-    combobox.searchInput.style.display = 'block';
-    combobox.searchInput.focus();
-    preventInputAutoscroll();
-    document.addEventListener('click', closeOnOutsideClick);
-  }
-
-  function preventInputAutoscroll() {
-    combobox.searchInput.classList.add('input-focus-no-scroll');
-
-    setTimeout(() => {
-      combobox.searchInput.classList.remove('input-focus-no-scroll');
-    }, 500); 
-  }
-
-  function closeCombobox() {
-    comboboxContainer.classList.remove('open');
-    combobox.displayText.style.display = 'block';
-    combobox.searchInput.style.display = 'none';
-    combobox.searchInput.value = '';
-    showMatchingOptions('');
-    document.removeEventListener('click', closeOnOutsideClick);
-  }
-
-  function closeOnOutsideClick(event) {
-    if (!comboboxContainer.contains(event.target)) {
-      closeCombobox();
-    }
-  }
-
-  function normalizeText(text) {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  function showMatchingOptions(searchTerm) {
-    const normalizedSearch = normalizeText(searchTerm);
-    const searchWords = normalizedSearch.split(' ').filter(Boolean);
-    let visibleItems = 0;
-
-    combobox.options.forEach(option => {
-      const optionName = normalizeText(option.dataset.name);
-      const isVisible = searchWords.length === 0 || searchWords.every(word => optionName.includes(word));
-      option.classList.toggle('hidden', !isVisible);
-
-      if (isVisible) {
-        visibleItems++;
-      }
-    });
-
-    const shouldShowEmptyMessage = visibleItems === 0;
-    combobox.emptyMessage.style.display = shouldShowEmptyMessage ? 'block' : 'none';
-  }
-
-  function selectOption(option) {
-    closeCombobox();
-    
-    combobox.options.forEach(opt => opt.classList.remove('selected'));
-    option.classList.add('selected');
-
-    combobox.displayText.textContent = option.dataset.name;
-    combobox.valueInput.value = option.dataset.value;
-  }
-
-  function selectFirstComboboxOption() {
-    const visibleOptions = Array.from(combobox.options).filter(opt => 
-      !opt.classList.contains('hidden')
-    );
-
-    if (!visibleOptions.length) {
-      return;
-    }
-    
-    selectOption(visibleOptions[0]);
-  }
-
-  combobox.trigger.addEventListener('focus', (event) => {
-    const isOpen = comboboxContainer.classList.contains('open');
-
-    if (!isOpen) {
-      openCombobox();
-    }
-  });
-
-  combobox.searchInput.addEventListener('blur', (event) => {
-    if (event.relatedTarget && comboboxContainer.contains(event.relatedTarget)) {
-      return;
-    }
-
-    closeCombobox();
-  });
-
-  combobox.searchInput.addEventListener('input', () => {
-    showMatchingOptions(combobox.searchInput.value);
-  });
-
-  combobox.searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeCombobox();
-    } else if (event.key === 'Enter') {
-      event.preventDefault();
-      selectFirstComboboxOption();
-    }
-  });
-
-  combobox.dropdown.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeCombobox();
-    }
-  });
-
-  combobox.options.forEach(option => {
-    option.addEventListener('click', (event) => {
-      selectOption(option);
-    });
-
-    option.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        selectOption(option);
-      }
-    });
-  });
-
-  if (combobox.options.length > 0) {
-    selectOption(combobox.options[0]);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  initCombobox('idp-select');
-});
-
-</script>
 
 </head>
 <body>
 <div class="app-container">
-  <form action="/auth/select-idp" method="post" class="container">
   <div class="container">
-    <div class="heading">
-      <h1 class="title">Your GesundheitsID</h1>
-      <p class="text">Select your GesundheitsID provider.</p>
-    </div>
-    
-    <div id="idp-select" class="combobox">
-        <input type="hidden" name="identityProvider" value="">
-        
-        <div class="combobox-trigger" tabindex="0">
-            <span class="combobox-text"></span>
-            <input type="text" class="combobox-search-input" placeholder="Search..." autocomplete="off" style="display: none;">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M4.25 6.5L8 10.25L11.75 6.5H4.25Z" fill="#000E30"/>
+  <svg width="173" height="180" viewBox="0 0 173 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_d_4787_24225)">
+<rect width="5.70267" height="34.216" rx="2.85134" transform="matrix(-1 -5.18986e-09 -5.18986e-09 1 21.2021 30.8851)" fill="#A9C0DA"/>
+<rect width="5.70267" height="15.6823" rx="2.85134" transform="matrix(-1 -5.18986e-09 -5.18986e-09 1 21.2021 75.0802)" fill="#A9C0DA"/>
+<rect width="137.93" height="284.095" rx="10.87" transform="matrix(-1 -5.18986e-09 -5.18986e-09 1 157.059 9.5)" fill="#444446"/>
+<path d="M148.894 29.4324C148.894 23.4279 144.026 18.5604 138.022 18.5604L38.3047 18.5604C32.3003 18.5604 27.4328 23.4279 27.4328 29.4324L27.4328 271.437C27.4328 277.441 32.3003 282.309 38.3048 282.309L138.022 282.309C144.026 282.309 148.894 277.441 148.894 271.437L148.894 29.4324Z" fill="white"/>
+<mask id="mask0_4787_24225" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="26" y="18" width="123" height="265">
+<path d="M148.444 29.4324C148.444 23.4279 143.577 18.5604 137.572 18.5604L37.8555 18.5604C31.8511 18.5604 26.9835 23.4279 26.9835 29.4324L26.9835 271.437C26.9835 277.441 31.8511 282.309 37.8555 282.309L137.572 282.309C143.577 282.309 148.444 277.441 148.444 271.437L148.444 29.4324Z" fill="#FDEFC6"/>
+</mask>
+<g mask="url(#mask0_4787_24225)">
+<path d="M121.535 58.784C121.262 59.7566 119.883 59.7566 119.61 58.784L118.691 55.5157C118.597 55.18 118.335 54.9176 117.999 54.8234L114.731 53.9069C113.757 53.6339 113.757 52.2541 114.731 51.9812L117.999 51.0646C118.335 50.9704 118.597 50.7081 118.691 50.3723L119.61 47.1041C119.883 46.1315 121.262 46.1315 121.535 47.1041L122.454 50.3723C122.548 50.7081 122.811 50.9704 123.146 51.0646L126.415 51.9812C127.388 52.2541 127.388 53.6339 126.415 53.9069L123.146 54.8234C122.811 54.9176 122.548 55.18 122.454 55.5157L121.535 58.784Z" fill="#00A88F"/>
+<rect x="59.499" y="59.6904" width="57" height="211" rx="28.5" fill="#DFF2EF"/>
+<path d="M111.277 89.0569C111.277 101.962 100.805 112.423 87.8871 112.423C74.9691 112.423 64.4971 101.962 64.4971 89.0569C64.4971 76.1519 74.9691 65.6904 87.8871 65.6904C100.805 65.6904 111.277 76.1519 111.277 89.0569Z" fill="#009682"/>
+<path opacity="0.5" d="M102.132 83.2568L83.9961 101.357C83.1284 102.224 81.7255 102.224 80.8578 101.357L73.6889 94.1957C72.8212 93.3289 72.8212 91.9445 73.6889 91.0776C74.5566 90.2108 75.9424 90.2108 76.8101 91.0776L82.4355 96.6974L99.011 80.1385C99.8787 79.2717 101.264 79.2717 102.132 80.1385C103 81.0054 103 82.39 102.132 83.2568Z" fill="#0080F6"/>
+<path d="M102.458 81.4651L83.7895 100.097C82.8963 100.989 81.4523 100.989 80.5591 100.097L73.1797 92.7252C72.2865 91.8329 72.2865 90.4078 73.1797 89.5155C74.0729 88.6232 75.4993 88.6232 76.3925 89.5155L82.1831 95.3003L99.2453 78.2552C100.138 77.3629 101.565 77.3629 102.458 78.2552C103.351 79.1475 103.351 80.5728 102.458 81.4651Z" fill="white"/>
+</g>
+<rect x="78.5" y="13.0061" width="16.3187" height="16.3187" rx="8.15936" fill="#444446"/>
+<rect x="83.3965" y="17.9017" width="6.52749" height="6.52749" rx="3.26374" fill="#BCBCC0"/>
+</g>
+<defs>
+<filter id="filter0_d_4787_24225" x="0.499023" y="0.5" width="171.56" height="314.095" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="6"/>
+<feGaussianBlur stdDeviation="7.5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_4787_24225"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_4787_24225" result="shape"/>
+</filter>
+</defs>
 </svg>
 
-        </div>
-        
-        <div class="combobox-dropdown">
-          <div class="combobox-empty-state" style="display: none;">
-            <span>No results found.</span>
-          </div>
-          
-          <div class="combobox-option" data-value="https://a.example.com" data-name="AoK Tesfalen" tabindex="0">
-            <span>AoK Tesfalen</span>
-            <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
-</svg>
-
-          </div>
-          <div class="combobox-option" data-value="https://d.example.com" data-name="Barmer" tabindex="0">
-            <span>Barmer</span>
-            <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
-</svg>
-
-          </div>
-          <div class="combobox-option" data-value="https://b.example.com" data-name="Siemens" tabindex="0">
-            <span>Siemens</span>
-            <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
-</svg>
-
-          </div>
-          <div class="combobox-option" data-value="https://c.example.com" data-name="Zuse" tabindex="0">
-            <span>Zuse</span>
-            <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M5.68871 10.8334L0.666748 5.99472L2.09316 4.62045L5.68871 8.08432L13.907 0.166687L15.3334 1.54096L5.68871 10.8334Z" fill="#444446"/>
-</svg>
-
-          </div>
-        </div>
-    </div>
+  
+  <div class="heading">
+    <h1 class="title">GesundheitsID successfully linked!</h1>
+    <p class="text">Your GesundheitsID is now linked. Simply log in with it in the future.</p>
   </div>
-
+  
   <div class="actions">
-    <input type="submit" value="Login" class="primary-button">
+    <a href="https://app.example.com/callback" class="primary-button">
+      Continue
+    </a>
   </div>
-</form>
+</div>
 
 </div>
 </body>

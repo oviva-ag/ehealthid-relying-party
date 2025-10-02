@@ -1,8 +1,23 @@
 {{<layout.html.mustache}}
-  {{$body}}
-    <h1>{{#trans}}error.login{{/trans}}</h1>
-    <p>
-      {{#trans}}{{errorMessage}}{{/trans}}
+{{$body}}
+<div class="container">
+  {{> assets/error-screen.svg }}
+  
+  <div class="heading">
+    <h1 class="title">{{#trans}}error.title{{/trans}}</h1>
+    <p class="text">
+      {{#errorMessage}}{{errorMessage}}{{/errorMessage}}
+      {{^errorMessage}}{{#trans}}error.genericMessage{{/trans}}{{/errorMessage}}
     </p>
-  {{/body}}
+  </div>
+  
+  {{#appUri}}
+  <div class="actions">
+    <a href="{{appUri}}" class="primary-button">
+      {{#trans}}backToApp{{/trans}}
+    </a>
+  </div>
+  {{/appUri}}
+</div>
+{{/body}}
 {{/layout.html.mustache}}

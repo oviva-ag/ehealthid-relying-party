@@ -1,77 +1,51 @@
 {{<layout.html.mustache}}
 {{$head}}
 <style>
-    .form-inline {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .form-inline .provider-wrapper {
-        margin: auto 0;
-    }
-
-    .form-inline label {
-        margin: 0 10px 4px 0;
-
-        font-size: 14px;
-        font-style: normal;
-        font-weight: 600;
-        line-height: 150%; /* 21px */
-        letter-spacing: 0.15px;
-    }
-
-    .form-inline select, .form-inline input {
-        width: 100%;
-        height: 40px;
-
-        padding: 0 16px;
-        margin: 10px 0;
-
-        border-radius: 8px;
-        border: 1px solid #00A88F;
-        background: #FFF;
-
-        font-size: 14px;
-        font-style: normal;
-        font-weight: 600;
-        line-height: 150%; /* 21px */
-        letter-spacing: 0.15px;
-    }
-
-    .form-inline select {
-        outline: none;
-        font-weight: 400;
-    }
-
-    .form-inline input[type=submit] {
-        padding: 10px 20px;
-        cursor: pointer;
-        color: white;
-
-        border-radius: 24px;
-
-        background: #00A88F url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIgogICAgIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICAgIDxkZWZzPgogICAgICAgIDxzdHlsZT4KICAgICAgICAgICAgLmNscy0xIHsKICAgICAgICAgICAgY2xpcC1wYXRoOiB1cmwoI2NsaXBwYXRoKTsKICAgICAgICAgICAgfQoKICAgICAgICAgICAgLmNscy01IHsKICAgICAgICAgICAgY2xpcC1wYXRoOiB1cmwoI2NsaXBwYXRoLTEpOwogICAgICAgICAgICB9CiAgICAgICAgPC9zdHlsZT4KICAgICAgICA8Y2xpcFBhdGggaWQ9ImNsaXBwYXRoIj4KICAgICAgICAgICAgPHBhdGggZD0ibTI1Niw0NTQuMDNjLTg5LjA1LDAtMTYxLjUtNzIuNDUtMTYxLjUtMTYxLjV2LTczLjg2YzAtODkuMDUsNzIuNDUtMTYxLjUsMTYxLjUtMTYxLjVzMTYxLjUsNzIuNDUsMTYxLjUsMTYxLjV2NzMuODZjMCw4OS4wNS03Mi40NSwxNjEuNS0xNjEuNSwxNjEuNVptMC0zNzguNTFjLTc4LjkzLDAtMTQzLjE1LDY0LjIyLTE0My4xNSwxNDMuMTV2NzMuODZjMCw3OC45Myw2NC4yMiwxNDMuMTUsMTQzLjE1LDE0My4xNXMxNDMuMTUtNjQuMjEsMTQzLjE1LTE0My4xNXYtNzMuODZjMC03OC45My02NC4yMS0xNDMuMTUtMTQzLjE1LTE0My4xNVptNTguOTYsMTY0LjQyaC0xMDAuMzl2LTE5LjQ0YzAtMjQuNTUsMTkuOTctNDQuNTIsNDQuNTItNDQuNTIsMTYuNDksMCwzMS41Nyw5LjA5LDM5LjM0LDIzLjcxLDMuNzgsNy4wOSwxMi41OCw5Ljc5LDE5LjY4LDYuMDIsNy4xLTMuNzcsOS43OS0xMi41OCw2LjAyLTE5LjY4LTEyLjg0LTI0LjE0LTM3Ljc2LTM5LjE0LTY1LjA0LTM5LjE0LTQwLjU5LDAtNzMuNjIsMzMuMDItNzMuNjIsNzMuNjJ2NzYuMzRjMCwxLjMyLjE5LDIuNi41MiwzLjgyLDMuODIsMzQuNywzMy4yMiw2MS42OSw2OC45NCw2MS42OSwzOS4xNiwwLDcwLjktMzEuNzQsNzAuOS03MC45di00MC42NWMwLTYtNC44Ny0xMC44Ny0xMC44Ny0xMC44N1ptLTQ4LjAzLDY4LjI0Yy0uMDEsNS4yNS00LjQsOS41LTkuNzksOS40OS01LjM5LS4wMS05Ljc2LTQuMjgtOS43NC05LjU0bC4wNi0yMy43OGMuMDEtNS4yNSw0LjQtMTEuOTgsOS44LTExLjk3LDUuMzkuMDEsOS43NSw2Ljc3LDkuNzQsMTIuMDJsLS4wNiwyMy43OFptODEuNjEsNTcuNDFjMy41NS00LjQ5LDYuOC05LjI5LDkuNjctMTQuMjQsMi43OC00LjgyLDEuMTMtMTAuOTgtMy42OC0xMy43Ni00LjgyLTIuNzktMTAuOTgtMS4xMy0xMy43NiwzLjY4LTIuMzgsNC4xMi01LjA4LDguMS04LjAzLDExLjgzLTE4LjcyLDIzLjY4LTQ2LjcsMzcuMjYtNzYuNzQsMzcuMjYtNTIuMzgsMC05Ni4yNS00Mi41Ny05Ny43OS05NC45LS4xNi01LjU2LTQuNzgtOS44Ni0xMC4zNy05Ljc3LTUuNTYuMTYtOS45NCw0LjgtOS43NywxMC4zNy45MSwzMC43MywxMy41OSw1OS41LDM1LjcxLDgxLjAyLDIyLjE3LDIxLjU2LDUxLjM3LDMzLjQ0LDgyLjIyLDMzLjQ0LDM2LjI0LDAsNjkuOTctMTYuMzcsOTIuNTQtNDQuOTFabTI1LjQzLTczLjA2di03My44NmMwLTYzLjU2LTUxLjY4LTExNi40OC0xMTUuMjEtMTE3Ljk1LS45Mi0uMDItMS44NC0uMDMtMi43Ny0uMDMtNS41NiwwLTEwLjA3LDQuNTEtMTAuMDcsMTAuMDdzNC41MSwxMC4wNywxMC4wNywxMC4wN2MuNzcsMCwxLjU0LDAsMi4zLjAzLDUyLjY4LDEuMjIsOTUuNTMsNDUuMSw5NS41Myw5Ny44MXY3My44NmMwLDUuNTYsNC41MSwxMC4wNywxMC4wNywxMC4wN3MxMC4wNy00LjUxLDEwLjA3LTEwLjA3Wm0tMjE1Ljg0LTQ4LjYxdi0yMS4xMWwuMDItNC4xNGMwLTM4LDIyLjM3LTcyLjg4LDU2Ljk5LTg4Ljg2LDUuMDUtMi4zMyw3LjI1LTguMzIsNC45Mi0xMy4zNy0yLjMzLTUuMDUtOC4zMS03LjI1LTEzLjM3LTQuOTItNDEuNzMsMTkuMjctNjguNjksNjEuMzMtNjguNjksMTA3LjA5bC0uMDIsMjUuMzFjMCw1LjU2LDQuNTEsMTAuMDcsMTAuMDcsMTAuMDdzMTAuMDctNC41MSwxMC4wNy0xMC4wN1oiLz4KICAgICAgICA8L2NsaXBQYXRoPgogICAgPC9kZWZzPgogICAgPGcgY2xhc3M9ImNscy0xIj4KICAgICAgICA8ZyBjbGFzcz0iY2xzLTUiPgogICAgICAgICAgICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjk1IiBoZWlnaHQ9Ijg0OSIgZmlsbD0id2hpdGUiLz4KICAgICAgICA8L2c+CiAgICA8L2c+Cjwvc3ZnPg==) no-repeat 12px 0;
-    }
-
-    .form-inline input[type=submit]:hover, .form-inline input[type=submit]:active {
-        background-color: rgba(0, 168, 143, 0.92);
-    }
+  {{> styles/select-idp.css.mustache }}
 </style>
+<script>
+  {{> js/select-idp.js.mustache }}
+</script>
 {{/head}}
 {{$body}}
-<form action="/auth/select-idp" method="post" class="form-inline">
-    <div class="provider-wrapper">
-        <h1>GesundheitsID</h1>
-        <label for="idp-selection">{{#trans}}idp.selection{{/trans}}</label>
-        <select name="identityProvider" id="idp-selection">
-            {{#identityProviders}}
-            <option value="{{iss}}">{{name}}</option>
-            {{/identityProviders}}
-        </select>
+<form action="/auth/select-idp" method="post" class="container">
+  <div class="container">
+    <div class="heading">
+      <h1 class="title">{{#trans}}idp.title{{/trans}}</h1>
+      <p class="text">{{#trans}}idp.description{{/trans}}</p>
     </div>
-    <input type="submit" value="{{#trans}}idp.login{{/trans}}">
+    
+    <div id="idp-select" class="combobox">
+        <input type="hidden" name="identityProvider" value="">
+        
+        <div class="combobox-trigger" tabindex="0">
+            <span class="combobox-text"></span>
+            <input type="text" class="combobox-search-input" placeholder="{{#trans}}idp.searchPlaceholder{{/trans}}" autocomplete="off" style="display: none;">
+            {{> assets/chevron-down-icon.svg }}
+        </div>
+        
+        <div class="combobox-dropdown">
+          <div class="combobox-empty-state" style="display: none;">
+            <span>{{#trans}}idp.noResults{{/trans}}</span>
+          </div>
+          
+          {{#identityProviders}}
+          <div class="combobox-option" data-value="{{iss}}" data-name="{{name}}" tabindex="0">
+            <span>{{name}}</span>
+            {{> assets/check-icon.svg }}
+          </div>
+          {{/identityProviders}}
+        </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <input type="submit" value="{{#trans}}idp.login{{/trans}}" class="primary-button">
+    {{#appUri}}
+    <div class="divider"></div>
+    <a class="link" href="{{appUri}}">{{#trans}}backToApp{{/trans}}</a>
+    {{/appUri}}
+  </div>
 </form>
 {{/body}}
 {{/layout.html.mustache}}

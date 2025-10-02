@@ -23,6 +23,7 @@ public class ConfigReader {
   public static final String CONFIG_FEDERATION_MASTER = "federation_master";
   public static final String CONFIG_ES_TTL = "es_ttl";
   public static final String CONFIG_APP_NAME = "app_name";
+  public static final String CONFIG_APP_URI = "app_uri";
   public static final String CONFIG_SCOPES = "scopes";
 
   public static final String CONFIG_SESSION_STORE_TTL = "session_store_ttl";
@@ -69,6 +70,8 @@ public class ConfigReader {
             .get(CONFIG_APP_NAME)
             .orElseThrow(() -> new IllegalArgumentException("missing 'app_name' configuration"));
 
+    var appUri = configProvider.get(CONFIG_APP_URI).map(URI::create).orElse(null);
+
     var entityStatementTtl =
         configProvider.get(CONFIG_ES_TTL).map(Duration::parse).orElse(Duration.ofHours(1));
 
@@ -96,6 +99,7 @@ public class ConfigReader {
         managementPort,
         baseUri,
         idpDiscoveryUri,
+        appUri,
         sessionStoreConfig(),
         codeStoreConfig());
   }
@@ -152,6 +156,7 @@ public class ConfigReader {
       int managementPort,
       URI baseUri,
       URI idpDiscoveryUri,
+      URI appUri,
       SessionStoreConfig sessionStore,
       CodeStoreConfig codeStoreConfig) {}
 

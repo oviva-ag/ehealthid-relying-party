@@ -36,9 +36,11 @@ public class AuthEndpoint {
   private final Pages pages = new Pages(new TemplateRenderer());
 
   private final AuthService authService;
+  private final URI appUri;
 
-  public AuthEndpoint(AuthService authService) {
+  public AuthEndpoint(AuthService authService, @Nullable URI appUri) {
     this.authService = authService;
+    this.appUri = appUri;
   }
 
   // Authorization Request
@@ -61,7 +63,7 @@ public class AuthEndpoint {
             new AuthorizationRequest(scope, state, responseType, clientId, uri, nonce));
 
     var locale = getNegotiatedLocale(acceptLanguage);
-    var form = pages.selectIdpForm(res.identityProviders(), locale);
+    var form = pages.selectIdpForm(res.identityProviders(), appUri, locale);
 
     return Response.ok(form, MediaType.TEXT_HTML_TYPE)
         .cookie(createSessionCookie(res.sessionId()))
@@ -114,11 +116,17 @@ public class AuthEndpoint {
   @GET
   @Path("/callback")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.TEXT_HTML)
   public Response callback(
-      @CookieParam("session_id") String sessionId, @QueryParam("code") String code) {
+      @CookieParam("session_id") String sessionId,
+      @QueryParam("code") String code,
+      @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
 
-    var redirect = authService.callback(new CallbackRequest(sessionId, code));
-    return Response.seeOther(redirect).build();
+    var redirectUri = authService.callback(new CallbackRequest(sessionId, code));
+    var locale = getNegotiatedLocale(acceptLanguage);
+    var successPage = pages.success(redirectUri, locale);
+
+    return Response.ok(successPage, MediaType.TEXT_HTML_TYPE).build();
   }
 
   public record AuthResponse(@JsonProperty("identity_providers") List<IdpEntry> identityProviders) {

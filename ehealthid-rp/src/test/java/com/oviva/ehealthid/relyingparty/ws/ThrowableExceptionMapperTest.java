@@ -10,6 +10,7 @@ import com.github.mustachejava.util.HtmlEscaper;
 import com.oviva.ehealthid.auth.AuthException;
 import com.oviva.ehealthid.fedclient.FederationException;
 import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
+import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
@@ -34,11 +35,13 @@ import org.slf4j.LoggerFactory;
 class ThrowableExceptionMapperTest {
 
   private static final URI REQUEST_URI = URI.create("https://example.com/my/request");
+  private static final URI APP_URI = URI.create("https://app.example.com/app");
+
   @Mock UriInfo uriInfo;
   @Mock Request request;
   @Mock HttpHeaders headers;
   @Spy Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
-  @InjectMocks ThrowableExceptionMapper mapper = new ThrowableExceptionMapper();
+  @InjectMocks ThrowableExceptionMapper mapper = new ThrowableExceptionMapper(APP_URI);
 
   private static Stream<Arguments> listValidLocale() {
     return Stream.of(
@@ -263,6 +266,18 @@ class ThrowableExceptionMapperTest {
     var w = new StringWriter();
     HtmlEscaper.escape(s, w);
     return w.toString();
+  }
+
+  @Test
+  void toResponse_usesAppUriFromConfig() {
+    when(uriInfo.getRequestUri()).thenReturn(REQUEST_URI);
+    mockHeaders("de-DE");
+
+    var res = mapper.toResponse(new IllegalArgumentException("Test exception"));
+
+    assertEquals(500, res.getStatus());
+    assertEquals(MediaType.TEXT_HTML_TYPE, res.getMediaType());
+    assertBodyContains(res, APP_URI.toString());
   }
 
   private void mockHeaders(String locales) {

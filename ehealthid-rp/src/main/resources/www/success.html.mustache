@@ -1,0 +1,18 @@
+{{<layout.html.mustache}}
+{{$body}}
+<div class="container">
+  {{> assets/success-screen.svg }}
+  
+  <div class="heading">
+    <h1 class="title">{{#trans}}success.title{{/trans}}</h1>
+    <p class="text">{{#trans}}success.description{{/trans}}</p>
+  </div>
+  
+  <div class="actions">
+    <a href="{{redirectUri}}" class="primary-button">
+      {{#trans}}continue{{/trans}}
+    </a>
+  </div>
+</div>
+{{/body}}
+{{/layout.html.mustache}}

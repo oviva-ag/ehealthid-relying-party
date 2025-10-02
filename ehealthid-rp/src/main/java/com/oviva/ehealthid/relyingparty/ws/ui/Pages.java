@@ -4,8 +4,10 @@ import static com.oviva.ehealthid.relyingparty.util.LocaleUtils.*;
 
 import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.net.URI;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,12 +20,20 @@ public class Pages {
     this.renderer = renderer;
   }
 
-  public String selectIdpForm(List<IdpEntry> identityProviders, Locale locale) {
+  public String selectIdpForm(
+      List<IdpEntry> identityProviders, @Nullable URI appUri, Locale locale) {
+
     identityProviders =
         identityProviders.stream().sorted(Comparator.comparing(IdpEntry::name)).toList();
 
-    return renderer.render(
-        "select-idp.html.mustache", Map.of("identityProviders", identityProviders), locale);
+    var templateData = new HashMap<String, Object>();
+    templateData.put("identityProviders", identityProviders);
+
+    if (appUri != null) {
+      templateData.put("appUri", appUri.toString());
+    }
+
+    return renderer.render("select-idp.html.mustache", templateData, locale);
   }
 
   public String jumpToApp(URI destination, Locale locale) {
@@ -32,10 +42,23 @@ public class Pages {
         "jump-to-app.html.mustache", Map.of("destination", destination.toString()), locale);
   }
 
-  public String error(Message errorMessage, Locale locale) {
+  public String success(URI redirectUri, Locale locale) {
+    var templateData = new HashMap<String, Object>();
+    templateData.put("redirectUri", redirectUri.toString());
+
+    return renderer.render("success.html.mustache", templateData, locale);
+  }
+
+  public String error(Message errorMessage, @Nullable URI appUri, Locale locale) {
     var localizedErrorMessage = formatLocalizedErrorMessage(errorMessage, locale);
 
-    return renderer.render(
-        "error.html.mustache", Map.of("errorMessage", localizedErrorMessage), locale);
+    var templateData = new HashMap<String, Object>();
+    templateData.put("errorMessage", localizedErrorMessage);
+
+    if (appUri != null) {
+      templateData.put("appUri", appUri.toString());
+    }
+
+    return renderer.render("error.html.mustache", templateData, locale);
   }
 }

@@ -9,6 +9,7 @@ import com.oviva.ehealthid.relyingparty.svc.AuthenticationException;
 import com.oviva.ehealthid.relyingparty.svc.ValidationException;
 import com.oviva.ehealthid.relyingparty.ws.ui.Pages;
 import com.oviva.ehealthid.relyingparty.ws.ui.TemplateRenderer;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -19,6 +20,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.Response.StatusType;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,11 +35,17 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
   private static final String AUTH_ERROR_MESSAGE = "error.authError";
 
   private final Pages pages = new Pages(new TemplateRenderer());
+  private final URI appUri;
+
   @Context UriInfo uriInfo;
   @Context Request request;
   @Context HttpHeaders headers;
 
   private Logger logger = LoggerFactory.getLogger(ThrowableExceptionMapper.class);
+
+  public ThrowableExceptionMapper(@Nullable URI appUri) {
+    this.appUri = appUri;
+  }
 
   @Override
   public Response toResponse(Throwable exception) {
@@ -88,7 +96,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
     var headerString = headers.getHeaderString("Accept-Language");
     var locale = getNegotiatedLocale(headerString);
 
-    var body = pages.error(message, locale);
+    var body = pages.error(message, appUri, locale);
 
     // FIXES oviva-ag/ehealthid-relying-party #58 / EPA-102
     // resteasy has a built-in `MessageSanitizerContainerResponseFilter` escaping all non status

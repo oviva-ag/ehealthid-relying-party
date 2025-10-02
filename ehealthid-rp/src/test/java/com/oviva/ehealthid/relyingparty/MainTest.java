@@ -229,7 +229,7 @@ class MainTest {
     assertTrue(responseBody.contains("de-DE"));
     assertTrue(
         responseBody.contains(
-            "Oops, Sitzung unbekannt oder abgelaufen. Bitte starten Sie erneut."));
+            "Ups! Die Sitzung ist unbekannt oder abgelaufen. Bitte versuche es erneut."));
   }
 
   @Test
