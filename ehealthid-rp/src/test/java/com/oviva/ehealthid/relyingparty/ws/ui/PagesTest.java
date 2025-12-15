@@ -3,7 +3,6 @@ package com.oviva.ehealthid.relyingparty.ws.ui;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
 import com.oviva.ehealthid.fedclient.IdpEntry;
 import com.oviva.ehealthid.relyingparty.svc.LocalizedException.Message;
 import com.oviva.ehealthid.relyingparty.test.Fixtures;
@@ -11,6 +10,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
+import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

@@ -43,8 +43,8 @@
     <version.micrometer>1.16.1</version.micrometer>
     <version.nimbus-jose-jwt>10.6</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.22</version.logback.classic>
-    <!--  wiremock 3.13.1 depends on 4.3.1 and breaks with newer versions -->
-    <version.handlebars>4.3.1</version.handlebars>
+    <version.wiremock>4.0.0-beta.22</version.wiremock>
+    <version.handlebars>4.5.0</version.handlebars>
 
     <spotless-maven-plugin.version>2.44.5</spotless-maven-plugin.version>
     <jacoco.version>0.8.14</jacoco.version>
@@ -160,7 +160,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.13.2</version>
+        <version>5.14.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -189,62 +189,27 @@
         <version>5.5.6</version>
       </dependency>
 
-      <!-- BEGIN wiremock // fix for broken dependency convergence & vulnerabilities -->
+      <!-- BEGIN wiremock -->
       <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <version>3.20.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.github.jknack</groupId>
-        <artifactId>handlebars</artifactId>
-        <version>${version.handlebars}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.github.jknack</groupId>
-        <artifactId>handlebars-helpers</artifactId>
-        <version>${version.handlebars}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.jayway.jsonpath</groupId>
-        <artifactId>json-path</artifactId>
-        <version>2.10.0</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-        </exclusions>
+        <groupId>org.wiremock</groupId>
+        <artifactId>wiremock-httpclient-apache5</artifactId>
+        <version>${version.wiremock}</version>
       </dependency>
       <dependency>
         <groupId>org.wiremock</groupId>
-        <artifactId>wiremock</artifactId>
-        <version>3.13.2</version>
-        <exclusions>
-          <exclusion>
-            <groupId>com.github.jknack</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-          </exclusion>
-        </exclusions>
+        <artifactId>wiremock-jetty</artifactId>
+        <version>${version.wiremock}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.wiremock</groupId>
+        <artifactId>wiremock-junit5</artifactId>
+        <version>${version.wiremock}</version>
       </dependency>
       <!-- END wiremock -->
-
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
-        <version>6.2.12.Final</version>
+        <version>6.2.15.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
