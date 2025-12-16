@@ -142,25 +142,20 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- BEGIN wiremock // fix for broken dependency convergence -->
+    <!-- BEGIN wiremock -->
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.jknack</groupId>
-      <artifactId>handlebars-helpers</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.jayway.jsonpath</groupId>
-      <artifactId>json-path</artifactId>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-httpclient-apache5</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.wiremock</groupId>
-      <artifactId>wiremock</artifactId>
+      <artifactId>wiremock-jetty</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-junit5</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- END wiremock -->
