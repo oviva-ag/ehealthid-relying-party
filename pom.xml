@@ -42,7 +42,7 @@
     <version.slf4j>2.0.17</version.slf4j>
     <version.micrometer>1.16.1</version.micrometer>
     <version.nimbus-jose-jwt>10.6</version.nimbus-jose-jwt>
-    <version.logback.classic>1.5.22</version.logback.classic>
+    <version.logback.classic>1.5.25</version.logback.classic>
     <version.wiremock>4.0.0-beta.22</version.wiremock>
     <version.handlebars>4.5.0</version.handlebars>
 
@@ -189,6 +189,20 @@
         <version>5.5.6</version>
       </dependency>
 
+      <!-- Security fix: GHSA-j382-5jj3-vw4j, GHSA-33hj-rcmx-86mv, GHSA-6h4f-pj3g-q8fq
+      override  undertow-core:jar:2.3.20.Final from resteasy-bom:7.0.1.Final (latest)
+      as still contains vulnerable version -->
+      <dependency>
+        <groupId>io.undertow</groupId>
+        <artifactId>undertow-core</artifactId>
+        <version>2.3.21.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.undertow</groupId>
+        <artifactId>undertow-servlet</artifactId>
+        <version>2.3.21.Final</version>
+      </dependency>
+
       <!-- BEGIN wiremock -->
       <dependency>
         <groupId>org.wiremock</groupId>
@@ -209,7 +223,7 @@
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
-        <version>6.2.15.Final</version>
+        <version>7.0.1.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

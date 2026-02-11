@@ -23,7 +23,7 @@ public class TlsContext {
     }
 
     try {
-      var ctx = SSLContext.getInstance("TLS");
+      var ctx = SSLContext.getInstance("TLSv1.2");
 
       var tmf = TrustManagerFactory.getInstance("PKIX");
 
