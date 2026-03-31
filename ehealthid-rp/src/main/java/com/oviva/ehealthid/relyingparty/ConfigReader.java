@@ -23,6 +23,7 @@ public class ConfigReader {
   public static final String CONFIG_FEDERATION_MASTER = "federation_master";
   public static final String CONFIG_ES_TTL = "es_ttl";
   public static final String CONFIG_APP_NAME = "app_name";
+  public static final String CONFIG_ORGANIZATION_NAME = "organization_name";
   public static final String CONFIG_APP_URI = "app_uri";
   public static final String CONFIG_SCOPES = "scopes";
 
@@ -72,6 +73,8 @@ public class ConfigReader {
 
     var appUri = configProvider.get(CONFIG_APP_URI).map(URI::create).orElse(null);
 
+    var organizationName = configProvider.get(CONFIG_ORGANIZATION_NAME).orElse(null);
+
     var entityStatementTtl =
         configProvider.get(CONFIG_ES_TTL).map(Duration::parse).orElse(Duration.ofHours(1));
 
@@ -80,6 +83,7 @@ public class ConfigReader {
             .sub(baseUri)
             .iss(baseUri)
             .appName(appName)
+            .organizationName(organizationName)
             .federationMaster(fedmaster)
             .ttl(entityStatementTtl)
             .scopes(getScopes())
