@@ -11,14 +11,16 @@ public record FederationConfig(
     Duration ttl,
     List<String> redirectUris,
     List<String> scopes,
-    String appName) {
+    String appName,
+    String organizationName) {
 
   public static Builder create() {
     return new Builder();
   }
 
   public Builder builder() {
-    return new Builder(iss, sub, federationMaster, ttl, redirectUris, scopes, appName);
+    return new Builder(
+        iss, sub, federationMaster, ttl, redirectUris, scopes, appName, organizationName);
   }
 
   public static final class Builder {
@@ -31,6 +33,7 @@ public record FederationConfig(
     private List<String> redirectUris;
     private List<String> scopes;
     private String appName;
+    private String organizationName;
 
     private Builder() {}
 
@@ -41,7 +44,8 @@ public record FederationConfig(
         Duration ttl,
         List<String> redirectUris,
         List<String> scopes,
-        String appName) {
+        String appName,
+        String organizationName) {
       this.iss = iss;
       this.sub = sub;
       this.federationMaster = federationMaster;
@@ -49,6 +53,7 @@ public record FederationConfig(
       this.redirectUris = redirectUris;
       this.scopes = scopes;
       this.appName = appName;
+      this.organizationName = organizationName;
     }
 
     public Builder iss(URI iss) {
@@ -86,8 +91,14 @@ public record FederationConfig(
       return this;
     }
 
+    public Builder organizationName(String organizationName) {
+      this.organizationName = organizationName;
+      return this;
+    }
+
     public FederationConfig build() {
-      return new FederationConfig(iss, sub, federationMaster, ttl, redirectUris, scopes, appName);
+      return new FederationConfig(
+          iss, sub, federationMaster, ttl, redirectUris, scopes, appName, organizationName);
     }
   }
 }
