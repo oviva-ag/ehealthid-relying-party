@@ -8,7 +8,6 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer;
 import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model;
 import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Environment;
-import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Scope;
 import com.oviva.ehealthid.fedclient.api.EntityStatementJWS;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -22,7 +21,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -135,11 +133,13 @@ public class FedRegistrationCommand implements Callable<Integer> {
         new Model(
             vfsConfirmation,
             memberId,
-            entityConfiguration.orgName(),
+            entityConfiguration.organisationName(),
+            entityConfiguration.fachdienstName(),
             contactEmail,
             issuerUri,
             environment,
             entityConfiguration.scopes(),
+            entityConfiguration.redirectUris(),
             entityConfiguration.jwks()));
   }
 
@@ -184,11 +184,16 @@ public class FedRegistrationCommand implements Callable<Integer> {
       logger.atInfo().log("retrieved entity configuration from '{}'", entityConfigurationUri);
 
       var entityStatement = EntityStatementJWS.parse(res.body());
+      var rp = entityStatement.body().metadata().openIdRelyingParty();
+      var scopes = Arrays.asList(rp.scope().split(" "));
+      var redirectUris = rp.redirectUris() != null ? rp.redirectUris() : List.<String>of();
       return new EntityConfiguration(
           entityStatement.body().sub(),
           entityStatement.body().jwks(),
+          rp.organizationName(),
           entityStatement.body().metadata().federationEntity().name(),
-          parseScopes(entityStatement.body().metadata().openIdRelyingParty().scope()));
+          scopes,
+          redirectUris);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -259,25 +264,6 @@ public class FedRegistrationCommand implements Callable<Integer> {
     }
   }
 
-  private List<Scope> parseScopes(String scopes) {
-    return Arrays.stream(scopes.split(" "))
-        .flatMap(
-            s ->
-                switch (s) {
-                  // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/index.html#A_22989-01
-                  case "urn:telematik:geburtsdatum" -> Stream.of(Scope.DATE_OF_BIRTH);
-                  case "urn:telematik:alter" -> Stream.of(Scope.AGE);
-                  case "urn:telematik:display_name" -> Stream.of(Scope.DISPLAY_NAME);
-                  case "urn:telematik:given_name" -> Stream.of(Scope.FIRST_NAME);
-                  case "urn:telematik:family_name" -> Stream.of(Scope.LAST_NAME);
-                  case "urn:telematik:geschlecht" -> Stream.of(Scope.GENDER);
-                  case "urn:telematik:email" -> Stream.of(Scope.EMAIL);
-                  case "urn:telematik:versicherter" -> Stream.of(Scope.INSURED_PERSON);
-                  default -> Stream.empty();
-                })
-        .toList();
-  }
-
   private void validateKey(JWK key, KeyUse keyUse) {
 
     if (key.getKeyID() == null || key.getKeyID().isBlank()) {
@@ -304,5 +290,11 @@ public class FedRegistrationCommand implements Callable<Integer> {
     }
   }
 
-  record EntityConfiguration(String sub, JWKSet jwks, String orgName, List<Scope> scopes) {}
+  record EntityConfiguration(
+      String sub,
+      JWKSet jwks,
+      String organisationName,
+      String fachdienstName,
+      List<String> scopes,
+      List<String> redirectUris) {}
 }
