@@ -12,7 +12,6 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer;
 import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model;
-import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Scope;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.List;
@@ -29,41 +28,45 @@ class RegistratonFormRendererTest {
             new Model(
                 "VFS_DiGA_Test",
                 "FDmyDiGAMemb",
+                "My DiGA Org",
                 "My DiGA",
                 "bobby.tables@example.com",
                 URI.create("https://mydiga.example.com"),
                 PU,
-                List.of(Scope.INSURED_PERSON, Scope.EMAIL, Scope.DISPLAY_NAME),
+                List.of("openid", "urn:telematik:versicherter", "urn:telematik:email"),
+                List.of("https://mydiga.example.com/auth/callback"),
                 new JWKSet(key)));
 
     assertEquals(
         """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <registrierungtifoederation>
-                  <datendesantragstellers>
-                  <vfsbestaetigung>VFS_DiGA_Test</vfsbestaetigung>
-                  <teilnehmertyp>Fachdienst</teilnehmertyp>
-                  <organisationsname>My DiGA</organisationsname>
-                  <memberid>FDmyDiGAMemb</memberid>
-                  <zwg>ORG-0229:BT-0170</zwg>
-                  <issueruri>https://mydiga.example.com</issueruri>
-                  <scopes>
-                    <scopealter>0</scopealter>
-                    <scopeanzeigename>1</scopeanzeigename>
-                    <scopeemail>1</scopeemail>
-                    <scopegeschlecht>0</scopegeschlecht>
-                    <scopegeburtsdatum>0</scopegeburtsdatum>
-                    <scopevorname>0</scopevorname>
-                    <scopenachname>0</scopenachname>
-                    <scopeversicherter>1</scopeversicherter>
-                  </scopes>
-                  <publickeys>
-                    <kidjwt>wXOS7cMWjpUGqySA-BwnbmiQSaaWBpEmy4xf08CHQXQ</kidjwt>
-                    <pubkeyjwt>-----BEGIN PUBLIC KEY-----&#10;MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2lFRaRRzJx0Tspr8nT526HTY0LCQ&#10;g8WJhXI+LNXvmjbYokHMfZzM9xerR/u+Y/q1VK9NSH2cbXfGAmT24gC4DQ&#61;&#61;&#10;-----END PUBLIC KEY-----&#10;</pubkeyjwt>
-                  </publickeys>
-                  </datendesantragstellers>
-                </registrierungtifoederation>
-                """,
+        <?xml version="1.0" encoding="UTF-8"?>
+        <registrierungtifoederation>
+          <teilnehmertyp>Fachdienst</teilnehmertyp>
+          <betriebsumgebung>PU</betriebsumgebung>
+          <kontaktemail>bobby.tables@example.com</kontaktemail>
+          <vfsbestaetigung>VFS_DiGA_Test</vfsbestaetigung>
+          <zuweisungsgruppe>ORG-0229:BT-0170</zuweisungsgruppe>
+          <memberid>FDmyDiGAMemb</memberid>
+          <organisationsname>My DiGA Org</organisationsname>
+          <fachdienstname>My DiGA</fachdienstname>
+          <fachdiensturi>https://mydiga.example.com</fachdiensturi>
+          <scopes>
+            <scope>openid</scope>
+            <scope>urn:telematik:versicherter</scope>
+            <scope>urn:telematik:email</scope>
+          </scopes>
+          <claims/>
+          <redirect_uris>
+            <redirect_uri>https://mydiga.example.com/auth/callback</redirect_uri>
+          </redirect_uris>
+          <publickeysjwt>
+            <publickey>
+              <kid>wXOS7cMWjpUGqySA-BwnbmiQSaaWBpEmy4xf08CHQXQ</kid>
+              <key>-----BEGIN PUBLIC KEY-----&#10;MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2lFRaRRzJx0Tspr8nT526HTY0LCQ&#10;g8WJhXI+LNXvmjbYokHMfZzM9xerR/u+Y/q1VK9NSH2cbXfGAmT24gC4DQ&#61;&#61;&#10;-----END PUBLIC KEY-----&#10;</key>
+            </publickey>
+          </publickeysjwt>
+        </registrierungtifoederation>
+        """,
         xml);
   }
 
@@ -73,42 +76,45 @@ class RegistratonFormRendererTest {
     var xml =
         RegistratonFormRenderer.render(
             new Model(
-                "VFS_DiGA_Test",
+                null,
                 "FDmyDiGAMemb",
+                "My DiGA Org",
                 "My DiGA",
                 "bobby.tables@example.com",
                 URI.create("https://mydiga.example.com"),
                 TU,
-                List.of(Scope.INSURED_PERSON, Scope.EMAIL, Scope.DISPLAY_NAME),
+                List.of("openid", "urn:telematik:versicherter", "urn:telematik:email"),
+                List.of("https://mydiga.example.com/auth/callback"),
                 new JWKSet(key)));
 
     assertEquals(
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <registrierungtifoederation>
-           <datendesantragstellers>
-             <kontaktemail>bobby.tables@example.com</kontaktemail>
-             <teilnehmertyp>Fachdienst</teilnehmertyp>
-             <betriebsumgebung>TU</betriebsumgebung>
-             <organisationsname>My DiGA</organisationsname>
-             <memberid>FDmyDiGAMemb</memberid>
-             <zwg>ORG-0001:BT-0144</zwg>
-             <issueruri>https://mydiga.example.com</issueruri>
-             <scopes>
-               <scopealter>0</scopealter>
-               <scopeanzeigename>1</scopeanzeigename>
-               <scopeemail>1</scopeemail>
-               <scopegeschlecht>0</scopegeschlecht>
-               <scopegeburtsdatum>0</scopegeburtsdatum>
-               <scopevorname>0</scopevorname>
-               <scopenachname>0</scopenachname>
-               <scopeversicherter>1</scopeversicherter>
-             </scopes>
-             <publickeys>
-               <kidjwt>wXOS7cMWjpUGqySA-BwnbmiQSaaWBpEmy4xf08CHQXQ</kidjwt>
-               <pubkeyjwt>-----BEGIN PUBLIC KEY-----&#10;MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2lFRaRRzJx0Tspr8nT526HTY0LCQ&#10;g8WJhXI+LNXvmjbYokHMfZzM9xerR/u+Y/q1VK9NSH2cbXfGAmT24gC4DQ&#61;&#61;&#10;-----END PUBLIC KEY-----&#10;</pubkeyjwt>
-             </publickeys>
-           </datendesantragstellers>
+          <teilnehmertyp>Fachdienst</teilnehmertyp>
+          <betriebsumgebung>TU</betriebsumgebung>
+          <kontaktemail>bobby.tables@example.com</kontaktemail>
+          <vfsbestaetigung></vfsbestaetigung>
+          <zuweisungsgruppe>ORG-0229:BT-0170</zuweisungsgruppe>
+          <memberid>FDmyDiGAMemb</memberid>
+          <organisationsname>My DiGA Org</organisationsname>
+          <fachdienstname>My DiGA</fachdienstname>
+          <fachdiensturi>https://mydiga.example.com</fachdiensturi>
+          <scopes>
+            <scope>openid</scope>
+            <scope>urn:telematik:versicherter</scope>
+            <scope>urn:telematik:email</scope>
+          </scopes>
+          <claims/>
+          <redirect_uris>
+            <redirect_uri>https://mydiga.example.com/auth/callback</redirect_uri>
+          </redirect_uris>
+          <publickeysjwt>
+            <publickey>
+              <kid>wXOS7cMWjpUGqySA-BwnbmiQSaaWBpEmy4xf08CHQXQ</kid>
+              <key>-----BEGIN PUBLIC KEY-----&#10;MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2lFRaRRzJx0Tspr8nT526HTY0LCQ&#10;g8WJhXI+LNXvmjbYokHMfZzM9xerR/u+Y/q1VK9NSH2cbXfGAmT24gC4DQ&#61;&#61;&#10;-----END PUBLIC KEY-----&#10;</key>
+            </publickey>
+          </publickeysjwt>
         </registrierungtifoederation>
         """,
         xml);
