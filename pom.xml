@@ -56,7 +56,7 @@
     <sonar.projectName>${project.artifactId}</sonar.projectName>
     <sonar.projectKey>oviva-ag_ehealthid-relying-party</sonar.projectKey>
     <sonar.moduleKey>${project.groupId}_${project.artifactId}</sonar.moduleKey>
-    <sonar.cpd.exclusions></sonar.cpd.exclusions>
+    <sonar.cpd.exclusions/>
     <sonar.coverage.exclusions>ehealthid-cli/**</sonar.coverage.exclusions>
     <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/reports/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
@@ -343,10 +343,10 @@
                 <reactorModuleConvergence>
                   <message>The reactor is not valid</message>
                 </reactorModuleConvergence>
-                <dependencyConvergence></dependencyConvergence>
-                <banDuplicatePomDependencyVersions></banDuplicatePomDependencyVersions>
-                <banDependencyManagementScope></banDependencyManagementScope>
-                <banCircularDependencies></banCircularDependencies>
+                <dependencyConvergence/>
+                <banDuplicatePomDependencyVersions/>
+                <banDependencyManagementScope/>
+                <banCircularDependencies/>
                 <bannedDependencies>
                   <excludes>
                     <exclude>com.google.code.findbugs:jsr305</exclude>
@@ -362,13 +362,13 @@
         <artifactId>spotless-maven-plugin</artifactId>
         <configuration>
           <java>
-            <removeUnusedImports></removeUnusedImports>
+            <removeUnusedImports/>
             <googleJavaFormat>
               <style>GOOGLE</style>
             </googleJavaFormat>
           </java>
           <pom>
-            <sortPom></sortPom>
+            <sortPom/>
           </pom>
         </configuration>
         <executions>
@@ -419,7 +419,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
-        <configuration></configuration>
+        <configuration/>
         <executions>
           <execution>
             <id>flatten</id>
