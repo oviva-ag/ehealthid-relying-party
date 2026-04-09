@@ -46,7 +46,7 @@
     <version.wiremock>4.0.0-beta.22</version.wiremock>
     <version.handlebars>4.5.0</version.handlebars>
 
-    <spotless-maven-plugin.version>2.44.5</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>
     <jacoco.version>0.8.14</jacoco.version>
 
     <maven-shade.version>3.6.1</maven-shade.version>
