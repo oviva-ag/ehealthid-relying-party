@@ -38,10 +38,10 @@
     <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
-    <version.jboss-logging>3.6.2.Final</version.jboss-logging>
+    <version.jboss-logging>3.6.3.Final</version.jboss-logging>
     <version.slf4j>2.0.17</version.slf4j>
-    <version.micrometer>1.16.3</version.micrometer>
-    <version.nimbus-jose-jwt>10.8</version.nimbus-jose-jwt>
+    <version.micrometer>1.16.4</version.micrometer>
+    <version.nimbus-jose-jwt>10.9</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.32</version.logback.classic>
     <version.wiremock>4.0.0-beta.22</version.wiremock>
     <version.handlebars>4.5.0</version.handlebars>
@@ -49,7 +49,7 @@
     <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>
     <jacoco.version>0.8.14</jacoco.version>
 
-    <maven-shade.version>3.6.1</maven-shade.version>
+    <maven-shade.version>3.6.2</maven-shade.version>
 
     <sonar.organization>oviva-ag</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -96,7 +96,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.59.0</version>
+        <version>1.60.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -113,7 +113,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
-        <version>2.21.1</version>
+        <version>2.21.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -125,7 +125,7 @@
       <dependency>
         <groupId>com.nimbusds</groupId>
         <artifactId>oauth2-oidc-sdk</artifactId>
-        <version>11.33</version>
+        <version>11.37</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
@@ -172,7 +172,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.22.0</version>
+        <version>5.23.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -195,12 +195,12 @@
       <dependency>
         <groupId>io.undertow</groupId>
         <artifactId>undertow-core</artifactId>
-        <version>2.3.23.Final</version>
+        <version>2.3.24.Final</version>
       </dependency>
       <dependency>
         <groupId>io.undertow</groupId>
         <artifactId>undertow-servlet</artifactId>
-        <version>2.3.23.Final</version>
+        <version>2.3.24.Final</version>
       </dependency>
 
       <!-- BEGIN wiremock -->
@@ -291,7 +291,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.4.0</version>
+          <version>3.5.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -325,7 +325,7 @@
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.11.0</version>
+            <version>1.12.0</version>
           </dependency>
         </dependencies>
         <executions>
