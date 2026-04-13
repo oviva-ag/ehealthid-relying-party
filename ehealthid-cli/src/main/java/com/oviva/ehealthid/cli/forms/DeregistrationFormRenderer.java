@@ -5,7 +5,7 @@ import java.net.URI;
 public class DeregistrationFormRenderer {
 
   private static final String TEMPLATE =
-      """
+"""
 <?xml version="1.0" encoding="UTF-8"?>
 <deregistrierungtifoederation>
   <betriebsumgebung>{{environment}}</betriebsumgebung>

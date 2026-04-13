@@ -18,7 +18,7 @@ class DeregistrationFormRendererTest {
                 DeregistrationFormRenderer.Model.Environment.RU));
 
     assertEquals(
-        """
+"""
 <?xml version="1.0" encoding="UTF-8"?>
 <deregistrierungtifoederation>
   <betriebsumgebung>RU</betriebsumgebung>
