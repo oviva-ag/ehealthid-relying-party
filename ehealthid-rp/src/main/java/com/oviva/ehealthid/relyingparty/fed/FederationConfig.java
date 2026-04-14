@@ -18,11 +18,6 @@ public record FederationConfig(
     return new Builder();
   }
 
-  public Builder builder() {
-    return new Builder(
-        iss, sub, federationMaster, ttl, redirectUris, scopes, appName, organizationName);
-  }
-
   public static final class Builder {
 
     private URI iss;
@@ -36,25 +31,6 @@ public record FederationConfig(
     private String organizationName;
 
     private Builder() {}
-
-    private Builder(
-        URI iss,
-        URI sub,
-        URI federationMaster,
-        Duration ttl,
-        List<String> redirectUris,
-        List<String> scopes,
-        String appName,
-        String organizationName) {
-      this.iss = iss;
-      this.sub = sub;
-      this.federationMaster = federationMaster;
-      this.ttl = ttl;
-      this.redirectUris = redirectUris;
-      this.scopes = scopes;
-      this.appName = appName;
-      this.organizationName = organizationName;
-    }
 
     public Builder iss(URI iss) {
       this.iss = iss;
