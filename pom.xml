@@ -43,7 +43,7 @@
     <version.micrometer>1.16.4</version.micrometer>
     <version.nimbus-jose-jwt>10.9</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.32</version.logback.classic>
-    <version.wiremock>4.0.0-beta.22</version.wiremock>
+    <version.wiremock>4.0.0-beta.34</version.wiremock>
     <version.handlebars>4.5.0</version.handlebars>
 
     <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>
