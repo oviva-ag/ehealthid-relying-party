@@ -7,14 +7,13 @@ on:
       - 'ehealthid-relying-party/v[0-9]+.[0-9]+.[0-9]+'
 
 env:
-  REGISTRY: ghcr.io
+  REGISTRY: europe-docker.pkg.dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
     steps:
       - uses: actions/checkout@v6
       - name: Setup Java
@@ -29,12 +28,13 @@ jobs:
           echo "parsing version from ref '$GITHUB_REF'"
           VERSION=$(echo "$GITHUB_REF" | sed -e 's|.*/ehealthid-relying-party/v\(.*\)|\1|g')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-      - name: Log in to the Container registry
-        uses: docker/login-action@v4
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      - name: Configure Docker for GAR
+        run: gcloud auth configure-docker europe-docker.pkg.dev --quiet
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - id: buildx
@@ -57,7 +57,7 @@ jobs:
         with:
           name: ${{ steps.version.outputs.version }}
           body: |
-            Docker image: `ghcr.io/oviva-ag/ehealthid-relying-party:v${{ steps.version.outputs.version }}`
+            Docker image: `europe-docker.pkg.dev/oviva-pkg/ovi/ehealthid-relying-party:v${{ steps.version.outputs.version }}`
           files: |
             ehealthid-cli/target/ehealthcli.jar
             ehealthid-rp/target/ehealthid-rp-jar-with-dependencies.jar
