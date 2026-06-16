@@ -186,7 +186,7 @@
       <dependency>
         <groupId>io.rest-assured</groupId>
         <artifactId>rest-assured</artifactId>
-        <version>5.5.6</version>
+        <version>6.0.0</version>
       </dependency>
 
       <!-- Security fix: GHSA-j382-5jj3-vw4j, GHSA-33hj-rcmx-86mv, GHSA-6h4f-pj3g-q8fq
