@@ -734,4 +734,95 @@ class FederationMasterClientImplTest {
 
     return new EntityStatementJWS(signed, body);
   }
+
+  @Test
+  void establishTrust_jwksDiffersFromTrustStore_andNotSelfSigned() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var issuer = URI.create("https://idp-tk.example.com");
+    var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
+
+    var fedmasterKeypair = ECKeyGenerator.example();
+
+    var fedmasterEntityConfigurationJws =
+        federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var trustedFederationStatement =
+        trustedFederationStatement(issuer, sectoralIdpKeypair, fedmasterKeypair);
+
+    var differentKeypair = ECKeyGenerator.generate();
+    var entityConfiguration =
+        badSignedSectoralIdpEntityConfiguration(issuer, sectoralIdpKeypair, differentKeypair);
+
+    when(federationApiClient.fetchEntityConfiguration(FEDERATION_MASTER))
+        .thenReturn(fedmasterEntityConfigurationJws);
+
+    when(federationApiClient.fetchFederationStatement(
+            federationFetchUrl, FEDERATION_MASTER.toString(), issuer.toString()))
+        .thenReturn(trustedFederationStatement);
+
+    when(federationApiClient.fetchEntityConfiguration(issuer)).thenReturn(entityConfiguration);
+
+    var e = assertThrows(FederationException.class, () -> client.establishIdpTrust(issuer));
+
+    assertEquals(
+        "entity statement of 'https://idp-tk.example.com' has a bad signature", e.getMessage());
+  }
+
+  @Test
+  void establishTrust_jwksDiffersFromTrustStore_butSelfSigned() {
+
+    var client = new FederationMasterClientImpl(FEDERATION_MASTER, federationApiClient, clock);
+
+    var issuer = URI.create("https://idp-tk.example.com");
+    var federationFetchUrl = FEDERATION_MASTER.resolve("/fetch");
+
+    var fedmasterKeypair = ECKeyGenerator.example();
+
+    var fedmasterEntityConfigurationJws =
+        federationFetchFedmasterConfiguration(federationFetchUrl, fedmasterKeypair);
+
+    var sectoralIdpKeypair = ECKeyGenerator.generate();
+    var trustedFederationStatement =
+        trustedFederationStatement(issuer, sectoralIdpKeypair, fedmasterKeypair);
+
+    var extraKeypair = ECKeyGenerator.generate();
+    var entityConfiguration =
+        sectoralIdpEntityConfigurationWithExtraKey(issuer, sectoralIdpKeypair, extraKeypair);
+
+    when(federationApiClient.fetchEntityConfiguration(FEDERATION_MASTER))
+        .thenReturn(fedmasterEntityConfigurationJws);
+
+    when(federationApiClient.fetchFederationStatement(
+            federationFetchUrl, FEDERATION_MASTER.toString(), issuer.toString()))
+        .thenReturn(trustedFederationStatement);
+
+    when(federationApiClient.fetchEntityConfiguration(issuer)).thenReturn(entityConfiguration);
+
+    var entityStatementJWS = client.establishIdpTrust(issuer);
+
+    assertEquals(issuer.toString(), entityStatementJWS.body().sub());
+  }
+
+  private EntityStatementJWS sectoralIdpEntityConfigurationWithExtraKey(
+      URI issuer, ECKey sectoralIdpKeypair, ECKey extraKey) {
+
+    var pub = sectoralIdpKeypair.toPublicJWK();
+    var extraPub = extraKey.toPublicJWK();
+    var jwks = new JWKSet(java.util.Arrays.asList(pub, extraPub));
+
+    var body =
+        EntityStatement.create()
+            .sub(issuer.toString())
+            .iss(issuer.toString())
+            .exp(NOW.plusSeconds(60))
+            .jwks(jwks)
+            .build();
+
+    var signed = JwsUtils.toJws(sectoralIdpKeypair, JsonCodec.writeValueAsString(body));
+
+    return new EntityStatementJWS(signed, body);
+  }
 }
