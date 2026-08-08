@@ -40,7 +40,7 @@
 
     <version.jboss-logging>3.6.3.Final</version.jboss-logging>
     <version.slf4j>2.0.18</version.slf4j>
-    <version.micrometer>1.16.5</version.micrometer>
+    <version.micrometer>1.16.6</version.micrometer>
     <version.nimbus-jose-jwt>10.9.1</version.nimbus-jose-jwt>
     <version.logback.classic>1.5.34</version.logback.classic>
     <version.wiremock>4.0.0-beta.22</version.wiremock>
