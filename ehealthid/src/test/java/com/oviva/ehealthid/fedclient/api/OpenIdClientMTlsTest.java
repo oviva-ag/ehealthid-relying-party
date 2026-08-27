@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.tomakehurst.wiremock.admin.model.ServeEventQuery;
-import com.github.tomakehurst.wiremock.http.Body;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.*;
@@ -75,10 +74,7 @@ class OpenIdClientMTlsTest {
     var stub =
         wmServer.stubFor(
             post(path)
-                .willReturn(
-                    created()
-                        .withResponseBody(
-                            Body.fromJsonBytes(PAR_RESPONSE.getBytes(StandardCharsets.UTF_8)))));
+                .willReturn(created().withBody(PAR_RESPONSE.getBytes(StandardCharsets.UTF_8))));
 
     var parBody = ParBodyBuilder.create();
 

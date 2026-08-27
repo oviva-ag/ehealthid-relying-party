@@ -90,8 +90,10 @@
       </dependency>
       <dependency>
         <groupId>io.micrometer</groupId>
-        <artifactId>micrometer-core</artifactId>
+        <artifactId>micrometer-bom</artifactId>
         <version>${version.micrometer}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>io.opentelemetry</groupId>
@@ -99,11 +101,6 @@
         <version>1.65.0</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.micrometer</groupId>
-        <artifactId>micrometer-registry-prometheus</artifactId>
-        <version>${version.micrometer}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.logging</groupId>
@@ -121,6 +118,12 @@
         <groupId>com.nimbusds</groupId>
         <artifactId>nimbus-jose-jwt</artifactId>
         <version>${version.nimbus-jose-jwt}</version>
+      </dependency>
+      <dependency>
+        <!-- fixes dependency convergence -->
+        <groupId>org.jspecify</groupId>
+        <artifactId>jspecify</artifactId>
+        <version>1.0.1</version>
       </dependency>
       <dependency>
         <groupId>com.nimbusds</groupId>
