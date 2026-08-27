@@ -2,9 +2,9 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.8
 
 LABEL org.opencontainers.image.source="https://github.com/oviva-ag/ehealthid-relying-party"
 
-ARG JAVA_PACKAGE=java-21-openjdk-headless
+ARG JAVA_PACKAGE=java-25-openjdk-headless
 ARG RUN_JAVA_VERSION=1.3.8
-ARG OTEL_AGENT_VERSION=v1.32.1
+ARG OTEL_AGENT_VERSION=v2.31.1
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 
