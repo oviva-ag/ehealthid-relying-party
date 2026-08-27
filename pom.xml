@@ -224,6 +224,11 @@
       </dependency>
       <!-- END wiremock -->
       <dependency>
+        <groupId>org.jsoup</groupId>
+        <artifactId>jsoup</artifactId>
+        <version>1.23.2</version>
+      </dependency>
+      <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
         <version>7.0.3.Final</version>
