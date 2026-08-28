@@ -3,7 +3,6 @@ package com.oviva.ehealthid.cli.forms;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.oviva.ehealthid.cli.forms.RegistratonFormRenderer.Model.Scope;
 import java.net.URI;
 import java.security.Key;
 import java.util.Base64;
@@ -11,99 +10,56 @@ import java.util.List;
 
 public class RegistratonFormRenderer {
 
-  // the PU registration XML differs from others
-  private static final String XML_TEMPLATE_PROD =
+  private static final String XML_TEMPLATE =
       """
-                    <?xml version="1.0" encoding="UTF-8"?>
-                    <registrierungtifoederation>
-                      <datendesantragstellers>
-                      <vfsbestaetigung>{{vfsConfirmation}}</vfsbestaetigung>
-                      <teilnehmertyp>Fachdienst</teilnehmertyp>
-                      <organisationsname>{{organisationName}}</organisationsname>
-                      <memberid>{{memberId}}</memberid>
-                      <zwg>ORG-0229:BT-0170</zwg>
-                      <issueruri>{{issuerUri}}</issueruri>
-                      <scopes>
-                        <scopealter>{{scopeAge}}</scopealter>
-                        <scopeanzeigename>{{scopeDisplayName}}</scopeanzeigename>
-                        <scopeemail>{{scopeEmail}}</scopeemail>
-                        <scopegeschlecht>{{scopeGender}}</scopegeschlecht>
-                        <scopegeburtsdatum>{{scopeDateOfBirth}}</scopegeburtsdatum>
-                        <scopevorname>{{scopeFirstName}}</scopevorname>
-                        <scopenachname>{{scopeLastName}}</scopenachname>
-                        <scopeversicherter>{{scopeInsuredPerson}}</scopeversicherter>
-                      </scopes>
-                      {{#publicKeys}}
-                      <publickeys>
-                        <kidjwt>{{kid}}</kidjwt>
-                        <pubkeyjwt>{{pem}}</pubkeyjwt>
-                      </publickeys>
-                      {{/publicKeys}}
-                      </datendesantragstellers>
-                    </registrierungtifoederation>
-                    """;
-
-  private static final String XML_TEMPLATE_TEST =
-      """
-                    <?xml version="1.0" encoding="UTF-8"?>
-                    <registrierungtifoederation>
-                       <datendesantragstellers>
-                         <kontaktemail>{{contactEmail}}</kontaktemail>
-                         <teilnehmertyp>Fachdienst</teilnehmertyp>
-                         <betriebsumgebung>{{environment}}</betriebsumgebung>
-                         <organisationsname>{{organisationName}}</organisationsname>
-                         <memberid>{{memberId}}</memberid>
-                         <zwg>ORG-0001:BT-0144</zwg>
-                         <issueruri>{{issuerUri}}</issueruri>
-                         <scopes>
-                           <scopealter>{{scopeAge}}</scopealter>
-                           <scopeanzeigename>{{scopeDisplayName}}</scopeanzeigename>
-                           <scopeemail>{{scopeEmail}}</scopeemail>
-                           <scopegeschlecht>{{scopeGender}}</scopegeschlecht>
-                           <scopegeburtsdatum>{{scopeDateOfBirth}}</scopegeburtsdatum>
-                           <scopevorname>{{scopeFirstName}}</scopevorname>
-                           <scopenachname>{{scopeLastName}}</scopenachname>
-                           <scopeversicherter>{{scopeInsuredPerson}}</scopeversicherter>
-                         </scopes>
-                         {{#publicKeys}}
-                         <publickeys>
-                           <kidjwt>{{kid}}</kidjwt>
-                           <pubkeyjwt>{{pem}}</pubkeyjwt>
-                         </publickeys>
-                         {{/publicKeys}}
-                       </datendesantragstellers>
-                    </registrierungtifoederation>
-                    """;
+      <?xml version="1.0" encoding="UTF-8"?>
+      <registrierungtifoederation>
+        <teilnehmertyp>Fachdienst</teilnehmertyp>
+        <betriebsumgebung>{{environment}}</betriebsumgebung>
+        <kontaktemail>{{contactEmail}}</kontaktemail>
+        <vfsbestaetigung>{{vfsConfirmation}}</vfsbestaetigung>
+        <zuweisungsgruppe>ORG-0229:BT-0170</zuweisungsgruppe>
+        <memberid>{{memberId}}</memberid>
+        <organisationsname>{{organisationName}}</organisationsname>
+        <fachdienstname>{{fachdienstName}}</fachdienstname>
+        <fachdiensturi>{{fachdienstUri}}</fachdiensturi>
+        <scopes>
+      {{#scopes}}
+          <scope>{{value}}</scope>
+      {{/scopes}}
+        </scopes>
+        <claims/>
+        <redirect_uris>
+      {{#redirectUris}}
+          <redirect_uri>{{value}}</redirect_uri>
+      {{/redirectUris}}
+        </redirect_uris>
+        <publickeysjwt>
+      {{#publicKeys}}
+          <publickey>
+            <kid>{{kid}}</kid>
+            <key>{{pem}}</key>
+          </publickey>
+      {{/publicKeys}}
+        </publickeysjwt>
+      </registrierungtifoederation>
+      """;
 
   public static String render(Model m) {
-
-    return switch (m.environment()) {
-      case PU -> renderProductiveEnvironment(m);
-      default -> renderTestEnvironment(m);
-    };
-  }
-
-  private static String renderProductiveEnvironment(Model m) {
-    return renderTemplate(XML_TEMPLATE_PROD, m);
-  }
-
-  private static String renderTestEnvironment(Model m) {
-    return renderTemplate(XML_TEMPLATE_TEST, m);
-  }
-
-  private static String renderTemplate(String template, Model m) {
     var rm = RenderModel.fromModel(m);
-    return MustacheRenderer.render(template, rm);
+    return MustacheRenderer.render(XML_TEMPLATE, rm);
   }
 
   public record Model(
       String vfsConfirmation,
       String memberId,
       String organisationName,
+      String fachdienstName,
       String contactEmail,
       URI issuerUri,
       Environment environment,
-      List<Scope> scopes,
+      List<String> scopes,
+      List<String> redirectUris,
       JWKSet jwks) {
 
     public enum Environment {
@@ -111,55 +67,36 @@ public class RegistratonFormRenderer {
       TU,
       PU
     }
-
-    // https://gemspec.gematik.de/docs/gemSpec/gemSpec_IDP_Sek/gemSpec_IDP_Sek_V2.3.0/index.html#A_22989-01
-    public enum Scope {
-      AGE,
-      DISPLAY_NAME,
-      EMAIL,
-      GENDER,
-      DATE_OF_BIRTH,
-      FIRST_NAME,
-      LAST_NAME,
-      INSURED_PERSON
-    }
   }
 
   record RenderModel(
       String vfsConfirmation,
       String memberId,
       String organisationName,
-      String issuerUri,
+      String fachdienstName,
+      String fachdienstUri,
       String environment,
       String contactEmail,
-      int scopeAge,
-      int scopeDisplayName,
-      int scopeEmail,
-      int scopeGender,
-      int scopeDateOfBirth,
-      int scopeFirstName,
-      int scopeLastName,
-      int scopeInsuredPerson,
+      List<StringValue> scopes,
+      List<StringValue> redirectUris,
       List<PublicKey> publicKeys) {
 
-    public static RenderModel fromModel(Model m) {
-
+    static RenderModel fromModel(Model m) {
       return new RenderModel(
-          m.vfsConfirmation(),
+          emptyIfNull(m.vfsConfirmation()),
           m.memberId(),
-          m.organisationName(),
+          emptyIfNull(m.organisationName()),
+          emptyIfNull(m.fachdienstName()),
           m.issuerUri().toString(),
           m.environment().name(),
-          m.contactEmail(),
-          m.scopes().contains(Scope.AGE) ? 1 : 0,
-          m.scopes().contains(Scope.DISPLAY_NAME) ? 1 : 0,
-          m.scopes().contains(Scope.EMAIL) ? 1 : 0,
-          m.scopes().contains(Scope.GENDER) ? 1 : 0,
-          m.scopes().contains(Scope.DATE_OF_BIRTH) ? 1 : 0,
-          m.scopes().contains(Scope.FIRST_NAME) ? 1 : 0,
-          m.scopes().contains(Scope.LAST_NAME) ? 1 : 0,
-          m.scopes().contains(Scope.INSURED_PERSON) ? 1 : 0,
+          emptyIfNull(m.contactEmail()),
+          m.scopes().stream().map(StringValue::new).toList(),
+          m.redirectUris().stream().map(StringValue::new).toList(),
           m.jwks().getKeys().stream().map(RenderModel::toPublicKey).toList());
+    }
+
+    private static String emptyIfNull(String s) {
+      return s == null ? "" : s;
     }
 
     private static PublicKey toPublicKey(JWK key) {
@@ -173,7 +110,6 @@ public class RegistratonFormRenderer {
     }
 
     private static String encodeAsPem(Key k, String type) {
-
       var encoded = Base64.getEncoder().encodeToString(k.getEncoded());
 
       var sb = new StringBuilder();
@@ -189,6 +125,8 @@ public class RegistratonFormRenderer {
       sb.append("-----END %s-----%n".formatted(type));
       return sb.toString();
     }
+
+    record StringValue(String value) {}
 
     record PublicKey(String kid, String pem) {}
   }
