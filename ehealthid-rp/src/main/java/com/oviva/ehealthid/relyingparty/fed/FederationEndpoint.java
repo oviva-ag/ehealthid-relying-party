@@ -49,6 +49,7 @@ public class FederationEndpoint {
                 Metadata.create()
                     .openIdRelyingParty(
                         OpenIdRelyingParty.create()
+                            .organizationName(federationConfig.organizationName())
                             .clientName(federationConfig.appName())
                             .jwks(relyingPartyJwks)
                             .responseTypes(List.of("code"))
