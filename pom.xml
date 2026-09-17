@@ -39,14 +39,14 @@
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
     <version.jboss-logging>3.6.3.Final</version.jboss-logging>
-    <version.slf4j>2.0.18</version.slf4j>
+    <version.slf4j>2.0.19</version.slf4j>
     <version.micrometer>1.17.1</version.micrometer>
-    <version.nimbus-jose-jwt>10.9.1</version.nimbus-jose-jwt>
+    <version.nimbus-jose-jwt>10.10</version.nimbus-jose-jwt>
     <version.logback.classic>1.6.3</version.logback.classic>
     <version.wiremock>4.0.0-beta.38</version.wiremock>
     <version.handlebars>4.5.0</version.handlebars>
 
-    <spotless-maven-plugin.version>3.10.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>3.10.2</spotless-maven-plugin.version>
     <jacoco.version>0.8.15</jacoco.version>
 
     <maven-shade.version>3.6.2</maven-shade.version>
@@ -98,7 +98,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.65.0</version>
+        <version>1.66.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -133,12 +133,12 @@
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk18on</artifactId>
-        <version>1.85.2</version>
+        <version>1.86</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcpkix-jdk18on</artifactId>
-        <version>1.85</version>
+        <version>1.86</version>
       </dependency>
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
@@ -231,7 +231,7 @@
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
-        <version>7.0.3.Final</version>
+        <version>7.0.4.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -264,17 +264,17 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.6</version>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.6</version>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.15.0</version>
+          <version>3.16.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -284,17 +284,17 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.4</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.4</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.5.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -304,7 +304,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.7.3</version>
+          <version>1.8.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -333,7 +333,7 @@
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.1</version>
           </dependency>
         </dependencies>
         <executions>
