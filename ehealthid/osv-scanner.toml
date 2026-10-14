@@ -1,0 +1,3 @@
+[[IgnoredVulns]]
+id = "161370610"
+reason = "False positive: the token in FederationApiClientTest is a test fixture, a signed JWKS (typ jwk-set+json) issued by the public Gematik reference environment (gsi-ref.dev.gematik.solutions). It contains only public keys, no private key or credential. The test needs a real signed JWS so fetchSignedJwks can parse it, so it cannot be replaced with a dummy value."

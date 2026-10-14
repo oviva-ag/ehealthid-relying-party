@@ -1,0 +1,7 @@
+[[IgnoredVulns]]
+id = "161370456"
+reason = "False positive: JsonEncoder is a Logback encoder that writes log entries as JSON for Google Cloud Logging. stringifyStackTrace uses printStackTrace only to build the string for the stack_trace field of the log entry, because Google Cloud Error Reporting reads stack traces from that field. The output goes to the log stream, never into an HTTP response or any message shown to an end user."
+
+[[IgnoredVulns]]
+id = "161370457"
+reason = "False positive: the URL fetched by HttpRetriever is the jwks_uri from the OpenID discovery document of the identity provider. That provider is set by the operator through config.idpDiscoveryUri() at startup (Main.java), not by request input, so a caller cannot choose the URL. The response is only parsed as a JWK set to verify signatures and is never returned to a caller. An attacker would need control of the configured IdP's discovery document."
