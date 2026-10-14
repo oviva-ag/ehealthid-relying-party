@@ -29,7 +29,7 @@
   </scm>
 
   <properties>
-    <maven.version>3.8.6</maven.version>
+    <maven.version>3.9.16</maven.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -39,14 +39,14 @@
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
     <version.jboss-logging>3.6.3.Final</version.jboss-logging>
-    <version.slf4j>2.0.19</version.slf4j>
+    <version.slf4j>2.0.20</version.slf4j>
     <version.micrometer>1.17.1</version.micrometer>
     <version.nimbus-jose-jwt>10.10</version.nimbus-jose-jwt>
-    <version.logback.classic>1.6.3</version.logback.classic>
+    <version.logback.classic>1.6.4</version.logback.classic>
     <version.wiremock>4.0.0-beta.38</version.wiremock>
     <version.handlebars>4.5.0</version.handlebars>
 
-    <spotless-maven-plugin.version>3.10.2</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>3.10.3</spotless-maven-plugin.version>
     <jacoco.version>0.8.15</jacoco.version>
 
     <maven-shade.version>3.6.2</maven-shade.version>
@@ -110,7 +110,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
-        <version>2.22.2</version>
+        <version>2.22.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -143,7 +143,7 @@
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
-        <version>3.2.4</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
@@ -175,7 +175,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.23.0</version>
+        <version>5.24.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
