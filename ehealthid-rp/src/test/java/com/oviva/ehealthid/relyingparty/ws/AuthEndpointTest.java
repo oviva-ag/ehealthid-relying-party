@@ -116,7 +116,7 @@ class AuthEndpointTest {
     var sut = new AuthEndpoint(authService, null);
 
     // when
-    try (var res = sut.callback(null, null, "de-DE")) {
+    try (var res = sut.callback(null, null, null, "de-DE")) {
 
       // then
       assertEquals(Status.OK.getStatusCode(), res.getStatus());
@@ -139,7 +139,7 @@ class AuthEndpointTest {
     var sessionId = IdGenerator.generateID();
 
     // when
-    try (var res = sut.callback(sessionId, code, "de-DE")) {
+    try (var res = sut.callback(sessionId, code, null, "de-DE")) {
 
       var captor = ArgumentCaptor.forClass(CallbackRequest.class);
       verify(authService).callback(captor.capture());
@@ -148,6 +148,20 @@ class AuthEndpointTest {
       assertEquals(code, req.code());
       assertEquals(sessionId, req.sessionId());
     }
+  }
+
+  @Test
+  void callback_idpError() {
+
+    var authService = mock(AuthService.class);
+    var sut = new AuthEndpoint(authService, null);
+
+    // when & then
+    assertThrows(
+        ValidationException.class, () -> sut.callback(null, null, "access_denied", "de-DE"));
+
+    // the idp error short-circuits: the code exchange must not run
+    verify(authService, never()).callback(any());
   }
 
   @Test
