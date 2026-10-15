@@ -120,7 +120,15 @@ public class AuthEndpoint {
   public Response callback(
       @CookieParam("session_id") String sessionId,
       @QueryParam("code") String code,
+      @QueryParam("error") String error,
       @HeaderParam("Accept-Language") @DefaultValue("de-DE") String acceptLanguage) {
+
+    if (error != null && !error.isBlank()) {
+      // the identity provider reported an error (e.g. `error=access_denied` when the user
+      // canceled the login) instead of an authorization code
+      // https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2.1
+      throw new ValidationException(new Message("error.idpError", error));
+    }
 
     var redirectUri = authService.callback(new CallbackRequest(sessionId, code));
     var locale = getNegotiatedLocale(acceptLanguage);
