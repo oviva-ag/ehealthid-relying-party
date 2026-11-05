@@ -51,10 +51,9 @@ public class ConfigReader {
         configProvider
             .get(CONFIG_IDP_DISCOVERY_URI)
             .map(URI::create)
-            .orElseThrow(
-                () ->
-                    new IllegalArgumentException(
-                        "no '%s' configured".formatted(CONFIG_IDP_DISCOVERY_URI)));
+            .orElseThrow(() ->
+                new IllegalArgumentException(
+                    "no '%s' configured".formatted(CONFIG_IDP_DISCOVERY_URI)));
 
     var host = configProvider.get(CONFIG_HOST).orElse("0.0.0.0");
     var port = getPortConfig(CONFIG_PORT, 1234);

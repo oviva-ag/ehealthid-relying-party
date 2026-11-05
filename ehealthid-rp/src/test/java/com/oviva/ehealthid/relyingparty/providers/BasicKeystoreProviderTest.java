@@ -100,11 +100,11 @@ class BasicKeystoreProviderTest {
     var config =
         PropertiesUtils.loadFromString(
             """
-                      federation_es_jwks_path=%s
-                      openid_rp_sig_jwks_path=%s
-                      openid_rp_enc_jwks_path=%s
-                      openid_provider_sig_jwks_path=%s
-                    """
+              federation_es_jwks_path=%s
+              openid_rp_sig_jwks_path=%s
+              openid_rp_enc_jwks_path=%s
+              openid_provider_sig_jwks_path=%s
+            """
                 .formatted(f, f, f, f));
 
     ConfigProvider configProvider = c -> Optional.ofNullable(config.get(c));
@@ -130,11 +130,11 @@ class BasicKeystoreProviderTest {
     var config =
         PropertiesUtils.loadFromString(
             """
-                              federation_es_jwks_path=%s
-                              openid_rp_sig_jwks_path=%s
-                              openid_rp_enc_jwks_path=%s
-                              openid_provider_sig_jwks_path=%s
-                            """
+              federation_es_jwks_path=%s
+              openid_rp_sig_jwks_path=%s
+              openid_rp_enc_jwks_path=%s
+              openid_provider_sig_jwks_path=%s
+            """
                 .formatted(f, f, f, f));
 
     ConfigProvider configProvider = c -> Optional.ofNullable(config.get(c));
@@ -153,11 +153,11 @@ class BasicKeystoreProviderTest {
     var config =
         PropertiesUtils.loadFromString(
             """
-                              federation_es_jwks_path=%s
-                              openid_rp_sig_jwks_path=%s
-                              openid_rp_enc_jwks_path=%s
-                              openid_provider_sig_jwks_path=%s
-                            """
+              federation_es_jwks_path=%s
+              openid_rp_sig_jwks_path=%s
+              openid_rp_enc_jwks_path=%s
+              openid_provider_sig_jwks_path=%s
+            """
                 .formatted(f, f, f, f));
 
     ConfigProvider configProvider = c -> Optional.ofNullable(config.get(c));

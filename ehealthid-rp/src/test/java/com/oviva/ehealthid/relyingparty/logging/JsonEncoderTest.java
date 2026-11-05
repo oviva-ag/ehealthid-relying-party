@@ -51,8 +51,8 @@ class JsonEncoderTest {
 
     assertMatchesJson(
         """
-          {"logger":"com.example.MyLogger","message":"Hello World!","severity":"INFO","thread_name":"main","time":"2024-08-09T14:13:33Z"}
-          """,
+        {"logger":"com.example.MyLogger","message":"Hello World!","severity":"INFO","thread_name":"main","time":"2024-08-09T14:13:33Z"}
+        """,
         msg);
   }
 
@@ -66,8 +66,8 @@ class JsonEncoderTest {
 
     assertMatchesJson(
         """
-              {"message":"error serializing log record: null","serviceContext":{"service":"","version":""},"severity":"ERROR","stack_trace":"java.lang.NullPointerException\\n","time":"2024-08-09T14:13:33Z"}
-              """,
+        {"message":"error serializing log record: null","serviceContext":{"service":"","version":""},"severity":"ERROR","stack_trace":"java.lang.NullPointerException\\n","time":"2024-08-09T14:13:33Z"}
+        """,
         msg);
   }
 
@@ -82,8 +82,8 @@ class JsonEncoderTest {
 
     assertMatchesJson(
         """
-                  {"@type":"type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent","logger":"com.example.MyLogger","message":"what a terrible failure","severity":"ERROR","thread_name":"main","time":"2024-08-09T14:13:33Z"}
-                  """,
+        {"@type":"type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent","logger":"com.example.MyLogger","message":"what a terrible failure","severity":"ERROR","thread_name":"main","time":"2024-08-09T14:13:33Z"}
+        """,
         msg);
   }
 
@@ -104,8 +104,8 @@ class JsonEncoderTest {
 
     assertMatchesJson(
         """
-                  {"logger":"com.example.MyLogger","mdc":{"spanId":"499910","traceId":"k398cidkekk"},"message":"oha, sup?","severity":"DEBUG","thread_name":"main","time":"2024-08-09T14:13:33Z"}
-                  """,
+        {"logger":"com.example.MyLogger","mdc":{"spanId":"499910","traceId":"k398cidkekk"},"message":"oha, sup?","severity":"DEBUG","thread_name":"main","time":"2024-08-09T14:13:33Z"}
+        """,
         msg);
   }
 
@@ -127,8 +127,8 @@ class JsonEncoderTest {
 
     assertMatchesJson(
         """
-                      {"a":{"b":{"c":"d"}},"logger":"com.example.MyLogger","message":"oha, sup?","req":{"method":"GET","url":"https://example.com"},"severity":"DEBUG","status":"500","thread_name":"main","time":"2024-08-09T14:13:33Z"}
-                      """,
+        {"a":{"b":{"c":"d"}},"logger":"com.example.MyLogger","message":"oha, sup?","req":{"method":"GET","url":"https://example.com"},"severity":"DEBUG","status":"500","thread_name":"main","time":"2024-08-09T14:13:33Z"}
+        """,
         msg);
   }
 
@@ -152,8 +152,8 @@ class JsonEncoderTest {
 
     assertMatchesJson(
         """
-                      {"logger":"com.example.MyLogger","logging.googleapis.com/spanId":"%s","logging.googleapis.com/trace":"%s","logging.googleapis.com/trace_sampled":true,"message":"oha, sup?","severity":"DEBUG","thread_name":"main","time":"2024-08-09T14:13:33Z"}
-                      """
+        {"logger":"com.example.MyLogger","logging.googleapis.com/spanId":"%s","logging.googleapis.com/trace":"%s","logging.googleapis.com/trace_sampled":true,"message":"oha, sup?","severity":"DEBUG","thread_name":"main","time":"2024-08-09T14:13:33Z"}
+        """
             .formatted(spanId, traceId),
         msg);
   }

@@ -39,15 +39,50 @@
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
 
     <version.jboss-logging>3.6.3.Final</version.jboss-logging>
+    <version.jackson>2.22.4</version.jackson>
+    <version.opentelemetry>1.67.0</version.opentelemetry>
+    <version.resteasy>7.0.5.Final</version.resteasy>
+    <version.undertow-core>2.4.4.Final</version.undertow-core>
+    <version.undertow-servlet>2.3.27.Final</version.undertow-servlet>
+    <version.caffeine>3.3.1</version.caffeine>
+    <version.jsoup>1.24.1</version.jsoup>
+    <version.picocli>4.7.7</version.picocli>
+    <version.spotbugs-annotations>4.10.5</version.spotbugs-annotations>
+    <version.jakartaee-bom>10.0.0</version.jakartaee-bom>
+    <version.jspecify>1.0.1</version.jspecify>
+    <version.oauth2-oidc-sdk>11.38.2</version.oauth2-oidc-sdk>
+    <version.bouncycastle>1.86</version.bouncycastle>
+    <version.auto-service>1.1.1</version.auto-service>
+    <version.mustache-compiler>0.9.14</version.mustache-compiler>
+    <version.junit>6.1.3</version.junit>
+    <version.hamcrest>3.0</version.hamcrest>
+    <version.mockito>5.24.0</version.mockito>
+    <version.testcontainers>2.0.5</version.testcontainers>
+    <version.rest-assured>5.5.7</version.rest-assured>
     <version.slf4j>2.0.20</version.slf4j>
-    <version.micrometer>1.17.1</version.micrometer>
+    <version.micrometer>1.17.2</version.micrometer>
     <version.nimbus-jose-jwt>10.10</version.nimbus-jose-jwt>
-    <version.logback.classic>1.6.4</version.logback.classic>
+    <version.logback.classic>1.6.6</version.logback.classic>
     <version.wiremock>4.0.0-beta.38</version.wiremock>
     <version.handlebars>4.5.0</version.handlebars>
 
-    <spotless-maven-plugin.version>3.10.3</spotless-maven-plugin.version>
-    <jacoco.version>0.8.15</jacoco.version>
+    <spotless-maven-plugin.version>3.11.0</spotless-maven-plugin.version>
+    <jacoco.version>0.8.16</jacoco.version>
+    <maven-enforcer.version>3.7.0</maven-enforcer.version>
+    <maven-surefire.version>3.6.1</maven-surefire.version>
+    <maven-failsafe.version>3.6.1</maven-failsafe.version>
+    <maven-compiler.version>3.16.0</maven-compiler.version>
+    <maven-clean.version>3.5.0</maven-clean.version>
+    <maven-install.version>3.2.0</maven-install.version>
+    <maven-deploy.version>3.2.0</maven-deploy.version>
+    <maven-jar.version>3.5.1</maven-jar.version>
+    <maven-resources.version>3.5.0</maven-resources.version>
+    <flatten-maven.version>1.8.0</flatten-maven.version>
+    <maven-source.version>3.4.0</maven-source.version>
+    <maven-assembly.version>3.8.0</maven-assembly.version>
+    <maven-site.version>3.22.0</maven-site.version>
+    <maven-dependency.version>3.11.0</maven-dependency.version>
+    <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
 
     <maven-shade.version>3.6.2</maven-shade.version>
 
@@ -66,7 +101,7 @@
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
-        <version>4.10.4</version>
+        <version>${version.spotbugs-annotations}</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -77,7 +112,7 @@
       <dependency>
         <groupId>jakarta.platform</groupId>
         <artifactId>jakarta.jakartaee-bom</artifactId>
-        <version>10.0.0</version>
+        <version>${version.jakartaee-bom}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -98,7 +133,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.66.0</version>
+        <version>${version.opentelemetry}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -110,7 +145,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
-        <version>2.22.3</version>
+        <version>${version.jackson}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -123,27 +158,27 @@
         <!-- fixes dependency convergence -->
         <groupId>org.jspecify</groupId>
         <artifactId>jspecify</artifactId>
-        <version>1.0.1</version>
+        <version>${version.jspecify}</version>
       </dependency>
       <dependency>
         <groupId>com.nimbusds</groupId>
         <artifactId>oauth2-oidc-sdk</artifactId>
-        <version>11.38.2</version>
+        <version>${version.oauth2-oidc-sdk}</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk18on</artifactId>
-        <version>1.86</version>
+        <version>${version.bouncycastle}</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcpkix-jdk18on</artifactId>
-        <version>1.86</version>
+        <version>${version.bouncycastle}</version>
       </dependency>
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
-        <version>3.3.0</version>
+        <version>${version.caffeine}</version>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
@@ -153,43 +188,43 @@
       <dependency>
         <groupId>com.google.auto.service</groupId>
         <artifactId>auto-service</artifactId>
-        <version>1.1.1</version>
+        <version>${version.auto-service}</version>
       </dependency>
       <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
-        <version>0.9.14</version>
+        <version>${version.mustache-compiler}</version>
       </dependency>
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.1.3</version>
+        <version>${version.junit}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest</artifactId>
-        <version>3.0</version>
+        <version>${version.hamcrest}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.24.0</version>
+        <version>${version.mockito}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>2.0.5</version>
+        <version>${version.testcontainers}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>io.rest-assured</groupId>
         <artifactId>rest-assured</artifactId>
-        <version>5.5.7</version>
+        <version>${version.rest-assured}</version>
       </dependency>
 
       <!-- Security fix: GHSA-j382-5jj3-vw4j, GHSA-33hj-rcmx-86mv, GHSA-6h4f-pj3g-q8fq
@@ -198,12 +233,12 @@
       <dependency>
         <groupId>io.undertow</groupId>
         <artifactId>undertow-core</artifactId>
-        <version>2.4.3.Final</version>
+        <version>${version.undertow-core}</version>
       </dependency>
       <dependency>
         <groupId>io.undertow</groupId>
         <artifactId>undertow-servlet</artifactId>
-        <version>2.3.26.Final</version>
+        <version>${version.undertow-servlet}</version>
       </dependency>
 
       <!-- BEGIN wiremock -->
@@ -226,12 +261,12 @@
       <dependency>
         <groupId>org.jsoup</groupId>
         <artifactId>jsoup</artifactId>
-        <version>1.23.2</version>
+        <version>${version.jsoup}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-bom</artifactId>
-        <version>7.0.4.Final</version>
+        <version>${version.resteasy}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -259,69 +294,69 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.6.3</version>
+          <version>${maven-enforcer.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.6.0</version>
+          <version>${maven-surefire.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.6.0</version>
+          <version>${maven-failsafe.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.16.0</version>
+          <version>${maven-compiler.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>${maven-clean.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>${maven-install.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>${maven-deploy.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.5.1</version>
+          <version>${maven-jar.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>${maven-resources.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.8.0</version>
+          <version>${flatten-maven.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.4.0</version>
+          <version>${maven-source.version}</version>
         </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>3.8.0</version>
+          <version>${maven-assembly.version}</version>
         </plugin>
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.22.0</version>
+          <version>${maven-site.version}</version>
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.11.0</version>
+          <version>${maven-dependency.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -333,7 +368,7 @@
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.12.1</version>
+            <version>${extra-enforcer-rules.version}</version>
           </dependency>
         </dependencies>
         <executions>

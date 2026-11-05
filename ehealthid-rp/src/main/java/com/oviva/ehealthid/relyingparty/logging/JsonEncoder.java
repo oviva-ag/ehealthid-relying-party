@@ -88,8 +88,8 @@ public class JsonEncoder extends EncoderBase<ILoggingEvent> {
     var stackTrace = escapeJson(stringifyStackTrace(t));
 
     return """
-       {"time":"%s","severity":"ERROR","message":"%s","stack_trace":"%s","serviceContext":{"service":"%s","version":"%s"}}
-      """
+     {"time":"%s","severity":"ERROR","message":"%s","stack_trace":"%s","serviceContext":{"service":"%s","version":"%s"}}
+    """
         .formatted(timeFormatter.format(event.getInstant()), escapedMessage, stackTrace, sn, sv)
         .getBytes(StandardCharsets.UTF_8);
   }

@@ -27,13 +27,12 @@ public class BasicKeystoreProvider {
   public static KeyStores load(ConfigProvider config) {
     var openIdProviderSigningKeys =
         loadJwks(config, CONFIG_OPENID_PROVIDER_SIG_JWKS_PATH)
-            .orElseGet(
-                () -> {
-                  logger.atInfo().log(
-                      "no key for {} configured, generating ephemeral key",
-                      CONFIG_OPENID_PROVIDER_SIG_JWKS_PATH);
-                  return new JWKSet(KeyGenerator.generateSigningKey());
-                });
+            .orElseGet(() -> {
+              logger.atInfo().log(
+                  "no key for {} configured, generating ephemeral key",
+                  CONFIG_OPENID_PROVIDER_SIG_JWKS_PATH);
+              return new JWKSet(KeyGenerator.generateSigningKey());
+            });
 
     return fromKeys(
         loadJwks(config, CONFIG_FEDERATION_SIG_JWKS_PATH).orElseThrow(),

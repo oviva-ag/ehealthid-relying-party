@@ -60,12 +60,12 @@ public class Main implements AutoCloseable {
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
   private static final String BANNER =
       """
-          ____       _
-         / __ \\_  __(_)  _____ _
-        / /_/ / |/ / / |/ / _ `/
-        \\____/|___/_/|___/\\_,_/
-             GesundheitsID OpenID Connect Relying-Party
-        """;
+        ____       _
+       / __ \\_  __(_)  _____ _
+      / /_/ / |/ / / |/ / _ `/
+      \\____/|___/_/|___/\\_,_/
+           GesundheitsID OpenID Connect Relying-Party
+      """;
   private static final Pattern FEDMASTER_TEST_PATTERN =
       Pattern.compile("app-(test|ref)\\.federationmaster\\.de");
   private static final String CONFIG_PREFIX = "EHEALTHID_RP";

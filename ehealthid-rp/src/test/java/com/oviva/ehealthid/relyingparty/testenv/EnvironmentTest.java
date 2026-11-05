@@ -34,8 +34,8 @@ class EnvironmentTest {
     Files.write(
         f,
         """
-      GEMATIK_AUTH_HEADER=%s
-      """
+        GEMATIK_AUTH_HEADER=%s
+        """
             .formatted(authHeader)
             .getBytes(StandardCharsets.UTF_8));
 

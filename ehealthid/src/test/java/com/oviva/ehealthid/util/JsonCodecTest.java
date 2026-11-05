@@ -26,7 +26,8 @@ class JsonCodecTest {
         new EncodeTC(
             JWKSet.parse(Fixtures.getUtf8String("json_codec_jwks.json")),
             """
-                {"keys":[{"kty":"EC","d":"6RrmHekWp_RwY6FNlM46zwt1wFytfVQSYrS2-DDLj7g","use":"enc","crv":"P-256","kid":"test","x":"M4yMVgv6nV9AHvNCdrFUZ2zLnSD8yXFZBgbLgXU0vAc","y":"AvE4diGs4teOYHECACyi41UMxPGv8myq-Y7MBZGfwzY"}]}"""));
+            {"keys":[{"kty":"EC","d":"6RrmHekWp_RwY6FNlM46zwt1wFytfVQSYrS2-DDLj7g","use":"enc","crv":"P-256","kid":"test","x":"M4yMVgv6nV9AHvNCdrFUZ2zLnSD8yXFZBgbLgXU0vAc","y":"AvE4diGs4teOYHECACyi41UMxPGv8myq-Y7MBZGfwzY"}]}\
+            """));
   }
 
   static List<FailingEncodeTC> testCasesFailingEncode() {
@@ -46,8 +47,8 @@ class JsonCodecTest {
 
     var raw =
         """
-    {"hello": "world" }\
-    """;
+        {"hello": "world" }\
+        """;
     var bytes = raw.getBytes(StandardCharsets.UTF_8);
 
     // when
@@ -75,8 +76,8 @@ class JsonCodecTest {
   void readBadJson() {
     var raw =
         """
-    {"a": bad }
-    """
+        {"a": bad }
+        """
             .getBytes(StandardCharsets.UTF_8);
     assertThrows(DeserializeException.class, () -> JsonCodec.readValue(raw, Object.class));
   }

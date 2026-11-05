@@ -43,8 +43,8 @@ class OpenIdEndpointTest {
     var key =
         ECKey.parse(
             """
-      {"kty":"EC","use":"sig","crv":"P-256","x":"yi3EF1QZS1EiAfAAfjoDyZkRnf59H49gUyklmfwKwSY","y":"Y_SGRGjwacDuT8kbcaX1Igyq8aRfJFNBMKLb2yr0x18"}
-      """);
+            {"kty":"EC","use":"sig","crv":"P-256","x":"yi3EF1QZS1EiAfAAfjoDyZkRnf59H49gUyklmfwKwSY","y":"Y_SGRGjwacDuT8kbcaX1Igyq8aRfJFNBMKLb2yr0x18"}
+            """);
     var keyStore = mock(Supplier.class);
     when(keyStore.get()).thenReturn(key);
 

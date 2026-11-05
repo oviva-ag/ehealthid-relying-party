@@ -84,14 +84,13 @@ class CaffeineCodeRepoTest {
 
     var redirect = URI.create("https://example.com/callback");
     var clientId = "app";
-    ids.forEach(
-        id -> {
-          var issuedAt = Instant.now();
-          var expiresAt = issuedAt.plusSeconds(60);
+    ids.forEach(id -> {
+      var issuedAt = Instant.now();
+      var expiresAt = issuedAt.plusSeconds(60);
 
-          var code = new Code(id, issuedAt, expiresAt, redirect, null, clientId, null);
-          sut.save(code);
-        });
+      var code = new Code(id, issuedAt, expiresAt, redirect, null, clientId, null);
+      sut.save(code);
+    });
 
     cache.cleanUp();
 
