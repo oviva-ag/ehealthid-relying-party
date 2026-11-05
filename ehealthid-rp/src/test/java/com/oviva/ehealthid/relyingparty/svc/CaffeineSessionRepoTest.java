@@ -83,30 +83,28 @@ class CaffeineSessionRepoTest {
     var sesionIds = IntStream.range(0, 100).mapToObj(Integer::toString).toList();
 
     sesionIds.stream()
-        .map(
-            i ->
-                Session.create()
-                    .id(i)
-                    .state(state)
-                    .nonce(nonce)
-                    .redirectUri(redirectUri)
-                    .clientId(clientId)
-                    .build())
+        .map(i ->
+            Session.create()
+                .id(i)
+                .state(state)
+                .nonce(nonce)
+                .redirectUri(redirectUri)
+                .clientId(clientId)
+                .build())
         .forEach(sut::save);
 
-    sesionIds.forEach(
-        id -> {
+    sesionIds.forEach(id -> {
 
-          // when
-          var got = sut.load(id);
+      // when
+      var got = sut.load(id);
 
-          // then
-          assertNotNull(got);
-          assertEquals(id, got.id());
-          assertEquals(state, got.state());
-          assertEquals(redirectUri, got.redirectUri());
-          assertEquals(clientId, got.clientId());
-        });
+      // then
+      assertNotNull(got);
+      assertEquals(id, got.id());
+      assertEquals(state, got.state());
+      assertEquals(redirectUri, got.redirectUri());
+      assertEquals(clientId, got.clientId());
+    });
   }
 
   @Test
@@ -167,15 +165,14 @@ class CaffeineSessionRepoTest {
     var sesionIds = IntStream.range(0, 100).mapToObj(Integer::toString).toList();
 
     sesionIds.stream()
-        .map(
-            i ->
-                Session.create()
-                    .id(i)
-                    .state(state)
-                    .nonce(nonce)
-                    .redirectUri(redirectUri)
-                    .clientId(clientId)
-                    .build())
+        .map(i ->
+            Session.create()
+                .id(i)
+                .state(state)
+                .nonce(nonce)
+                .redirectUri(redirectUri)
+                .clientId(clientId)
+                .build())
         .forEach(sut::save);
 
     store.cleanUp();

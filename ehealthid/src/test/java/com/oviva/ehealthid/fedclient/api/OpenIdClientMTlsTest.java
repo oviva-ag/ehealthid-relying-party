@@ -45,8 +45,8 @@ class OpenIdClientMTlsTest {
   private static final String PAR_REDIRECT = "https://par.example.com/auth";
   private static final String PAR_RESPONSE =
       """
-  { "request_uri":"%s", "expires_in": 1234 }
-  """
+      { "request_uri":"%s", "expires_in": 1234 }
+      """
           .formatted(PAR_REDIRECT);
 
   @RegisterExtension

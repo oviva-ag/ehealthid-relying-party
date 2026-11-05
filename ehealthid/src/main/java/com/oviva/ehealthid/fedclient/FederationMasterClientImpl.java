@@ -78,21 +78,20 @@ public class FederationMasterClientImpl implements FederationMasterClient {
     return Optional.of(signedJwksUri)
         .map(URI::create)
         .map(apiClient::fetchSignedJwks)
-        .map(
-            jws -> {
-              if (!jws.isValidAt(clock.instant())) {
-                throw FederationExceptions.expiredSignedJwks(issuer, signedJwksUri);
-              }
+        .map(jws -> {
+          if (!jws.isValidAt(clock.instant())) {
+            throw FederationExceptions.expiredSignedJwks(issuer, signedJwksUri);
+          }
 
-              if (!jws.verifySignature(idpTrustStore)) {
-                throw FederationExceptions.invalidSignedJwks(issuer, signedJwksUri);
-              }
+          if (!jws.verifySignature(idpTrustStore)) {
+            throw FederationExceptions.invalidSignedJwks(issuer, signedJwksUri);
+          }
 
-              if (!matchesIfPresent(issuer, jws.body().iss())) {
-                throw FederationExceptions.invalidSignedJwks(issuer, signedJwksUri);
-              }
-              return jws;
-            })
+          if (!matchesIfPresent(issuer, jws.body().iss())) {
+            throw FederationExceptions.invalidSignedJwks(issuer, signedJwksUri);
+          }
+          return jws;
+        })
         .map(s -> s.body().toJWKSet())
         .map(JWKSet::getKeys);
   }

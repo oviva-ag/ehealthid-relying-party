@@ -133,9 +133,8 @@ class AuthenticationFlowExampleTest {
 
     return Arrays.stream(raw.split("&"))
         .map(p -> Arrays.asList(p.split("=")))
-        .map(
-            splits ->
-                splits.stream().map(s -> URLDecoder.decode(s, StandardCharsets.UTF_8)).toList())
+        .map(splits ->
+            splits.stream().map(s -> URLDecoder.decode(s, StandardCharsets.UTF_8)).toList())
         .collect(Collectors.toMap(s -> s.get(0), s -> s.get(1)));
   }
 

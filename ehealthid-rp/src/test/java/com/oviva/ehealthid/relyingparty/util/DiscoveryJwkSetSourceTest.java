@@ -27,19 +27,19 @@ class DiscoveryJwkSetSourceTest {
     var kid = "test";
     var jwks =
         """
-    {
-      "keys": [
         {
-          "kty": "EC",
-          "use": "sig",
-          "crv": "P-256",
-          "kid": "%s",
-          "x": "PFjgWFHOCAtnw47F3bT99fmWOKcDARN45JGEPgB8yKs",
-          "y": "sFR6D_6Pa1vRRc5OfQNsetnN8EkXNliEipaip2L2OBg"
+          "keys": [
+            {
+              "kty": "EC",
+              "use": "sig",
+              "crv": "P-256",
+              "kid": "%s",
+              "x": "PFjgWFHOCAtnw47F3bT99fmWOKcDARN45JGEPgB8yKs",
+              "y": "sFR6D_6Pa1vRRc5OfQNsetnN8EkXNliEipaip2L2OBg"
+            }
+          ]
         }
-      ]
-    }
-    """
+        """
             .formatted(kid);
 
     var discoveryUrl = URI.create(wm.getHttpBaseUrl()).resolve(DISCOVERY_PATH);
