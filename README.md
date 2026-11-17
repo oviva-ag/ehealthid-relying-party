@@ -60,11 +60,13 @@ export ISSUER_URI=https://mydiga.example.com
 #---- 2. deploy the relying party
 docker run --rm \
     -v "$(pwd)"/sig_mydiga_example_com_jwks.json:/secrets/sig_jwks.json:ro \
+    -v "$(pwd)"/rp_sig_mydiga_example_com_jwks.json:/secrets/rp_sig_jwks.json:ro \
+    -v "$(pwd)"/rp_enc_mydiga_example_com_jwks.json:/secrets/rp_enc_jwks.json:ro \
     -e "EHEALTHID_RP_APP_NAME=Awesome DiGA" \
     -e "EHEALTHID_RP_BASE_URI=$ISSUER_URI" \
     -e 'EHEALTHID_RP_FEDERATION_ES_JWKS_PATH=/secrets/sig_jwks.json' \
-    -e 'EHEALTHID_RP_OPENID_RP_SIG_JWKS_PATH=/secrets/sig_jwks.json' \
-    -e 'EHEALTHID_RP_OPENID_RP_ENC_JWKS_PATH=/secrets/sig_jwks.json' \
+    -e 'EHEALTHID_RP_OPENID_RP_SIG_JWKS_PATH=/secrets/rp_sig_jwks.json' \
+    -e 'EHEALTHID_RP_OPENID_RP_ENC_JWKS_PATH=/secrets/rp_enc_jwks.json' \
     -e 'EHEALTHID_RP_FEDERATION_MASTER=https://app-test.federationmaster.de' \
     -e 'EHEALTHID_RP_REDIRECT_URIS=https://sso-mydiga.example.com/auth/callback' \
     -e 'EHEALTHID_RP_ES_TTL=PT5M' \
