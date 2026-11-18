@@ -160,6 +160,14 @@ Use environment variables to configure the relying party server.
 | `EHEALTHID_RP_LOG_LEVEL`                     | The log level.                                                                                                                                                             | `INFO`                                                            |
 | `EHEALTHID_RP_OPENID_PROVIDER_SIG_JWKS_PATH` | Path to a JWKS with signing keys for our openIdProvider, for example the id_token issued by the relying party will be signed with it. Will be generated if not configured. | `./openid_provider_sig_jwks.json`                                 |
 
+## Container image
+
+The image is based on [Distroless](https://github.com/GoogleContainerTools/distroless) `java25-debian13:nonroot`:
+
+- It runs as the `nonroot` user (UID 65532) and has no shell.
+- Add JVM options with `JDK_JAVA_OPTIONS`, e.g. `-e 'JDK_JAVA_OPTIONS=-XshowSettings:vm'`. `JAVA_OPTIONS` is no longer read.
+- Set an HTTP proxy with JVM options such as `-Dhttps.proxyHost=proxy.example.com -Dhttps.proxyPort=3128`.
+
 # Generate Keys & Register for Federation
 
 In order to participate in the GesundheitsID one needs to register the entity statement of the IDP
