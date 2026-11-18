@@ -41,6 +41,7 @@
     <version.jboss-logging>3.6.3.Final</version.jboss-logging>
     <version.jackson>2.22.4</version.jackson>
     <version.opentelemetry>1.67.0</version.opentelemetry>
+    <version.opentelemetry-javaagent>2.31.1</version.opentelemetry-javaagent>
     <version.resteasy>7.0.5.Final</version.resteasy>
     <version.undertow-core>2.4.4.Final</version.undertow-core>
     <version.undertow-servlet>2.3.27.Final</version.undertow-servlet>
