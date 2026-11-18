@@ -1,7 +1,21 @@
 #!/bin/bash
-# need to generate keys before running this, e.g. using:
-# ./cli.sh keygen --issuer-uri=$ISSUER_URI
-# ./rp-keygen.sh mydiga_example_com
+
+set -e
+
+>&2 ./mvnw --quiet package -DskipTests -am -pl=ehealthid-rp
+
+./cli.sh keygen --issuer-uri=https://mydiga.example.com
+
+cat > ehealthid-rp/target/RpKeyGen.java <<'JAVA'
+import com.nimbusds.jose.jwk.JWKSet;
+import com.oviva.ehealthid.relyingparty.util.KeyGenerator;
+import java.nio.file.*;
+class RpKeyGen { public static void main(String[] args) throws Exception {
+Files.writeString(Path.of("rp_sig_" + args[0] + "_jwks.json"), new JWKSet(KeyGenerator.generateSigningKey()).toString(false));
+Files.writeString(Path.of("rp_enc_" + args[0] + "_jwks.json"), new JWKSet(KeyGenerator.generateEncryptionKey()).toString(false));
+}}
+JAVA
+java -cp ehealthid-rp/target/ehealthid-rp-jar-with-dependencies.jar ehealthid-rp/target/RpKeyGen.java mydiga_example_com
 
 export EHEALTHID_RP_APP_NAME=Awesome DiGA
 export EHEALTHID_RP_APP_URI=https://sso-mydiga.example.com/app
