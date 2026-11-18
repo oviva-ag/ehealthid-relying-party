@@ -28,7 +28,7 @@ EXPOSE 1234
 
 # Add JVM options with JDK_JAVA_OPTIONS, e.g. -XshowSettings:vm to display the heap size.
 ENTRYPOINT [ "java", \
-  "-XX:MaxRAMPercentage=75", \
+  "-XX:MaxRAMPercentage=50", \
   "-XX:+ExitOnOutOfMemoryError", \
   "-Djava.security.properties=/deployments/java-security.properties", \
   "-javaagent:/opentelemetry-javaagent.jar", \
