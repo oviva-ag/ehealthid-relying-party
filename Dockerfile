@@ -27,7 +27,7 @@ echo "securerandom.strongAlgorithms=NativePRNGNonBlocking:SUN,DRBG:SUN" >> /etc/
 EOF
 
 # Configure the JAVA_OPTIONS, you can add -XshowSettings:vm to also display the heap size.
-ENV JAVA_OPTIONS="-javaagent:/opentelemetry-javaagent.jar"
+ENV JAVA_OPTIONS="-javaagent:/opentelemetry-javaagent.jar -XX:-UseBASE64Intrinsics"
 
 # Configure OpenTelemetry
 ENV OTEL_JAVAAGENT_DEBUG=false
